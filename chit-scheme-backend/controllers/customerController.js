@@ -1,6 +1,8 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
-const { convertToCsv } = require('../utils');
+const { convertToCsv, parseExcel } = require('../utils');
+const xlsx = require('xlsx');
+const path = require('path');
 
 const getAllCustomers = async (req, res) => {
   try {
@@ -50,8 +52,15 @@ const getAllCustomers = async (req, res) => {
     `;
     const totalResult = await executeQuery(totalQuery, params);
 
-    res.json(
-      customers);
+    res.json({
+      customers,
+      pagination: {
+        totalRecords: totalResult[0]?.total || 0,
+        totalPages: Math.ceil((totalResult[0]?.total || 0) / limit),
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit)
+      }
+    });
   } catch (error) {
     console.error('❌ getAllCustomers Error:', error);
     res.status(500).json({ 
@@ -72,7 +81,7 @@ const getCustomerById = async (req, res) => {
       LEFT JOIN District_Master d ON c.District_ID = d.District_ID 
       LEFT JOIN State_Master s ON c.State_ID = s.State_ID
       WHERE c.Customer_ID = @param0
-    `, [{ value: parseInt(id), type: sql.Int }]);
+    `, [{ value: id, type: sql.VarChar(50) }]);
 
     if (!customer.length) {
       return res.status(404).json({ error: 'Customer not found' });
@@ -100,18 +109,18 @@ const createCustomer = async (req, res) => {
       Pincode,
       Nationality,
     } = req.body;
+    console.log(req.body);
 
     const name = `${FirstName} ${LastName}`;
 
     const result = await executeInsertGetId(
       `
-      INSERT INTO Customer_Master (Customer_ID, Name, First_Name, Last_Name, Phone_Number, Phone_Number2, Street_Address1, Street_Address2, Area, District_ID, State_ID, Pincode, Nationality)
+      INSERT INTO Customer_Master (Customer_ID, First_Name, Last_Name, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality)
       OUTPUT INSERTED.Customer_ID
-      VALUES (@param0, @param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9, @param10, @param11, @param12)
-    `,
+      VALUES (@param0, @param1, @param2, @param3, @param4, @param5, 
+              @param6, @param7, @param8, @param9, @param10, @param11)`,
       [
-        { value: Customer_ID, type: sql.Int },
-        { value: name, type: sql.VarChar },
+        { value: Customer_ID, type: sql.VarChar },
         { value: FirstName, type: sql.VarChar },
         { value: LastName, type: sql.VarChar },
         { value: PhoneNumber, type: sql.BigInt },
@@ -199,18 +208,22 @@ const deleteCustomer = async (req, res) => {
   }
 };
 
+// ✅ FIXED: Handle VARCHAR Customer_ID
 const checkCustomerId = async (req, res) => {
   try {
     const { id } = req.params;
+    // ✅ NO parseInt() - Customer_ID is VARCHAR(50)
     const customer = await executeQuery(
       'SELECT Customer_ID FROM Customer_Master WHERE Customer_ID = @param0',
-      [{ value: parseInt(id), type: sql.Int }]
+      [{ value: id, type: sql.VarChar(50) }]  // ✅ VarChar, not Int
     );
     res.json({ exists: customer.length > 0 });
   } catch (error) {
+    console.error('❌ checkCustomerId Error:', error);
     res.status(500).json({ error: error.message });
   }
 };
+
 
 const downloadCustomers = async (req, res) => {
     try {
@@ -249,8 +262,17 @@ const uploadCustomers = async (req, res) => {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
-    const csvData = req.file.buffer.toString('utf-8');
-    const rows = csvData.split('\n').slice(1);
+    // Determine file type (CSV or Excel) and parse accordingly
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    let rows = [];
+    if (ext === '.xlsx' || ext === '.xls') {
+        // Use Excel parser utility
+        rows = parseExcel(req.file.buffer);
+    } else {
+        // Assume CSV
+        const csvData = req.file.buffer.toString('utf-8');
+        rows = csvData.split('\n').slice(1);
+    }
 
     const transaction = new sql.Transaction();
     try {
@@ -259,7 +281,9 @@ const uploadCustomers = async (req, res) => {
 
         for (const row of rows) {
             if (!row) continue;
-            const [Customer_ID, FirstName, LastName, PhoneNumber, PhoneNumber2, StreetAddress1, StreetAddress2, Area, District_ID, State_ID, Pincode, Nationality] = row.split(',');
+            // Support both CSV (comma‑separated) and Excel (array) formats
+            const values = Array.isArray(row) ? row : row.split(',');
+            const [Customer_ID, FirstName, LastName, PhoneNumber, PhoneNumber2, StreetAddress1, StreetAddress2, Area, District_ID, State_ID, Pincode, Nationality] = values;
             const name = `${FirstName} ${LastName}`;
 
             const request = new sql.Request(transaction);

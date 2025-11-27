@@ -10,39 +10,57 @@ const getPool = async () => {
   return pool;
 };
 
-const executeQuery = async (query, params) => {
+const executeQuery = async (query, params = []) => {
   const connection = await sql.connect(dbConfig);  // ✅ Fresh connection EVERY time
   const request = connection.request();  // ✅ Always works
+  
+  if (params) {
+    params.forEach((param, index) => {
+      const paramName = param.name || `param${index}`;
+      request.input(paramName, param.type, param.value);
+    });
+  }
+
   const result = await request.query(query);
   await connection.close();  // ✅ Clean up
   return result.recordset;
 };
 
 const executeInsertGetId = async (query, params = []) => {
-  const pool = await getPool();
+  const connection = await sql.connect(dbConfig);
   try {
-    const request = pool.request();
-    params.forEach((param, index) => {
-      request.input(`param${index}`, param.type, param.value);
-    });
+    const request = connection.request();
+    if (params) {
+      params.forEach((param, index) => {
+        const paramName = param.name || `param${index}`;
+        request.input(paramName, param.type, param.value);
+      });
+    }
     const result = await request.query(query);
+    await connection.close();
     return result.recordset[0];
   } catch (error) {
+    await connection.close();
     console.error('❌ Insert Error:', error);
     throw error;
   }
 };
 
 const executeUpdate = async (query, params = []) => {
-  const pool = await getPool();
+  const connection = await sql.connect(dbConfig);
   try {
-    const request = pool.request();
-    params.forEach((param, index) => {
-      request.input(`param${index}`, param.type, param.value);
-    });
+    const request = connection.request();
+    if (params) {
+      params.forEach((param, index) => {
+        const paramName = param.name || `param${index}`;
+        request.input(paramName, param.type, param.value);
+      });
+    }
     await request.query(query);
+    await connection.close();
     return { success: true };
   } catch (error) {
+    await connection.close();
     throw error;
   }
 };
