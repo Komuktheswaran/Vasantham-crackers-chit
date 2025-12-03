@@ -21,8 +21,9 @@ import {
   DeleteOutlined,
   DownloadOutlined,
   UploadOutlined,
+  UsergroupAddOutlined,
 } from "@ant-design/icons";
-import { customersAPI, statesAPI, districtsAPI } from "../services/api"; // Assuming api service is structured this way
+import { customersAPI, statesAPI, districtsAPI, schemesAPI } from "../services/api"; // Assuming api service is structured this way
 import Highlighter from "react-highlight-words";
 
 const { Option } = Select;
@@ -39,6 +40,10 @@ const Customers = () => {
   const [districts, setDistricts] = useState([]);
   const [selectedState, setSelectedState] = useState(null);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
+  const [assignSchemeModalVisible, setAssignSchemeModalVisible] = useState(false);
+  const [availableSchemes, setAvailableSchemes] = useState([]);
+  const [selectedSchemes, setSelectedSchemes] = useState([]);
+  const [currentCustomerId, setCurrentCustomerId] = useState(null);
 
   const uploadProps = {
     name: 'file',
@@ -140,6 +145,12 @@ const Customers = () => {
             onClick={() => deleteCustomer(record.Customer_ID)}
             size="small"
           />
+          <Button
+            icon={<UsergroupAddOutlined />}
+            onClick={() => openAssignSchemeModal(record.Customer_ID)}
+            size="small"
+            title="Assign Schemes"
+          />
         </Space>
       ),
     },
@@ -216,6 +227,35 @@ const Customers = () => {
       fetchCustomers({ page: 1, limit: 20 });
     } catch (error) {
       console.error("Save error:", error);
+    }
+  };
+
+  const openAssignSchemeModal = async (customerId) => {
+    setCurrentCustomerId(customerId);
+    setAssignSchemeModalVisible(true);
+    try {
+      // Fetch all schemes
+      const schemesResponse = await schemesAPI.getAll();
+      setAvailableSchemes(schemesResponse.data);
+
+      // Fetch currently assigned schemes for this customer
+      const assignedResponse = await customersAPI.getSchemes(customerId);
+      setSelectedSchemes(assignedResponse.data);
+    } catch (error) {
+      console.error("Error fetching schemes:", error);
+      message.error("Failed to load schemes.");
+    }
+  };
+
+  const handleAssignSchemes = async () => {
+    try {
+      await customersAPI.assignSchemes(currentCustomerId, selectedSchemes);
+      message.success("Schemes assigned successfully!");
+      setAssignSchemeModalVisible(false);
+      fetchCustomers({ page: data.pagination.currentPage, limit: data.pagination.pageSize });
+    } catch (error) {
+      console.error("Assign schemes error:", error);
+      message.error("Failed to assign schemes.");
     }
   };
 
@@ -421,6 +461,29 @@ const Customers = () => {
             </Col>
           </Row>
         </Form>
+      </Modal>
+
+      <Modal
+        title="Assign Schemes"
+        open={assignSchemeModalVisible}
+        onCancel={() => setAssignSchemeModalVisible(false)}
+        onOk={handleAssignSchemes}
+      >
+        <p>Select schemes to assign to this customer:</p>
+        <Select
+          mode="multiple"
+          style={{ width: '100%' }}
+          placeholder="Select schemes"
+          value={selectedSchemes}
+          onChange={setSelectedSchemes}
+          optionFilterProp="children"
+        >
+          {availableSchemes.map(scheme => (
+            <Option key={scheme.Scheme_ID} value={scheme.Scheme_ID}>
+              {scheme.Name} (₹{scheme.Total_Amount})
+            </Option>
+          ))}
+        </Select>
       </Modal>
     </>
   );

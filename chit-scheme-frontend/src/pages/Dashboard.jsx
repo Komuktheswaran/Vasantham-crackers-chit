@@ -1,18 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Statistic, Table } from 'antd';
-import { customersAPI, schemesAPI } from '../services/api';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { UserOutlined, MoneyCollectOutlined, BarChartOutlined } from '@ant-design/icons';
+import { Row, Col, Card, Statistic, Table, Select, Drawer, Descriptions, Progress, Timeline, Tag, Spin } from 'antd';
+import { customersAPI, schemesAPI, dashboardAPI } from '../services/api';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from 'recharts';
+import { UserOutlined, MoneyCollectOutlined, BarChartOutlined, DollarOutlined, EyeOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
+
+const { Option } = Select;
 
 const Dashboard = () => {
   const [stats, setStats] = useState({});
   const [recentCustomers, setRecentCustomers] = useState([]);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [schemeStats, setSchemeStats] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(dayjs().year());
+  const [loading, setLoading] = useState(true);
+  
+  // Detail view states
+  const [detailType, setDetailType] = useState(null); // 'customer', 'scheme', 'month'
+  const [detailData, setDetailData] = useState(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  
+  // Selection states
+  const [allCustomers, setAllCustomers] = useState([]);
+  const [allSchemes, setAllSchemes] = useState([]);
+  
+  // Graph filter states
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+  const [selectedSchemeId, setSelectedSchemeId] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [selectedYear, selectedCustomerId, selectedSchemeId]);
 
   const fetchDashboardData = async () => {
+    setLoading(true);
     try {
       const [customersRes, schemesRes] = await Promise.all([
         customersAPI.getAll({ page: 1, limit: 5 }),
@@ -26,8 +47,64 @@ const Dashboard = () => {
       });
 
       setRecentCustomers(customersRes.data.customers || []);
+      
+      // Fetch all customers and schemes for selectors
+      const allCustomersRes = await customersAPI.getAll({});
+      setAllCustomers(allCustomersRes.data.customers || []);
+      setAllSchemes(schemesRes.data || []);
+      
+      setSchemeStats(schemesRes.data.map(scheme => ({
+        name: scheme.Name,
+        members: scheme.member_count || 0,
+        amount: scheme.Total_Amount || 0,
+        key: scheme.Scheme_ID
+      })));
+
+      const monthlyStatsRes = await dashboardAPI.getMonthlyStats(selectedYear, selectedCustomerId, selectedSchemeId);
+      setMonthlyData(monthlyStatsRes.data);
+      
     } catch (error) {
       console.error('Dashboard error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCustomerSelect = async (customerId) => {
+    try {
+      const response = await dashboardAPI.getCustomerDetails(customerId);
+      setDetailData(response.data);
+      setDetailType('customer');
+      setDrawerVisible(true);
+    } catch (error) {
+      console.error('Error loading customer details:', error);
+    }
+  };
+
+  const handleSchemeSelect = async (schemeId) => {
+    try {
+      const response = await dashboardAPI.getSchemeDetails(schemeId);
+      setDetailData(response.data);
+      setDetailType('scheme');
+      setDrawerVisible(true);
+    } catch (error) {
+      console.error('Error loading scheme details:', error);
+    }
+  };
+
+  const handleMonthClick = (month) => {
+    const monthIndex = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(month) + 1;
+    fetchMonthDetails(selectedYear, monthIndex);
+  };
+
+  const fetchMonthDetails = async (year, month) => {
+    try {
+      const response = await dashboardAPI.getMonthDetails(year, month);
+      setDetailData({ ...response.data, year, month });
+      setDetailType('month');
+      setDrawerVisible(true);
+    } catch (error) {
+      console.error('Error loading month details:', error);
     }
   };
 
@@ -36,15 +113,258 @@ const Dashboard = () => {
     { name: 'Inactive Schemes', value: (stats.totalSchemes || 0) - (stats.activeSchemes || 0) },
   ];
 
-  const columns = [
-    { title: 'Customer', dataIndex: 'Name', key: 'name' },
+  const recentCustomerColumns = [
+    { 
+      title: 'Customer', 
+      key: 'name',
+      render: (_, record) => `${record.First_Name} ${record.Last_Name}`
+    },
     { title: 'Phone', dataIndex: 'Phone_Number', key: 'phone', render: (text) => `+91 ${text}` },
     { title: 'Area', dataIndex: 'Area', key: 'area' },
   ];
 
+  const schemeStatsColumns = [
+    { title: 'Scheme Name', dataIndex: 'name', key: 'name' },
+    { title: 'Members', dataIndex: 'members', key: 'members' },
+    { 
+      title: 'Total Amount', 
+      dataIndex: 'amount', 
+      key: 'amount',
+      render: (val) => `₹${val?.toLocaleString()}`
+    },
+  ];
+
+  const renderCustomerDetails = () => {
+    if (!detailData || !detailData.customer) return null;
+    const { customer, schemes, payments } = detailData;
+
+    const schemeColumns = [
+      { title: 'Scheme', dataIndex: 'Name', key: 'name' },
+      { 
+        title: 'Progress', 
+        key: 'progress',
+        render: (_, record) => {
+          const percentage = record.total_dues > 0 ? (record.paid_dues / record.total_dues) * 100 : 0;
+          return <Progress percent={Math.round(percentage)} size="small" />;
+        }
+      },
+      { 
+        title: 'Paid', 
+        dataIndex: 'total_paid_amount', 
+        key: 'paid',
+        render: (val) => `₹${val?.toLocaleString()}`
+      },
+      { 
+        title: 'Due', 
+        dataIndex: 'total_due_amount', 
+        key: 'due',
+        render: (val) => `₹${val?.toLocaleString()}`
+      },
+    ];
+
+    const paymentColumns = [
+      { title: 'Date', dataIndex: 'Amount_Received_date', key: 'date', render: (val) => dayjs(val).format('DD MMM YYYY') },
+      { title: 'Scheme', dataIndex: 'scheme_name', key: 'scheme' },
+      { title: 'Amount', dataIndex: 'Amount_Received', key: 'amount', render: (val) => `₹${val?.toLocaleString()}` },
+      { title: 'Transaction ID', dataIndex: 'Transaction_ID', key: 'txn' },
+    ];
+
+    return (
+      <>
+        <Descriptions title="Customer Information" column={2} bordered>
+          <Descriptions.Item label="Customer ID">{customer.Customer_ID}</Descriptions.Item>
+          <Descriptions.Item label="Name">{customer.First_Name} {customer.Last_Name}</Descriptions.Item>
+          <Descriptions.Item label="Phone">{customer.Phone_Number}</Descriptions.Item>
+          <Descriptions.Item label="Phone 2">{customer.Phone_Number2}</Descriptions.Item>
+          <Descriptions.Item label="Address" span={2}>{customer.StreetAddress1}, {customer.Area}</Descriptions.Item>
+        </Descriptions>
+
+        <Card title="Schemes" style={{ marginTop: 16 }}>
+          <Table dataSource={schemes} columns={schemeColumns} rowKey="Scheme_ID" pagination={false} />
+        </Card>
+
+        <Card title="Payment History" style={{ marginTop: 16 }}>
+          <Table dataSource={payments} columns={paymentColumns} rowKey="Pay_ID" pagination={{ pageSize: 5 }} />
+        </Card>
+      </>
+    );
+  };
+
+  const renderSchemeDetails = () => {
+    if (!detailData || !detailData.scheme) return null;
+    const { scheme, members, monthlyCollection } = detailData;
+
+    const memberColumns = [
+      { title: 'Customer', dataIndex: 'customer_name', key: 'name' },
+      { title: 'Phone', dataIndex: 'Phone_Number', key: 'phone' },
+      { 
+        title: 'Progress', 
+        key: 'progress',
+        render: (_, record) => {
+          const percentage = record.total_dues > 0 ? (record.paid_dues / record.total_dues) * 100 : 0;
+          return <Progress percent={Math.round(percentage)} size="small" />;
+        }
+      },
+      { 
+        title: 'Paid', 
+        dataIndex: 'total_paid_amount', 
+        key: 'paid',
+        render: (val) => `₹${val?.toLocaleString()}`
+      },
+    ];
+
+    const monthNames = ['','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const chartData = monthlyCollection.map(m => ({
+      month: `${monthNames[m.month]} ${m.year}`,
+      due: m.total_due,
+      received: m.total_received
+    }));
+
+    return (
+      <>
+        <Descriptions title="Scheme Information" column={2} bordered>
+          <Descriptions.Item label="Scheme Name">{scheme.Name}</Descriptions.Item>
+          <Descriptions.Item label="Total Amount">₹{scheme.Total_Amount?.toLocaleString()}</Descriptions.Item>
+          <Descriptions.Item label="Amount per Month">₹{scheme.Amount_per_month?.toLocaleString()}</Descriptions.Item>
+          <Descriptions.Item label="Number of Dues">{scheme.Number_of_due}</Descriptions.Item>
+          <Descriptions.Item label="Members">{members.length}</Descriptions.Item>
+        </Descriptions>
+
+        <Card title="Monthly Collection" style={{ marginTop: 16 }}>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="due" stroke="#faad14" name="Expected" />
+              <Line type="monotone" dataKey="received" stroke="#52c41a" name="Received" />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card title="Members" style={{ marginTop: 16 }}>
+          <Table dataSource={members} columns={memberColumns} rowKey="Customer_ID" pagination={false} />
+        </Card>
+      </>
+    );
+  };
+
+  const renderMonthDetails = () => {
+    if (!detailData || !detailData.summary) return null;
+    const { summary, payments, dues, year, month } = detailData;
+    const monthNames = ['','Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    const paymentColumns = [
+      { title: 'Date', dataIndex: 'Amount_Received_date', key: 'date', render: (val) => dayjs(val).format('DD MMM') },
+      { title: 'Customer', dataIndex: 'customer_name', key: 'customer' },
+      { title: 'Scheme', dataIndex: 'scheme_name', key: 'scheme' },
+      { title: 'Amount', dataIndex: 'Amount_Received', key: 'amount', render: (val) => `₹${val?.toLocaleString()}` },
+    ];
+
+    const dueColumns = [
+      { title: 'Due Date', dataIndex: 'Due_date', key: 'date', render: (val) => dayjs(val).format('DD MMM') },
+      { title: 'Customer', dataIndex: 'customer_name', key: 'customer' },
+      { title: 'Scheme', dataIndex: 'scheme_name', key: 'scheme' },
+      { title: 'Pending', dataIndex: 'pending_amount', key: 'pending', render: (val) => `₹${val?.toLocaleString()}` },
+    ];
+
+    return (
+      <>
+        <h3>{monthNames[month]} {year} Summary</h3>
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col span={12}>
+            <Card>
+              <Statistic 
+                title="Payments Received" 
+                value={summary.totalPayments} 
+                precision={0}
+                valueStyle={{ color: '#52c41a' }}
+                suffix={`(${summary.paymentsCount})`}
+              />
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card>
+              <Statistic 
+                title="Pending Dues" 
+                value={summary.totalDues} 
+                precision={0}
+                valueStyle={{ color: '#faad14' }}
+                suffix={`(${summary.duesCount})`}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Card title="Payments Received" style={{ marginTop: 16 }}>
+          <Table dataSource={payments} columns={paymentColumns} rowKey="Pay_ID" pagination={{ pageSize: 5 }} />
+        </Card>
+
+        <Card title="Pending Dues" style={{ marginTop: 16 }}>
+          <Table dataSource={dues} columns={dueColumns} rowKey={(record) => `${record.Customer_ID}_${record.Scheme_ID}_${record.Due_number}`} pagination={{ pageSize: 5 }} />
+        </Card>
+      </>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+        <Spin size="large" spinning={true}>
+          <div style={{ padding: 50 }}>Loading dashboard data...</div>
+        </Spin>
+      </div>
+    );
+  }
+
   return (
     <>
       <h2>Dashboard Overview</h2>
+      
+      {/* Selection Row */}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={8}>
+          <Card title="View Customer Details">
+            <Select
+              showSearch
+              style={{ width: '100%' }}
+              placeholder="Select a customer"
+              optionFilterProp="children"
+              onChange={handleCustomerSelect}
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {allCustomers.map(c => (
+                <Option key={c.Customer_ID} value={c.Customer_ID}>
+                  {c.First_Name} {c.Last_Name} ({c.Customer_ID})
+                </Option>
+              ))}
+            </Select>
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="View Scheme Details">
+            <Select
+              style={{ width: '100%' }}
+              placeholder="Select a scheme"
+              onChange={handleSchemeSelect}
+            >
+              {allSchemes.map(s => (
+                <Option key={s.Scheme_ID} value={s.Scheme_ID}>
+                  {s.Name}
+                </Option>
+              ))}
+            </Select>
+          </Card>
+        </Col>
+        <Col span={8}>
+          <Card title="Click on a month in the chart below to view details" />
+        </Col>
+      </Row>
+
       <Row gutter={16} style={{ marginBottom: 24 }}>
         <Col span={6}>
           <Card>
@@ -76,10 +396,92 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
+        <Col span={6}>
+          <Card>
+            <Statistic
+              title="Total Revenue (Est.)"
+              value={schemeStats.reduce((sum, s) => sum + (s.amount * s.members), 0)}
+              valueStyle={{ color: '#faad14' }}
+              prefix={<DollarOutlined />}
+              precision={0}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={24}>
+          <Card 
+            title="Monthly Payment Overview (Click on bars to view details)"
+            extra={
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Select 
+                  allowClear
+                  showSearch
+                  style={{ width: 200 }}
+                  placeholder="Filter by customer"
+                  optionFilterProp="children"
+                  value={selectedCustomerId}
+                  onChange={setSelectedCustomerId}
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                >
+                  {allCustomers.map(c => (
+                    <Option key={c.Customer_ID} value={c.Customer_ID}>
+                      {c.First_Name} {c.Last_Name}
+                    </Option>
+                  ))}
+                </Select>
+                <Select
+                  allowClear
+                  style={{ width: 180 }}
+                  placeholder="Filter by scheme"
+                  value={selectedSchemeId}
+                  onChange={setSelectedSchemeId}
+                >
+                  {allSchemes.map(s => (
+                    <Option key={s.Scheme_ID} value={s.Scheme_ID}>
+                      {s.Name}
+                    </Option>
+                  ))}
+                </Select>
+                <Select value={selectedYear} onChange={setSelectedYear} style={{ width: 100 }}>
+                  <Option value={2024}>2024</Option>
+                  <Option value={2025}>2025</Option>
+                </Select>
+              </div>
+            }
+          >
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={monthlyData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar 
+                  dataKey="payments" 
+                  fill="#52c41a" 
+                  name="Payments Received" 
+                  onClick={(data) => handleMonthClick(data.month)}
+                  cursor="pointer"
+                />
+                <Bar 
+                  dataKey="due" 
+                  fill="#faad14" 
+                  name="Pending Dues" 
+                  onClick={(data) => handleMonthClick(data.month)}
+                  cursor="pointer"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </Card>
+        </Col>
       </Row>
 
       <Row gutter={16}>
-        <Col span={12}>
+        <Col span={8}>
           <Card title="Scheme Distribution">
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -99,18 +501,46 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </Card>
         </Col>
-        <Col span={12}>
+        <Col span={8}>
           <Card title="Recent Customers">
             <Table
               dataSource={recentCustomers}
-              columns={columns}
+              columns={recentCustomerColumns}
               rowKey="Customer_ID"
               pagination={false}
               size="small"
             />
           </Card>
         </Col>
+        <Col span={8}>
+          <Card title="Scheme Statistics">
+            <Table
+              dataSource={schemeStats}
+              columns={schemeStatsColumns}
+              rowKey="key"
+              pagination={false}
+              size="small"
+              scroll={{ y: 240 }}
+            />
+          </Card>
+        </Col>
       </Row>
+
+      <Drawer
+        title={
+          detailType === 'customer' ? 'Customer Details' :
+          detailType === 'scheme' ? 'Scheme Details' :
+          'Month Details'
+        }
+        placement="right"
+        width={720}
+        onClose={() => setDrawerVisible(false)}
+        open={drawerVisible}
+      >
+        {detailType === 'customer' && renderCustomerDetails()}
+        {detailType === 'scheme' && renderSchemeDetails()}
+        {detailType === 'month' && renderMonthDetails()}
+      </Drawer>
     </>
   );
 };

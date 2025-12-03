@@ -5,13 +5,15 @@ import {
   HomeOutlined,
   UsergroupAddOutlined,
   MoneyCollectOutlined,
-  BarChartOutlined
+  BarChartOutlined,
+  DownloadOutlined
 } from '@ant-design/icons';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Customers from './pages/Customers';
 import Schemes from './pages/Schemes';
 import Payments from './pages/Payments';
+import Downloads from './pages/Downloads';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -25,6 +27,7 @@ const App = () => {
     { key: '/customers', icon: <UsergroupAddOutlined />, label: 'Customers' },
     { key: '/schemes', icon: <MoneyCollectOutlined />, label: 'Schemes' },
     { key: '/payments', icon: <BarChartOutlined />, label: 'Payments' },
+    { key: '/downloads', icon: <DownloadOutlined />, label: 'Downloads' },
   ];
 
   return (
@@ -67,6 +70,7 @@ const App = () => {
             <Route path="/customers" element={<Customers />} />
             <Route path="/schemes" element={<Schemes />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/downloads" element={<Downloads />} />
           </Routes>
         </Content>
         <Footer style={{ textAlign: 'center', padding: '16px 0' }}>

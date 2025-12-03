@@ -7,22 +7,27 @@ const login = async (req, res) => {
   try {
     const { username, password } = req.body;
     
-    // Simple user validation (replace with real users table)
-    const users = await executeQuery(`
-      SELECT * FROM (VALUES 
-        (1, 'admin', 'Admin User', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi')
-      ) AS u(id, username, name, password)
-    `);
+    // Query user from database
+    const users = await executeQuery(
+      'SELECT User_ID, Username, Password_Hash, Full_Name FROM Users WHERE Username = @username',
+      [{ name: 'username', value: username, type: require('mssql').VarChar }]
+    );
     
-    const user = users.find(u => u.username === username);
-    if (!user || !bcrypt.compareSync(password, user.password)) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+    const user = users[0];
+    
+    if (!user || !bcrypt.compareSync(password, user.Password_Hash)) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
     
-    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign(
+      { id: user.User_ID, username: user.Username }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: '8h' } // Reduced token validity for better security
+    );
+    
     res.json({
       token,
-      user: { id: user.id, username: user.username, name: user.name }
+      user: { id: user.User_ID, username: user.Username, name: user.Full_Name }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

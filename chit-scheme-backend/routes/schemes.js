@@ -1,4 +1,5 @@
 const express = require('express');
+const { schemeValidation } = require('../middleware/validators');
 const router = express.Router();
 
 // ✅ Import ONLY functions that exist in controller
@@ -14,8 +15,8 @@ const {
 // ✅ Route definitions - ALL functions exist
 router.get('/', getAllSchemes);
 router.get('/:id', getSchemeById);
-router.post('/', createScheme);
-router.put('/:id', updateScheme);
+router.post('/', schemeValidation, createScheme);
+router.put('/:id', schemeValidation, updateScheme);
 router.delete('/:id', deleteScheme);
 router.get('/download', downloadSchemes);
 

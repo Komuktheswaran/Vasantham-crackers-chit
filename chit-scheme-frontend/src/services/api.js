@@ -25,6 +25,8 @@ export const customersAPI = {
   create: (data) => api.post('/customers', data),
   update: (id, data) => api.put(`/customers/${id}`, data),
   delete: (id) => api.delete(`/customers/${id}`),
+  getSchemes: (id) => api.get(`/customers/${id}/schemes`),
+  assignSchemes: (id, schemeIds) => api.post(`/customers/${id}/schemes`, { schemeIds }),
 };
 
 export const schemesAPI = {
@@ -36,7 +38,9 @@ export const schemesAPI = {
 };
 
 export const paymentsAPI = {
+  getAll: (params) => api.get('/payments', { params }),
   getByCustomer: (customerId) => api.get(`/payments/customer/${customerId}`),
+  getDues: (customerId, schemeId) => api.get(`/payments/dues/${customerId}/${schemeId}`),
   create: (data) => api.post('/payments', data),
 };
 
@@ -46,6 +50,25 @@ export const statesAPI = {
 
 export const districtsAPI = {
   getAll: () => api.get('/districts'),
+};
+
+export const dashboardAPI = {
+  getMonthlyStats: (year, customerId, schemeId) => {
+    const params = { year };
+    if (customerId) params.customerId = customerId;
+    if (schemeId) params.schemeId = schemeId;
+    return api.get('/dashboard/monthly-stats', { params });
+  },
+  getCustomerStats: () => api.get('/dashboard/customer-stats'),
+  getCustomerDetails: (customerId) => api.get(`/dashboard/customer/${customerId}`),
+  getSchemeDetails: (schemeId) => api.get(`/dashboard/scheme/${schemeId}`),
+  getMonthDetails: (year, month) => api.get(`/dashboard/month/${year}/${month}`),
+};
+
+export const exportsAPI = {
+  exportCustomers: (filters) => api.get('/exports/customers', { params: filters, responseType: 'blob' }),
+  exportPayments: (filters) => api.get('/exports/payments', { params: filters, responseType: 'blob' }),
+  exportSchemes: (filters) => api.get('/exports/schemes', { params: filters, responseType: 'blob' }),
 };
 
 export default api;

@@ -4,23 +4,35 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 
+const morgan = require('morgan');
+
 dotenv.config();
 const app = express();
 
 // Security middleware
 app.use(helmet());
+app.use(morgan('combined')); // Log HTTP requests
 app.use(cors({
-  origin: 'http://localhost:3000'
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
 const limiter = rateLimit({ 
-  windowMs: 15 * 60 * 1000, 
-  max: 100 
+  windowMs: 15 * 60 * 10000, 
+  max: 1000 
 });
 app.use('/api/', limiter);
+
+// Stricter rate limiting for auth
+const authLimiter = rateLimit({ 
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 login requests per windowMs
+  message: 'Too many login attempts, please try again after 15 minutes'
+});
+app.use('/api/auth/', authLimiter);
 
 // Health check
 app.get('/api/health', async (req, res) => {
@@ -35,9 +47,11 @@ app.get('/api/health', async (req, res) => {
 
 // API Routes - IMPORTANT: Order matters!
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/schemes', require('./routes/schemes'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/exports', require('./routes/exports'));
 app.use('/api/states', require('./routes/states'));
 app.use('/api/districts', require('./routes/districts'));
 
@@ -57,5 +71,6 @@ app.listen(PORT, () => {
   console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
   console.log(`🌍 States: http://localhost:${PORT}/api/states`);
   console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
+  console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
   console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
 });

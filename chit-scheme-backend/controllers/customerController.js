@@ -6,7 +6,7 @@ const path = require('path');
 
 const getAllCustomers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '' } = req.query;
+    const { page = 1, limit = 20, search = '', state, district, area, scheme_id } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     // Build base query with proper parameterization
@@ -22,13 +22,48 @@ const getAllCustomers = async (req, res) => {
       LEFT JOIN State_Master s ON c.State_ID = s.State_ID
     `;
     
+    // Add scheme join if filtering by scheme
+    if (scheme_id) {
+      fromQuery += ` INNER JOIN Scheme_Members sm ON c.Customer_ID = sm.Customer_ID`;
+    }
+
     let whereClause = 'WHERE 1=1';
     const params = [];
+    let paramIndex = 0;
 
     // Search functionality
     if (search) {
-      whereClause += ' AND (c.Name LIKE @search OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @search)';
-      params.push({ name: 'search', value: `%${search}%`, type: sql.VarChar });
+      whereClause += ` AND (c.Name LIKE @param${paramIndex} OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @param${paramIndex})`;
+      params.push({ value: `%${search}%`, type: sql.VarChar });
+      paramIndex++;
+    }
+
+    // State filter
+    if (state) {
+      whereClause += ` AND s.State_Name = @param${paramIndex}`;
+      params.push({ value: state, type: sql.VarChar(100) });
+      paramIndex++;
+    }
+
+    // District filter
+    if (district) {
+      whereClause += ` AND d.District_Name = @param${paramIndex}`;
+      params.push({ value: district, type: sql.VarChar(100) });
+      paramIndex++;
+    }
+
+    // Area filter
+    if (area) {
+      whereClause += ` AND c.Area LIKE @param${paramIndex}`;
+      params.push({ value: `%${area}%`, type: sql.VarChar(100) });
+      paramIndex++;
+    }
+
+    // Scheme filter
+    if (scheme_id) {
+      whereClause += ` AND sm.Scheme_ID = @param${paramIndex}`;
+      params.push({ value: parseInt(scheme_id), type: sql.Int });
+      paramIndex++;
     }
 
     // Main query with pagination
@@ -46,7 +81,7 @@ const getAllCustomers = async (req, res) => {
 
     // Total count query
     const totalQuery = `
-      SELECT COUNT(*) as total 
+      SELECT COUNT(DISTINCT c.Customer_ID) as total 
       ${fromQuery}
       ${whereClause}
     `;
@@ -302,8 +337,90 @@ const uploadCustomers = async (req, res) => {
     }
 };
 
+const getCustomerSchemes = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const schemes = await executeQuery(
+      'SELECT Scheme_ID FROM Scheme_Members WHERE Customer_ID = @param0',
+      [{ value: id, type: sql.VarChar(50) }]
+    );
+    res.json(schemes.map(s => s.Scheme_ID));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const assignSchemes = async (req, res) => {
+  const connection = await sql.connect(require('../config/database').dbConfig);
+  const transaction = new sql.Transaction(connection);
+  
+  try {
+    const { id } = req.params;
+    const { schemeIds } = req.body; // Array of Scheme_IDs
+
+    await transaction.begin();
+    const request = new sql.Request(transaction);
+
+    // 1. Delete existing assignments
+    await request.input('customerId', sql.VarChar(50), id)
+                 .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId');
+
+    // 2. Delete existing dues (Resetting dues for the customer)
+    // Note: This assumes we want to reset dues when re-assigning. 
+    // If preserving history is needed, this logic needs to be more complex.
+    const deleteDuesReq = new sql.Request(transaction);
+    await deleteDuesReq.input('customerId', sql.VarChar(50), id)
+                       .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId');
+
+    // 3. Insert new assignments and generate dues
+    if (schemeIds && schemeIds.length > 0) {
+      for (const schemeId of schemeIds) {
+        // Insert Member
+        const insertMemberReq = new sql.Request(transaction);
+        await insertMemberReq.input('customerId', sql.VarChar(50), id)
+                             .input('schemeId', sql.Int, schemeId)
+                             .query('INSERT INTO Scheme_Members (Customer_ID, Scheme_ID) VALUES (@customerId, @schemeId)');
+
+        // Fetch Scheme Details for Dues
+        const schemeDetailsReq = new sql.Request(transaction);
+        const schemeResult = await schemeDetailsReq.input('schemeId', sql.Int, schemeId)
+            .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
+        
+        const scheme = schemeResult.recordset[0];
+        if (scheme) {
+            for (let i = 1; i <= scheme.Number_of_due; i++) {
+                const dueDate = new Date(scheme.Month_from);
+                dueDate.setMonth(dueDate.getMonth() + (i - 1));
+
+                const insertDueReq = new sql.Request(transaction);
+                await insertDueReq.input('schemeId', sql.Int, schemeId)
+                                  .input('customerId', sql.VarChar(50), id)
+                                  .input('dueNumber', sql.Int, i)
+                                  .input('dueDate', sql.Date, dueDate)
+                                  .input('dueAmount', sql.Decimal(15, 2), scheme.Amount_per_month)
+                                  .query(`
+                                      INSERT INTO Scheme_Due (Scheme_ID, Customer_ID, Due_number, Due_date, Due_amount)
+                                      VALUES (@schemeId, @customerId, @dueNumber, @dueDate, @dueAmount)
+                                  `);
+            }
+        }
+      }
+    }
+
+    await transaction.commit();
+    res.json({ success: true, message: 'Schemes assigned and dues generated successfully' });
+  } catch (error) {
+    if (transaction.active) await transaction.rollback();
+    console.error('❌ assignSchemes Error:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    await connection.close();
+  }
+};
+
 module.exports = { 
   getAllCustomers, getCustomerById, 
   createCustomer, updateCustomer, deleteCustomer,
-  checkCustomerId, downloadCustomers, uploadCustomers
+  checkCustomerId, downloadCustomers, uploadCustomers,
+  getCustomerSchemes, assignSchemes
 };
