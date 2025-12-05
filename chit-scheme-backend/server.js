@@ -29,7 +29,7 @@ app.use('/api/', limiter);
 // Stricter rate limiting for auth
 const authLimiter = rateLimit({ 
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login requests per windowMs
+  max:10000, // Limit each IP to 5 login requests per windowMs
   message: 'Too many login attempts, please try again after 15 minutes'
 });
 app.use('/api/auth/', authLimiter);
@@ -47,6 +47,7 @@ app.get('/api/health', async (req, res) => {
 
 // API Routes - IMPORTANT: Order matters!
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/schemes', require('./routes/schemes'));
@@ -67,10 +68,12 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n🚀 Server: http://localhost:${PORT}`);
   console.log(`✅ Health: http://localhost:${PORT}/api/health`);
+  console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
+  console.log(`👤 Users: http://localhost:${PORT}/api/users`);
   console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
   console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
+  console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
   console.log(`🌍 States: http://localhost:${PORT}/api/states`);
   console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
   console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
-  console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
 });

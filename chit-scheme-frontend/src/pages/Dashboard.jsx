@@ -28,6 +28,10 @@ const Dashboard = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
   const [selectedSchemeId, setSelectedSchemeId] = useState(null);
 
+  // Temporary selection states for drawers
+  const [customerSelectorValue, setCustomerSelectorValue] = useState(undefined);
+  const [schemeSelectorValue, setSchemeSelectorValue] = useState(undefined);
+
   useEffect(() => {
     fetchDashboardData();
   }, [selectedYear, selectedCustomerId, selectedSchemeId]);
@@ -72,23 +76,29 @@ const Dashboard = () => {
 
   const handleCustomerSelect = async (customerId) => {
     try {
+      setCustomerSelectorValue(customerId); // Show selection briefly
       const response = await dashboardAPI.getCustomerDetails(customerId);
       setDetailData(response.data);
       setDetailType('customer');
       setDrawerVisible(true);
+      setCustomerSelectorValue(undefined); // Clear after loading
     } catch (error) {
       console.error('Error loading customer details:', error);
+      setCustomerSelectorValue(undefined); // Clear on error too
     }
   };
 
   const handleSchemeSelect = async (schemeId) => {
     try {
+      setSchemeSelectorValue(schemeId); // Show selection briefly
       const response = await dashboardAPI.getSchemeDetails(schemeId);
       setDetailData(response.data);
       setDetailType('scheme');
       setDrawerVisible(true);
+      setSchemeSelectorValue(undefined); // Clear after loading
     } catch (error) {
       console.error('Error loading scheme details:', error);
+      setSchemeSelectorValue(undefined); // Clear on error too
     }
   };
 
@@ -179,11 +189,11 @@ const Dashboard = () => {
           <Descriptions.Item label="Address" span={2}>{customer.StreetAddress1}, {customer.Area}</Descriptions.Item>
         </Descriptions>
 
-        <Card title="Schemes" style={{ marginTop: 16 }}>
+        <Card title="Schemes" className="mt-16">
           <Table dataSource={schemes} columns={schemeColumns} rowKey="Scheme_ID" pagination={false} />
         </Card>
 
-        <Card title="Payment History" style={{ marginTop: 16 }}>
+        <Card title="Payment History" className="mt-16">
           <Table dataSource={payments} columns={paymentColumns} rowKey="Pay_ID" pagination={{ pageSize: 5 }} />
         </Card>
       </>
@@ -230,7 +240,7 @@ const Dashboard = () => {
           <Descriptions.Item label="Members">{members.length}</Descriptions.Item>
         </Descriptions>
 
-        <Card title="Monthly Collection" style={{ marginTop: 16 }}>
+        <Card title="Monthly Collection" className="mt-16">
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -244,7 +254,7 @@ const Dashboard = () => {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Members" style={{ marginTop: 16 }}>
+        <Card title="Members" className="mt-16">
           <Table dataSource={members} columns={memberColumns} rowKey="Customer_ID" pagination={false} />
         </Card>
       </>
@@ -273,14 +283,14 @@ const Dashboard = () => {
     return (
       <>
         <h3>{monthNames[month]} {year} Summary</h3>
-        <Row gutter={16} style={{ marginBottom: 16 }}>
+        <Row gutter={16} className="mb-16">
           <Col span={12}>
             <Card>
               <Statistic 
                 title="Payments Received" 
                 value={summary.totalPayments} 
                 precision={0}
-                valueStyle={{ color: '#52c41a' }}
+                className="stat-success"
                 suffix={`(${summary.paymentsCount})`}
               />
             </Card>
@@ -291,18 +301,18 @@ const Dashboard = () => {
                 title="Pending Dues" 
                 value={summary.totalDues} 
                 precision={0}
-                valueStyle={{ color: '#faad14' }}
+                className="stat-warning"
                 suffix={`(${summary.duesCount})`}
               />
             </Card>
           </Col>
         </Row>
 
-        <Card title="Payments Received" style={{ marginTop: 16 }}>
+        <Card title="Payments Received" className="mt-16">
           <Table dataSource={payments} columns={paymentColumns} rowKey="Pay_ID" pagination={{ pageSize: 5 }} />
         </Card>
 
-        <Card title="Pending Dues" style={{ marginTop: 16 }}>
+        <Card title="Pending Dues" className="mt-16">
           <Table dataSource={dues} columns={dueColumns} rowKey={(record) => `${record.Customer_ID}_${record.Scheme_ID}_${record.Due_number}`} pagination={{ pageSize: 5 }} />
         </Card>
       </>
@@ -311,9 +321,9 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+      <div className="loading-container">
         <Spin size="large" spinning={true}>
-          <div style={{ padding: 50 }}>Loading dashboard data...</div>
+          <div className="p-50">Loading dashboard data...</div>
         </Spin>
       </div>
     );
@@ -321,10 +331,10 @@ const Dashboard = () => {
 
   return (
     <>
-      <h2>Dashboard Overview</h2>
+      <h2 className="page-title mb-24">Dashboard Overview</h2>
       
       {/* Selection Row */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
+      <Row gutter={16} className="mb-24">
         <Col span={8}>
           <Card title="View Customer Details">
             <Select
@@ -333,6 +343,7 @@ const Dashboard = () => {
               placeholder="Select a customer"
               optionFilterProp="children"
               onChange={handleCustomerSelect}
+              value={customerSelectorValue}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -351,6 +362,7 @@ const Dashboard = () => {
               style={{ width: '100%' }}
               placeholder="Select a scheme"
               onChange={handleSchemeSelect}
+              value={schemeSelectorValue}
             >
               {allSchemes.map(s => (
                 <Option key={s.Scheme_ID} value={s.Scheme_ID}>
@@ -365,56 +377,56 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
+      <Row gutter={16} className="mb-24">
         <Col span={6}>
           <Card>
-            <Statistic
-              title="Total Customers"
-              value={stats.totalCustomers}
-              valueStyle={{ color: '#3f8600' }}
-              prefix={<UserOutlined />}
-            />
+              <Statistic
+                title="Total Customers"
+                value={stats.totalCustomers}
+                className="stat-dark-green"
+                prefix={<UserOutlined />}
+              />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <Statistic
-              title="Total Schemes"
-              value={stats.totalSchemes}
-              valueStyle={{ color: '#1890ff' }}
-              prefix={<MoneyCollectOutlined />}
-            />
+              <Statistic
+                title="Total Schemes"
+                value={stats.totalSchemes}
+                className="stat-primary"
+                prefix={<MoneyCollectOutlined />}
+              />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <Statistic
-              title="Active Schemes"
-              value={stats.activeSchemes}
-              valueStyle={{ color: '#52c41a' }}
-              prefix={<BarChartOutlined />}
-            />
+              <Statistic
+                title="Active Schemes"
+                value={stats.activeSchemes}
+                className="stat-success"
+                prefix={<BarChartOutlined />}
+              />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <Statistic
-              title="Total Revenue (Est.)"
-              value={schemeStats.reduce((sum, s) => sum + (s.amount * s.members), 0)}
-              valueStyle={{ color: '#faad14' }}
-              prefix={<DollarOutlined />}
-              precision={0}
-            />
+              <Statistic
+                title="Total Revenue (Est.)"
+                value={schemeStats.reduce((sum, s) => sum + (s.amount * s.members), 0)}
+                className="stat-warning"
+                prefix={<DollarOutlined />}
+                precision={0}
+              />
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={16} style={{ marginBottom: 24 }}>
+      <Row gutter={16} className="mb-24">
         <Col span={24}>
           <Card 
             title="Monthly Payment Overview (Click on bars to view details)"
             extra={
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="flex-gap-8">
                 <Select 
                   allowClear
                   showSearch

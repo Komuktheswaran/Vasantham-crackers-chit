@@ -47,7 +47,7 @@ const Customers = () => {
 
   const uploadProps = {
     name: 'file',
-    action: `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/customers/upload`,
+    action: `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/customers/upload`,
     accept: '.csv',
     onChange(info) {
       if (info.file.status === 'done') {
@@ -278,7 +278,7 @@ const Customers = () => {
   };
 
   const handleDownload = (filtered = false) => {
-    let url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/customers/download`;
+    let url = `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/customers/download`;
     if (filtered && searchText) {
       url += `?search=${encodeURIComponent(searchText)}`;
     }
@@ -302,14 +302,8 @@ const Customers = () => {
 
   return (
     <>
-      <div
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <h2>Customer Management ({data.pagination?.totalRecords || 0} total)</h2>
+      <div className="page-header-row">
+        <h2 className="page-title">Customer Management ({data.pagination?.totalRecords || 0} total)</h2>
         <Space>
           <Input.Search
             placeholder="Search customers"
@@ -318,7 +312,7 @@ const Customers = () => {
               setSearchText(value);
               fetchCustomers({ search: value });
             }}
-            style={{ width: 200 }}
+            className="search-input"
           />
           <Button
             type="primary"
@@ -472,7 +466,7 @@ const Customers = () => {
         <p>Select schemes to assign to this customer:</p>
         <Select
           mode="multiple"
-          style={{ width: '100%' }}
+          className="full-width"
           placeholder="Select schemes"
           value={selectedSchemes}
           onChange={setSelectedSchemes}

@@ -9,7 +9,7 @@ const login = async (req, res) => {
     
     // Query user from database
     const users = await executeQuery(
-      'SELECT User_ID, Username, Password_Hash, Full_Name FROM Users WHERE Username = @username',
+      'SELECT User_ID, Username, Password_Hash, Full_Name, Role FROM Users WHERE Username = @username',
       [{ name: 'username', value: username, type: require('mssql').VarChar }]
     );
     
@@ -20,14 +20,14 @@ const login = async (req, res) => {
     }
     
     const token = jwt.sign(
-      { id: user.User_ID, username: user.Username }, 
+      { id: user.User_ID, username: user.Username, role: user.Role }, 
       process.env.JWT_SECRET, 
       { expiresIn: '8h' } // Reduced token validity for better security
     );
     
     res.json({
       token,
-      user: { id: user.User_ID, username: user.Username, name: user.Full_Name }
+      user: { id: user.User_ID, username: user.Username, name: user.Full_Name, role: user.Role }
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
