@@ -13,14 +13,12 @@ import {
   message,
   Dropdown,
   Menu,
-  Upload,
 } from "antd";
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   DownloadOutlined,
-  UploadOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
 import { customersAPI, statesAPI, districtsAPI, schemesAPI } from "../services/api"; // Assuming api service is structured this way
@@ -39,26 +37,12 @@ const Customers = () => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [selectedState, setSelectedState] = useState(null);
-  const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [assignSchemeModalVisible, setAssignSchemeModalVisible] = useState(false);
   const [availableSchemes, setAvailableSchemes] = useState([]);
   const [selectedSchemes, setSelectedSchemes] = useState([]);
   const [currentCustomerId, setCurrentCustomerId] = useState(null);
 
-  const uploadProps = {
-    name: 'file',
-    action: `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/customers/upload`,
-    accept: '.csv',
-    onChange(info) {
-      if (info.file.status === 'done') {
-        message.success(`${info.file.name} file uploaded successfully`);
-        setUploadModalVisible(false);
-        fetchCustomers();
-      } else if (info.file.status === 'error') {
-        message.error(`${info.file.name} file upload failed.`);
-      }
-    },
-  };
+
 
   // Function to check if Customer_ID exists
   const checkId = async (rule, value) => {

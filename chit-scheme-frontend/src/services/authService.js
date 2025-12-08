@@ -1,6 +1,7 @@
 import axios from 'axios';
+import * as storage from './storage';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://103.38.50.149:5006/api';
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'user_info';
 
@@ -15,8 +16,8 @@ export const login = async (username, password) => {
     });
 
     if (response.data.token) {
-      localStorage.setItem(TOKEN_KEY, response.data.token);
-      localStorage.setItem(USER_KEY, JSON.stringify(response.data.user));
+      await storage.setItem(TOKEN_KEY, response.data.token);
+      await storage.setItem(USER_KEY, JSON.stringify(response.data.user));
     }
 
     return response.data;
@@ -28,38 +29,39 @@ export const login = async (username, password) => {
 /**
  * Logout user
  */
-export const logout = () => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+export const logout = async () => {
+  await storage.removeItem(TOKEN_KEY);
+  await storage.removeItem(USER_KEY);
 };
 
 /**
  * Get stored token
  */
-export const getToken = () => {
-  return localStorage.getItem(TOKEN_KEY);
+export const getToken = async () => {
+  return await storage.getItem(TOKEN_KEY);
 };
 
 /**
  * Get stored user info
  */
-export const getUserInfo = () => {
-  const userStr = localStorage.getItem(USER_KEY);
+export const getUserInfo = async () => {
+  const userStr = await storage.getItem(USER_KEY);
   return userStr ? JSON.parse(userStr) : null;
 };
 
 /**
  * Check if user is authenticated
  */
-export const isAuthenticated = () => {
-  return !!getToken();
+export const isAuthenticated = async () => {
+  const token = await getToken();
+  return !!token;
 };
 
 /**
  * Check if user is admin
  */
-export const isAdmin = () => {
-  const user = getUserInfo();
+export const isAdmin = async () => {
+  const user = await getUserInfo();
   return user?.role === 'admin';
 };
 
@@ -85,8 +87,8 @@ export const decodeToken = (token) => {
 /**
  * Check if token is expired
  */
-export const isTokenExpired = () => {
-  const token = getToken();
+export const isTokenExpired = async () => {
+  const token = await getToken();
   if (!token) return true;
 
   const decoded = decodeToken(token);

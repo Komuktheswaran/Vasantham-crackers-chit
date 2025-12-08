@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Button, Layout, Menu, theme, Avatar, Dropdown } from 'antd';
+import { Button, Layout, Menu, Avatar, Dropdown, Spin } from 'antd';
 import {
   UserOutlined,
   HomeOutlined,
@@ -19,54 +19,80 @@ import Payments from './pages/Payments';
 import Downloads from './pages/Downloads';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
-import { isAuthenticated, isAdmin, logout, getUserInfo } from './services/authService';
+import { isAuthenticated, logout, getUserInfo } from './services/authService';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 // Protected Route Component
-const ProtectedRoute = ({ children }) => {
-  if (!isAuthenticated()) {
+const ProtectedRoute = ({ children, authenticated, loading }) => {
+  if (loading) return <div className="loading-container"><Spin size="large" /></div>;
+  if (!authenticated) {
     return <Navigate to="/login" replace />;
   }
   return children;
 };
 
 // Admin-Only Route Component
-const AdminRoute = ({ children }) => {
-  if (!isAuthenticated()) {
+const AdminRoute = ({ children, authenticated, user, loading }) => {
+  if (loading) return <div className="loading-container"><Spin size="large" /></div>;
+  if (!authenticated) {
     return <Navigate to="/login" replace />;
   }
-  if (!isAdmin()) {
+  if (user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
   return children;
 };
 
+// Component to handle forced logout for /login route
+const LogoutHandler = ({ onLogout }) => {
+  useEffect(() => {
+    onLogout();
+  }, [onLogout]);
+
+  return <div className="loading-container"><Spin size="large" tip="Logging out..." /></div>;
+};
+
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [authenticated, setAuthenticated] = useState(isAuthenticated());
-  const [user, setUser] = useState(getUserInfo());
+  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Update authentication state when location changes
-    const authStatus = isAuthenticated();
-    setAuthenticated(authStatus);
-    setUser(getUserInfo());
+    checkAuth();
   }, [location]);
+
+  const checkAuth = async () => {
+    // setLoading(true); // Don't reload on every nav, just check status
+    const authStatus = await isAuthenticated();
+    const userInfo = await getUserInfo();
+    setAuthenticated(authStatus);
+    setUser(userInfo);
+    setLoading(false);
+  };
 
   const handleLogin = (userData) => {
     setAuthenticated(true);
     setUser(userData);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setAuthenticated(false);
     setUser(null);
     navigate('/login');
   };
+
+  if (loading) {
+    return (
+      <div className="app-loading">
+        <Spin size="large" tip="Loading App..." />
+      </div>
+    );
+  }
 
   // If not authenticated, show only login page
   if (!authenticated) {
@@ -87,7 +113,7 @@ const App = () => {
   ];
 
   // Add User Management menu item only for admins
-  if (isAdmin()) {
+  if (user?.role === 'admin') {
     menuItems.push({
       key: '/users',
       icon: <SettingOutlined />,
@@ -106,7 +132,7 @@ const App = () => {
 
   return (
     <Layout className="app-main-layout">
-      {isAuthenticated() && (
+      {authenticated && (
         <Sider 
           collapsible 
           collapsed={collapsed} 
@@ -130,7 +156,7 @@ const App = () => {
         </Sider>
       )}
       <Layout className="app-content-layout">
-        {isAuthenticated() && (
+        {authenticated && (
           <Header className="app-header">
             <Button 
               type="link"
@@ -153,19 +179,19 @@ const App = () => {
             </Dropdown>
           </Header>
         )}
-        <Content className={isAuthenticated() ? "app-content-wrapper" : ""}>
+        <Content className={authenticated ? "app-content-wrapper" : ""}>
           <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/customers" element={<ProtectedRoute><Customers /></ProtectedRoute>} />
-            <Route path="/schemes" element={<ProtectedRoute><Schemes /></ProtectedRoute>} />
-            <Route path="/payments" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
-            <Route path="/downloads" element={<ProtectedRoute><Downloads /></ProtectedRoute>} />
-            <Route path="/users" element={<AdminRoute><UserManagement /></AdminRoute>} />
+            <Route path="/login" element={<LogoutHandler onLogout={handleLogout} />} />
+            <Route path="/" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Dashboard /></ProtectedRoute>} />
+            <Route path="/customers" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Customers /></ProtectedRoute>} />
+            <Route path="/schemes" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Schemes /></ProtectedRoute>} />
+            <Route path="/payments" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Payments /></ProtectedRoute>} />
+            <Route path="/downloads" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Downloads /></ProtectedRoute>} />
+            <Route path="/users" element={<AdminRoute authenticated={authenticated} user={user} loading={loading}><UserManagement /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Content>
-        {isAuthenticated() && (
+        {authenticated && (
           <Footer className="app-footer">
             MaDuSOFT Solutions © {new Date().getFullYear()}
           </Footer>

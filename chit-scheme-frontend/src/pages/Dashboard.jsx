@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Row, Col, Card, Statistic, Table, Select, Drawer, Descriptions, Progress, Timeline, Tag, Spin } from 'antd';
+import { Row, Col, Card, Statistic, Table, Select, Drawer, Descriptions, Progress, Spin } from 'antd';
 import { customersAPI, schemesAPI, dashboardAPI } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from 'recharts';
-import { UserOutlined, MoneyCollectOutlined, BarChartOutlined, DollarOutlined, EyeOutlined } from '@ant-design/icons';
+import { UserOutlined, MoneyCollectOutlined, BarChartOutlined, DollarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
@@ -34,7 +34,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedYear, selectedCustomerId, selectedSchemeId]);
+  }, [selectedYear, selectedCustomerId, selectedSchemeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboardData = async () => {
     setLoading(true);

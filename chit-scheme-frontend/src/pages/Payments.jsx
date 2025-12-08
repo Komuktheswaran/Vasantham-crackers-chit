@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Card, Typography, Select, Table, Button, Form, Input, 
-  DatePicker, message, Row, Col, Divider, Tag, Space 
+  DatePicker, message, Row, Col, Tag 
 } from 'antd';
 import { customersAPI, paymentsAPI } from '../services/api';
 import dayjs from 'dayjs';
@@ -19,7 +19,6 @@ const Payments = () => {
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
 
   // Load all customers on mount
   useEffect(() => {
@@ -37,7 +36,6 @@ const Payments = () => {
 
   // Filter customers by search value
   const handleSearch = (value) => {
-    setSearchValue(value);
     if (!value) {
       setCustomers(allCustomers);
       return;

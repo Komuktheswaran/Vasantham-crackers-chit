@@ -4,28 +4,39 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
+    "@expo/metro-runtime": "~4.0.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "antd": "^5.18.0",
     "axios": "^1.13.2",
+    "babel-preset-expo": "^12.0.11",
     "dayjs": "^1.11.19",
-    "expo": "^54.0.25",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "expo": "~52.0.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "react-highlight-words": "^0.21.0",
-    "react-native-web": "^0.21.0",
-    "react-router-dom": "^7.9.6",
+    "react-native": "0.76.9",
+    "react-native-gesture-handler": "~2.20.2",
+    "react-native-paper": "^5.12.0",
+    "react-native-reanimated": "~3.16.1",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0",
+    "react-native-web": "~0.19.13",
+    "react-router-dom": "^6.22.0",
     "react-scripts": "^5.0.1",
-    "recharts": "^3.5.0",
+    "recharts": "^2.12.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "mobile": "expo start"
   },
   "eslintConfig": {
     "extends": [
@@ -46,7 +57,7 @@
     ]
   },
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
-  "main": "postcss.config.js",
+  "main": "index.js",
   "author": "",
   "license": "ISC"
 }

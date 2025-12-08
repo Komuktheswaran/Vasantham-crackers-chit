@@ -38,10 +38,44 @@ app.use('/api/auth/', authLimiter);
 app.get('/api/health', async (req, res) => {
   try {
     const { executeQuery } = require('./models/db');
+    const { dbConfig } = require('./config/database');
+    
+    // Log the configuration to the console for debugging
+    console.log('🔍 Database Configuration:', {
+      ...dbConfig,
+      password: dbConfig.password ? '****' : 'NOT_SET'
+    });
+
     await executeQuery('SELECT 1');
-    res.json({ status: 'OK', db: 'Connected', timestamp: new Date() });
-  } catch {
-    res.status(500).json({ status: 'Error', db: 'Disconnected' });
+    
+    // Return safe config in response
+    const safeConfig = {
+      server: dbConfig.server,
+      database: dbConfig.database,
+      user: dbConfig.user,
+      port: dbConfig.port,
+      options: dbConfig.options
+    };
+
+    res.json({ 
+      status: 'OK', 
+      db: 'Connected', 
+      config: safeConfig,
+      timestamp: new Date() 
+    });
+  } catch (error) {
+    console.error('Health Check Error:', error);
+    const { dbConfig } = require('./config/database');
+    res.status(500).json({ 
+      status: 'Error', 
+      db: 'Disconnected', 
+      error: error.message,
+      configUsed: {
+        server: dbConfig?.server,
+        user: dbConfig?.user,
+        port: dbConfig?.port
+      } 
+    });
   }
 });
 

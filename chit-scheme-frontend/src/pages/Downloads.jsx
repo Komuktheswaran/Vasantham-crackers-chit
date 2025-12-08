@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tabs } from 'antd';
 import { DownloadOutlined } from '@ant-design/icons';
 import CustomerDownload from '../components/downloads/CustomerDownload';
