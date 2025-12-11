@@ -3,7 +3,7 @@ import {
   Card, Typography, Select, Table, Button, Form, Input, 
   DatePicker, message, Row, Col, Tag 
 } from 'antd';
-import { customersAPI, paymentsAPI } from '../services/api';
+import { customersAPI, paymentsAPI, schemesAPI } from '../services/api';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -19,12 +19,13 @@ const Payments = () => {
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentMode, setPaymentMode] = useState('Cash');
 
   // Load all customers on mount
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const response = await customersAPI.getAll({});
+        const response = await customersAPI.getAll({ has_scheme: 'true', limit: 1000 });
         setAllCustomers(response.data.customers);
         setCustomers(response.data.customers);
       } catch (error) {
@@ -43,8 +44,7 @@ const Payments = () => {
     
     const filtered = allCustomers.filter(c => 
       c.Customer_ID?.toLowerCase().includes(value.toLowerCase()) ||
-      c.First_Name?.toLowerCase().includes(value.toLowerCase()) ||
-      c.Last_Name?.toLowerCase().includes(value.toLowerCase()) ||
+      c.Name?.toLowerCase().includes(value.toLowerCase()) ||
       c.Phone_Number?.includes(value)
     );
     setCustomers(filtered);
@@ -59,16 +59,7 @@ const Payments = () => {
     
     try {
       const response = await customersAPI.getSchemes(customerId);
-      // Fetch full scheme details for the dropdown (name, etc.)
-      // Note: The current getSchemes returns IDs only. 
-      // Ideally we should fetch full details or map IDs to names if we have them.
-      // For now, let's assume we need to fetch scheme details separately or update getSchemes.
-      // Let's use what we have:
-      // We'll fetch all schemes to map names (inefficient but works for now)
-      // OR better: Update getSchemes to return objects. 
-      // For this step, I'll assume getSchemes returns objects or I'll fetch all schemes.
-      // Let's fetch all schemes to map.
-      const allSchemesRes = await import('../services/api').then(m => m.schemesAPI.getAll());
+      const allSchemesRes = await schemesAPI.getAll();
       const assignedIds = response.data;
       const assignedSchemes = allSchemesRes.data.filter(s => assignedIds.includes(s.Scheme_ID));
       setSchemes(assignedSchemes);
@@ -107,11 +98,14 @@ const Payments = () => {
         Transaction_ID: values.transactionId,
         Amount_Received: values.amount,
         Payment_Date: values.date.format('YYYY-MM-DD'),
+        Payment_Mode: values.paymentMode,
+        UPI_Phone_Number: values.upiPhone
       };
 
       await paymentsAPI.create(payload);
       message.success("Payment recorded successfully!");
-      form.resetFields(['dueNumber', 'amount', 'transactionId', 'date']);
+      form.resetFields(['dueNumber', 'amount', 'transactionId', 'date', 'paymentMode']);
+      setPaymentMode('Cash');
       fetchDues(selectedCustomer, selectedScheme); // Refresh dues
     } catch (error) {
       console.error("Payment error:", error);
@@ -165,8 +159,10 @@ const Payments = () => {
               form.setFieldsValue({
                 dueNumber: record.Due_number,
                 amount: due - recd,
-                date: dayjs()
+                date: dayjs(),
+                paymentMode: 'Cash'
               });
+              setPaymentMode('Cash');
             }}
           >
             Pay
@@ -181,7 +177,7 @@ const Payments = () => {
       <Title level={2}>Payment Management</Title>
       
       <Row gutter={24}>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card title="Select Customer & Scheme">
             <Form layout="vertical">
               <Form.Item label="Search Customer">
@@ -198,7 +194,7 @@ const Payments = () => {
                 >
                   {customers.map(d => (
                     <Option key={d.Customer_ID} value={d.Customer_ID}>
-                      [{d.Customer_ID}] {d.First_Name} {d.Last_Name} - {d.Phone_Number}
+                      [{d.Customer_ID}] {d.Name} - {d.Phone_Number} 
                     </Option>
                   ))}
                 </Select>
@@ -241,13 +237,44 @@ const Payments = () => {
                   <Input type="number" prefix="₹" />
                 </Form.Item>
 
-                <Form.Item 
-                  name="transactionId" 
-                  label="Transaction ID" 
-                  rules={[{ required: true }]}
+                <Form.Item
+                  name="paymentMode"
+                  label="Payment Mode"
+                  rules={[{ required: true, message: 'Please select payment mode' }]}
+                  initialValue="Cash"
                 >
-                  <Input placeholder="Cash / UPI Ref / Cheque No" />
+                  <Select onChange={setPaymentMode}>
+                    <Option value="Cash">Cash</Option>
+                    <Option value="UPI">UPI</Option>
+                    <Option value="Bank Transfer">Bank Transfer</Option>
+                    <Option value="Cheque">Cheque</Option>
+                  </Select>
                 </Form.Item>
+
+                {paymentMode !== 'Cash' && (
+                  <>
+                    <Form.Item 
+                      name="transactionId" 
+                      label="Transaction / Reference No" 
+                      rules={[{ required: true, message: 'Transaction ID is required for non-cash payments' }]}
+                    >
+                      <Input placeholder="Enter Ref No / Cheque No" />
+                    </Form.Item>
+
+                    {paymentMode === 'UPI' && (
+                      <Form.Item
+                        name="upiPhone"
+                        label="Phone Number"
+                        rules={[
+                          { required: true, message: 'Phone Number is required for UPI' },
+                          { pattern: /^[0-9]{10}$/, message: 'Please enter a valid 10-digit phone number' }
+                        ]}
+                      >
+                       <Input placeholder="Enter UPI Phone Number" maxLength={10} />
+                      </Form.Item>
+                    )}
+                  </>
+                )}
 
                 <Form.Item 
                   name="date" 
@@ -265,7 +292,7 @@ const Payments = () => {
           )}
         </Col>
 
-        <Col span={16}>
+        <Col xs={24} md={16}>
           <Card title="Scheme Dues">
             <Table 
               columns={columns} 
@@ -273,7 +300,7 @@ const Payments = () => {
               rowKey="Due_number"
               loading={loading}
               pagination={false}
-              scroll={{ y: 500 }}
+              scroll={{ x: true, y: 500 }}
             />
           </Card>
         </Col>

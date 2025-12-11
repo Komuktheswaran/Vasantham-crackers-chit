@@ -81,14 +81,14 @@ const getCustomerStats = async (req, res) => {
     const query = `
       SELECT TOP 10
         c.Customer_ID,
-        c.First_Name + ' ' + c.Last_Name as customer_name,
+        c.Name as customer_name,
         COUNT(DISTINCT sm.Scheme_ID) as scheme_count,
         ISNULL(SUM(sd.Recd_amount), 0) as total_paid,
         ISNULL(SUM(sd.Due_amount), 0) as total_due
       FROM Customer_Master c
       LEFT JOIN Scheme_Members sm ON c.Customer_ID = sm.Customer_ID
       LEFT JOIN Scheme_Due sd ON c.Customer_ID = sd.Customer_ID
-      GROUP BY c.Customer_ID, c.First_Name, c.Last_Name
+      GROUP BY c.Customer_ID, c.Name
       ORDER BY total_paid DESC
     `;
 
@@ -166,7 +166,7 @@ const getSchemeDetails = async (req, res) => {
     const membersQuery = `
       SELECT 
         c.Customer_ID,
-        c.First_Name + ' ' + c.Last_Name as customer_name,
+        c.Name as customer_name,
         c.Phone_Number,
         COUNT(sd.Due_number) as total_dues,
         SUM(CASE WHEN sd.Recd_amount >= sd.Due_amount THEN 1 ELSE 0 END) as paid_dues,
@@ -176,7 +176,7 @@ const getSchemeDetails = async (req, res) => {
       JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
       LEFT JOIN Scheme_Due sd ON sm.Scheme_ID = sd.Scheme_ID AND sm.Customer_ID = sd.Customer_ID
       WHERE sm.Scheme_ID = @param0
-      GROUP BY c.Customer_ID, c.First_Name, c.Last_Name, c.Phone_Number
+      GROUP BY c.Customer_ID, c.Name, c.Phone_Number
     `;
     const members = await executeQuery(membersQuery, [{ value: parseInt(schemeId), type: sql.Int }]);
 
@@ -213,7 +213,7 @@ const getMonthDetails = async (req, res) => {
     const paymentsQuery = `
       SELECT 
         pm.*,
-        c.First_Name + ' ' + c.Last_Name as customer_name,
+        c.Name as customer_name,
         cm.Name as scheme_name
       FROM Payment_Master pm
       JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
@@ -230,7 +230,7 @@ const getMonthDetails = async (req, res) => {
     const duesQuery = `
       SELECT 
         sd.*,
-        c.First_Name + ' ' + c.Last_Name as customer_name,
+        c.Name as customer_name,
         cm.Name as scheme_name,
         (sd.Due_amount - ISNULL(sd.Recd_amount, 0)) as pending_amount
       FROM Scheme_Due sd

@@ -3,6 +3,7 @@ import { Card, Select, Input, Button, Table, message, Space, Statistic } from 'a
 import { DownloadOutlined, EyeOutlined, ClearOutlined } from '@ant-design/icons';
 import { customersAPI, schemesAPI, statesAPI, districtsAPI, exportsAPI } from '../../services/api';
 
+
 const { Option } = Select;
 
 const CustomerDownload = () => {
@@ -85,6 +86,8 @@ const CustomerDownload = () => {
       if (filters.district) params.district = filters.district;
       if (filters.area) params.area = filters.area;
       if (filters.scheme_id) params.scheme_id = filters.scheme_id;
+      if (filters.customer_type) params.customer_type = filters.customer_type;
+      if (filters.fund_number) params.fund_number = filters.fund_number;
 
       const response = await customersAPI.getAll({ ...params, limit: 10 });
       setPreviewData(response.data.customers || []);
@@ -104,6 +107,8 @@ const CustomerDownload = () => {
       if (filters.district) params.district = filters.district;
       if (filters.area) params.area = filters.area;
       if (filters.scheme_id) params.scheme_id = filters.scheme_id;
+      if (filters.customer_type) params.customer_type = filters.customer_type;
+      if (filters.fund_number) params.fund_number = filters.fund_number;
 
       const response = await exportsAPI.exportCustomers(params);
       
@@ -165,6 +170,7 @@ const CustomerDownload = () => {
               placeholder="Search by Area"
               value={filters.area}
               onChange={(e) => handleFilterChange('area', e.target.value)}
+              style={{ width: '100%' }}
             />
 
             <Select
@@ -178,9 +184,30 @@ const CustomerDownload = () => {
                 <Option key={s.Scheme_ID} value={s.Scheme_ID}>{s.Name}</Option>
               ))}
             </Select>
+
+             <Select
+                placeholder="Filter by Type"
+                allowClear
+                style={{ width: '100%' }}
+                value={filters.customer_type}
+                onChange={(value) => handleFilterChange('customer_type', value)}
+              >
+                 <Option value="New">New</Option>
+                 <Option value="Regular Customer">Regular</Option>
+                 <Option value="Wholesale">Wholesale</Option>
+                 <Option value="Giftbox">Giftbox</Option>
+                 <Option value="Fund Scheme">Fund Scheme</Option>
+              </Select>
+
+             <Input
+              placeholder="Search by Fund Number"
+              value={filters.fund_number}
+              onChange={(e) => handleFilterChange('fund_number', e.target.value)}
+              style={{ width: '100%' }}
+            />
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <Button icon={<EyeOutlined />} onClick={handlePreview} loading={loading}>
               Preview
             </Button>
@@ -213,6 +240,7 @@ const CustomerDownload = () => {
             rowKey="Customer_ID"
             pagination={false}
             size="small"
+            scroll={{ x: true }}
           />
           <p style={{ marginTop: 8, color: '#666', fontSize: '12px' }}>
             Showing first 10 records. Download will include all {recordCount} matching records.

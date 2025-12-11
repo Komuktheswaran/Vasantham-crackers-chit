@@ -98,7 +98,7 @@ const SchemeDownload = () => {
             </Radio.Group>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
             <Button icon={<EyeOutlined />} onClick={handlePreview} loading={loading}>
               Preview
             </Button>

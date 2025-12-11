@@ -41,7 +41,7 @@ const recordPayment = async (req, res) => {
   const transaction = new sql.Transaction(connection);
 
   try {
-    const { Scheme_ID, Customer_ID, Due_number, Transaction_ID, Amount_Received, Payment_Date } = req.body;
+    const { Scheme_ID, Customer_ID, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number } = req.body;
     
     await transaction.begin();
 
@@ -54,10 +54,12 @@ const recordPayment = async (req, res) => {
       .input('transactionId', sql.VarChar(50), Transaction_ID)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
+      .input('paymentMode', sql.VarChar(50), Payment_Mode)
+      .input('upiPhone', sql.VarChar(20), UPI_Phone_Number)
       .query(`
-        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date)
+        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
         OUTPUT INSERTED.Pay_ID
-        VALUES (@schemeId, @customerId, @dueNumber, 1, @transactionId, @amount, @date)
+        VALUES (@schemeId, @customerId, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
       `);
 
     // 2. Update Scheme_Due
@@ -100,6 +102,8 @@ const getAllPayments = async (req, res) => {
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
+        pm.Payment_Mode,
+        pm.UPI_Phone_Number,
         pm.Due_number
       FROM Payment_Master pm
       JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID

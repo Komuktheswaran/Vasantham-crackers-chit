@@ -1,26 +1,29 @@
-const { executeQuery } = require('./models/db');
+const { dbConfig, sql } = require('./config/database');
 
-const inspect = async () => {
-  try {
-    console.log('--- Scheme_Members Columns ---');
-    const membersCols = await executeQuery(`
-      SELECT COLUMN_NAME, DATA_TYPE 
-      FROM INFORMATION_SCHEMA.COLUMNS 
-      WHERE TABLE_NAME = 'Scheme_Members'
-    `);
-    console.table(membersCols);
+async function inspect() {
+    try {
+        await sql.connect(dbConfig);
+        
+        console.log('--- Latest Customers ---');
+        const custs = await new sql.Request().query(`
+            SELECT TOP 5 Customer_ID, Name FROM Customer_Master ORDER BY Customer_ID DESC
+        `);
+        console.table(custs.recordset);
 
-    console.log('--- Scheme_Due Columns ---');
-    const dueCols = await executeQuery(`
-      SELECT COLUMN_NAME, DATA_TYPE 
-      FROM INFORMATION_SCHEMA.COLUMNS 
-      WHERE TABLE_NAME = 'Scheme_Due'
-    `);
-    console.table(dueCols);
-
-  } catch (error) {
-    console.error(error);
-  }
-};
+        if (custs.recordset.length > 0) {
+            const latestId = custs.recordset[0].Customer_ID;
+            console.log(`--- Checking Scheme Members for ${latestId} ---`);
+            const members = await new sql.Request().query(`
+                SELECT * FROM Scheme_Members WHERE Customer_ID = '${latestId}'
+            `);
+            console.table(members.recordset);
+        }
+        
+    } catch (err) {
+        console.error('Error:', err);
+    } finally {
+        await sql.close();
+    }
+}
 
 inspect();

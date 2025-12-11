@@ -1,7 +1,7 @@
 import axios from 'axios';
 import * as storage from './storage';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://103.38.50.149:5006/api';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:5000/api';
 const TOKEN_KEY = 'auth_token';
 const USER_KEY = 'user_info';
 

@@ -31,11 +31,30 @@ const exportCustomers = async (req, res) => {
     let paramIndex = 0;
 
     // Add scheme filter if provided
+    if (scheme_id || fund_number) {
+      if (!query.includes('INNER JOIN Scheme_Members')) {
+         query += ` INNER JOIN Scheme_Members sm ON c.Customer_ID = sm.Customer_ID`;
+      }
+    }
+
     if (scheme_id) {
-      query += ` INNER JOIN Scheme_Members sm ON c.Customer_ID = sm.Customer_ID`;
-      whereClauses.push(`sm.Scheme_ID = @param${paramIndex}`);
-      params.push({ value: parseInt(scheme_id), type: sql.Int });
-      paramIndex++;
+       whereClauses.push(`sm.Scheme_ID = @param${paramIndex}`);
+       params.push({ value: parseInt(scheme_id), type: sql.Int });
+       paramIndex++;
+    }
+
+    // Add fund_number filter
+    if (fund_number) {
+        whereClauses.push(`sm.Fund_Number LIKE @param${paramIndex}`);
+        params.push({ value: `%${fund_number}%`, type: sql.VarChar(50) });
+        paramIndex++;
+    }
+
+    // Add customer_type filter
+    if (customer_type) {
+        whereClauses.push(`c.Customer_Type LIKE @param${paramIndex}`);
+        params.push({ value: `%${customer_type}%`, type: sql.VarChar(50) });
+        paramIndex++;
     }
 
     // Add area filter

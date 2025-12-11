@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getToken } from './authService';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance with auth headers
 const axiosInstance = axios.create({

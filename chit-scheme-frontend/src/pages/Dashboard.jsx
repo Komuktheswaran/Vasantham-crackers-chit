@@ -127,19 +127,22 @@ const Dashboard = () => {
     { 
       title: 'Customer', 
       key: 'name',
+      width: 150,
+      ellipsis: true,
       render: (_, record) => `${record.First_Name} ${record.Last_Name}`
     },
-    { title: 'Phone', dataIndex: 'Phone_Number', key: 'phone', render: (text) => `+91 ${text}` },
-    { title: 'Area', dataIndex: 'Area', key: 'area' },
+    { title: 'Phone', dataIndex: 'Phone_Number', key: 'phone', width: 120, render: (text) => `+91 ${text}` },
+    { title: 'Area', dataIndex: 'Area', key: 'area', width: 100, ellipsis: true },
   ];
 
   const schemeStatsColumns = [
-    { title: 'Scheme Name', dataIndex: 'name', key: 'name' },
-    { title: 'Members', dataIndex: 'members', key: 'members' },
+    { title: 'Scheme Name', dataIndex: 'name', key: 'name', width: 180, ellipsis: true },
+    { title: 'Members', dataIndex: 'members', key: 'members', width: 120 },
     { 
       title: 'Total Amount', 
       dataIndex: 'amount', 
       key: 'amount',
+      width: 140,
       render: (val) => `₹${val?.toLocaleString()}`
     },
   ];
@@ -334,8 +337,8 @@ const Dashboard = () => {
       <h2 className="page-title mb-24">Dashboard Overview</h2>
       
       {/* Selection Row */}
-      <Row gutter={16} className="mb-24">
-        <Col span={8}>
+      <Row gutter={[16, 16]} className="mb-24">
+        <Col xs={24} md={8}>
           <Card title="View Customer Details">
             <Select
               showSearch
@@ -356,7 +359,7 @@ const Dashboard = () => {
             </Select>
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card title="View Scheme Details">
             <Select
               style={{ width: '100%' }}
@@ -372,13 +375,13 @@ const Dashboard = () => {
             </Select>
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card title="Click on a month in the chart below to view details" />
         </Col>
       </Row>
 
-      <Row gutter={16} className="mb-24">
-        <Col span={6}>
+      <Row gutter={[16, 16]} className="mb-24">
+        <Col xs={24} sm={12} lg={6}>
           <Card>
               <Statistic
                 title="Total Customers"
@@ -388,7 +391,7 @@ const Dashboard = () => {
               />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
               <Statistic
                 title="Total Schemes"
@@ -398,7 +401,7 @@ const Dashboard = () => {
               />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
               <Statistic
                 title="Active Schemes"
@@ -408,7 +411,7 @@ const Dashboard = () => {
               />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
               <Statistic
                 title="Total Revenue (Est.)"
@@ -421,16 +424,17 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={16} className="mb-24">
+      <Row gutter={[16, 16]} className="mb-24">
         <Col span={24}>
           <Card 
-            title="Monthly Payment Overview (Click on bars to view details)"
+            title="Monthly Payment Overview"
+            className="dashboard-chart-card"
             extra={
-              <div className="flex-gap-8">
+              <div className="flex-gap-8 responsive-filters">
                 <Select 
                   allowClear
                   showSearch
-                  style={{ width: 200 }}
+                  className="dashboard-filter-select"
                   placeholder="Filter by customer"
                   optionFilterProp="children"
                   value={selectedCustomerId}
@@ -447,7 +451,7 @@ const Dashboard = () => {
                 </Select>
                 <Select
                   allowClear
-                  style={{ width: 180 }}
+                  className="dashboard-filter-select"
                   placeholder="Filter by scheme"
                   value={selectedSchemeId}
                   onChange={setSelectedSchemeId}
@@ -492,8 +496,8 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={16}>
-        <Col span={8}>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} md={8}>
           <Card title="Scheme Distribution">
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -513,7 +517,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card title="Recent Customers">
             <Table
               dataSource={recentCustomers}
@@ -521,10 +525,11 @@ const Dashboard = () => {
               rowKey="Customer_ID"
               pagination={false}
               size="small"
+              scroll={{ x: true }}
             />
           </Card>
         </Col>
-        <Col span={8}>
+        <Col xs={24} md={8}>
           <Card title="Scheme Statistics">
             <Table
               dataSource={schemeStats}
@@ -532,7 +537,7 @@ const Dashboard = () => {
               rowKey="key"
               pagination={false}
               size="small"
-              scroll={{ y: 240 }}
+              scroll={{ x: true, y: 240 }}
             />
           </Card>
         </Col>
@@ -545,7 +550,7 @@ const Dashboard = () => {
           'Month Details'
         }
         placement="right"
-        width={720}
+        width={window.innerWidth > 768 ? 720 : '100%'}
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
       >

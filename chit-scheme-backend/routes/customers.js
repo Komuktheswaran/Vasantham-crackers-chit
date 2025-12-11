@@ -4,7 +4,7 @@ const {
   getAllCustomers, getCustomerById, createCustomer,
   updateCustomer, deleteCustomer, checkCustomerId, downloadCustomers, uploadCustomers,
   getCustomerSchemes, assignSchemes
-} = require('../controllers/customerController');
+} = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
 const router = express.Router();
 

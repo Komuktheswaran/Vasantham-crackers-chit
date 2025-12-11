@@ -33,7 +33,7 @@ const Schemes = () => {
 
   const uploadProps = {
     name: 'file',
-    action: `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/schemes/upload`,
+    action: `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/schemes/upload`,
     accept: '.csv',
     onChange(info) {
       if (info.file.status === 'done') {
@@ -47,7 +47,7 @@ const Schemes = () => {
   };
 
   const handleDownload = (filtered = false) => {
-    let url = `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/schemes/download`;
+    let url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/schemes/download`;
     if (filtered && searchText) {
       url += `?search=${encodeURIComponent(searchText)}`;
     }
@@ -197,15 +197,9 @@ const Schemes = () => {
 
   return (
     <>
-      <div
-        style={{
-          marginBottom: 16,
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
+      <div className="page-header-row">
         <h2>Chit Schemes</h2>
-        <Space>
+        <Space className="w-100 flex-wrap">
           <Input.Search
             placeholder="Search schemes"
             allowClear
@@ -213,7 +207,7 @@ const Schemes = () => {
               setSearchText(value);
               fetchSchemes({ search: value });
             }}
-            style={{ width: 200 }}
+            className="search-input"
           />
           <Button type="primary" onClick={() => openModal()}>
             + New Scheme
@@ -246,6 +240,8 @@ const Schemes = () => {
           form.resetFields();
         }}
         onOk={() => form.submit()}
+        width="100%"
+        style={{ top: 20, maxWidth: 600 }}
       >
         <Form form={form} onFinish={handleOk} layout="vertical">
           <Form.Item

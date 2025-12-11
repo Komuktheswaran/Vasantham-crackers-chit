@@ -178,10 +178,11 @@ const PaymentDownload = () => {
               placeholder="Search by Transaction ID"
               value={filters.transaction_id}
               onChange={(e) => handleFilterChange('transaction_id', e.target.value)}
+              style={{ width: '100%' }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <Button icon={<EyeOutlined />} onClick={handlePreview} loading={loading}>
               Preview
             </Button>

@@ -138,6 +138,12 @@ const App = () => {
           collapsed={collapsed} 
           onCollapse={setCollapsed}
           className="app-sider"
+          breakpoint="lg"
+          collapsedWidth="0"
+          onBreakpoint={(broken) => {
+            setCollapsed(broken);
+          }}
+          zeroWidthTriggerStyle={{ top: '64px' }}
         >
           <div className="app-logo-container">
             {collapsed ? (

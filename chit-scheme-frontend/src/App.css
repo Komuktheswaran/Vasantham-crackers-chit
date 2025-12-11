@@ -1,5 +1,5 @@
 /* Global Styles */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap");
 
 :root {
   --primary-color: #1890ff;
@@ -13,8 +13,8 @@
 
 body {
   margin: 0;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -33,7 +33,7 @@ body {
 }
 
 .app-sider {
-  box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   z-index: 10;
 }
 
@@ -59,7 +59,7 @@ body {
 }
 
 .app-header {
-  padding: 0 24px !important; 
+  padding: 0 24px !important;
   background: #fff !important;
   border-bottom: 1px solid #f0f0f0;
   display: flex;
@@ -68,7 +68,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 9;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
 .app-header-title {
@@ -89,7 +89,7 @@ body {
 }
 
 .app-user-menu:hover {
-  background: rgba(0,0,0,0.025);
+  background: rgba(0, 0, 0, 0.025);
 }
 
 .app-user-name {
@@ -104,6 +104,42 @@ body {
   min-height: 280px;
   border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-card);
+}
+
+@media (max-width: 576px) {
+  .app-content-wrapper {
+    margin: 8px 4px; /* Tighter margins on mobile */
+    padding: 12px;
+  }
+
+  .app-header {
+    padding: 0 12px !important;
+  }
+
+  .app-header-title {
+    font-size: 16px;
+    white-space: normal; /* Allow wrapping */
+    line-height: 1.2;
+    max-width: none; /* Remove max-width restriction */
+  }
+
+  .page-title {
+    font-size: 18px; /* Smaller title on mobile */
+    margin-bottom: 8px !important;
+  }
+  
+  /* Ensure Full Width Inputs on Mobile even if inline style misses */
+  .full-width-mobile {
+      width: 100% !important;
+  }
+
+  .page-header-container {
+      margin-bottom: 12px;
+  }
+}
+
+.page-header-container {
+    margin-bottom: 24px;
 }
 
 .app-footer {
@@ -148,7 +184,7 @@ body {
 
 .stats-card {
   margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   border-radius: var(--border-radius-base);
 }
 
@@ -162,18 +198,41 @@ body {
   height: 80vh;
 }
 
-.mb-24 { margin-bottom: 24px; }
-.mt-16 { margin-top: 16px; }
-.p-50 { padding: 50px; }
-.flex-gap-8 { display: flex; gap: 8px; }
-.flex-center { display: flex; justify-content: center; align-items: center; }
+.mb-24 {
+  margin-bottom: 24px;
+}
+.mt-16 {
+  margin-top: 16px;
+}
+.p-50 {
+  padding: 50px;
+}
+.flex-gap-8 {
+  display: flex;
+  gap: 8px;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 /* AntD Statistic Overrides */
-.stat-dark-green .ant-statistic-content-value { color: #3f8600 !important; }
-.stat-primary .ant-statistic-content-value { color: #1890ff !important; }
-.stat-success .ant-statistic-content-value { color: #52c41a !important; }
-.stat-warning .ant-statistic-content-value { color: #faad14 !important; }
-.stat-danger .ant-statistic-content-value { color: #f5222d !important; }
+.stat-dark-green .ant-statistic-content-value {
+  color: #3f8600 !important;
+}
+.stat-primary .ant-statistic-content-value {
+  color: #1890ff !important;
+}
+.stat-success .ant-statistic-content-value {
+  color: #52c41a !important;
+}
+.stat-warning .ant-statistic-content-value {
+  color: #faad14 !important;
+}
+.stat-danger .ant-statistic-content-value {
+  color: #f5222d !important;
+}
 
 /* ==========================================================================
    Login Page Styles
@@ -214,8 +273,12 @@ body {
 }
 
 @keyframes moveBackground {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(50px, 50px); }
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  }
 }
 
 .login-card {
@@ -232,8 +295,14 @@ body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-header {
@@ -252,9 +321,15 @@ body {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .login-title {
@@ -263,6 +338,7 @@ body {
   color: #333;
   margin: 0;
   background: -webkit-linear-gradient(45deg, #1890ff, #764ba2);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -290,10 +366,64 @@ body {
   background: linear-gradient(to right, #764ba2, #667eea);
 }
 
-.text-success { color: #52c41a; }
-.text-danger { color: #ff4d4f; }
-.text-primary { color: #1890ff; }
+.text-success {
+  color: #52c41a;
+}
+.text-danger {
+  color: #ff4d4f;
+}
+.text-primary {
+  color: #1890ff;
+}
 
-.full-width { width: 100%; }
-.mt-2 { margin-top: 16px; }
-.mb-2 { margin-bottom: 16px; }
+.full-width {
+  width: 100%;
+}
+.mt-2 {
+  margin-top: 16px;
+}
+.mb-2 {
+  margin-bottom: 16px;
+}
+
+@media (min-width: 577px) {
+  /* Dashboard Specifics */
+  .dashboard-chart-card .ant-card-extra {
+    width: 60%;
+    padding: 8px 0;
+  }
+
+  .responsive-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .dashboard-filter-select {
+    width: 200px;
+  }
+}
+
+@media (max-width: 576px) {
+  .responsive-filters {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .dashboard-filter-select {
+    width: 100% !important;
+  }
+
+  .dashboard-chart-card .ant-card-extra {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .dashboard-chart-card .ant-card-head {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
