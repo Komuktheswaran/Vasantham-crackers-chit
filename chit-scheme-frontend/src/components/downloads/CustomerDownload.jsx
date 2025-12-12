@@ -49,7 +49,7 @@ const CustomerDownload = () => {
       setStates(statesRes.data);
       setAllDistricts(districtsRes.data);
       setDistricts(districtsRes.data);
-      setSchemes(schemesRes.data);
+      setSchemes(schemesRes.data.schemes || schemesRes.data || []);
     } catch (error) {
       message.error('Failed to load filter options');
     }

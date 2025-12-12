@@ -33,7 +33,7 @@ const PaymentDownload = () => {
         schemesAPI.getAll()
       ]);
       setCustomers(customersRes.data.customers || []);
-      setSchemes(schemesRes.data);
+      setSchemes(schemesRes.data.schemes || schemesRes.data || []);
     } catch (error) {
       message.error('Failed to load filter options');
     }

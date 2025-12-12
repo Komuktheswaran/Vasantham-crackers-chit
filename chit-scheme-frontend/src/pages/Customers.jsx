@@ -201,7 +201,7 @@ const Customers = () => {
   const fetchAvailableSchemes = async () => {
     try {
         const schemesResponse = await schemesAPI.getAll();
-        setAvailableSchemes(schemesResponse.data);
+        setAvailableSchemes(schemesResponse.data.schemes || schemesResponse.data || []);
     } catch (error) {
         console.error("Fetch schemes error", error);
     }

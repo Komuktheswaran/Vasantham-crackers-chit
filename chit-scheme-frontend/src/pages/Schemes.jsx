@@ -19,7 +19,7 @@ import {
   DownloadOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import { schemesAPI } from "../services/api";
+import { schemesAPI, exportsAPI } from "../services/api";
 import dayjs from "dayjs";
 
 const Schemes = () => {
@@ -47,12 +47,32 @@ const Schemes = () => {
     },
   };
 
-  const handleDownload = (filtered = false) => {
-    let url = `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/schemes/download`;
-    if (filtered && searchText) {
-      url += `?search=${encodeURIComponent(searchText)}`;
+  const handleDownload = async (filtered = false) => {
+    setLoading(true);
+    try {
+      const filters = {};
+      if (filtered && searchText) {
+        filters.search = searchText;
+      }
+      
+      const response = await exportsAPI.exportSchemes(filters);
+      
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `schemes_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      message.success('Schemes exported successfully');
+    } catch (error) {
+       console.error("Export error:", error);
+       message.error("Failed to export schemes.");
+    } finally {
+       setLoading(false);
     }
-    window.open(url, '_blank');
   };
 
   const downloadMenu = (

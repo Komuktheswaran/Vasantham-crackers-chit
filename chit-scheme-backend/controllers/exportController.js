@@ -7,7 +7,7 @@ const { convertToCSV, formatDateForCSV } = require('../utils/csvHelper');
  */
 const exportCustomers = async (req, res) => {
   try {
-    const { area, state, district, scheme_id } = req.query;
+    const { area, state, district, scheme_id, fund_number, customer_type } = req.query;
 
     let query = `
       SELECT DISTINCT
@@ -221,7 +221,7 @@ const exportPayments = async (req, res) => {
  */
 const exportSchemes = async (req, res) => {
   try {
-    const { active_only } = req.query;
+    const { active_only, search } = req.query;
 
     let query = `
       SELECT 
@@ -236,6 +236,14 @@ const exportSchemes = async (req, res) => {
         COUNT(DISTINCT sm.Customer_ID) as Member_Count
       FROM Chit_Master cm
       LEFT JOIN Scheme_Members sm ON cm.Scheme_ID = sm.Scheme_ID
+    `;
+
+    // Add search filter
+    if (search) {
+      query += ` WHERE cm.Name LIKE '%${search.replace(/'/g, "''")}%'`;
+    }
+
+    query += `
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, cm.Number_of_due, cm.Period, cm.Month_from, cm.Month_to
     `;
 

@@ -3,6 +3,7 @@ import { Form, Input, Button, Card, message, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../services/authService';
+import './Login.css';
 
 const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);

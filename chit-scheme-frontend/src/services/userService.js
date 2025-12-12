@@ -1,24 +1,6 @@
-import axios from 'axios';
-import { getToken } from './authService';
+import api from './api';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-// Create axios instance with auth headers
-const axiosInstance = axios.create({
-  baseURL: API_URL
-});
-
-// Add auth token to requests
-axiosInstance.interceptors.request.use(
-  async (config) => {
-    const token = await getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+const axiosInstance = api; // Alias to minimize changes below, or just replace usage
 
 /**
  * Get all users (admin only)

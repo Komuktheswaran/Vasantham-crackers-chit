@@ -35,7 +35,7 @@ const SchemeDownload = () => {
       if (filters.active_only === 'inactive') params.active_only = 'false';
 
       const response = await schemesAPI.getAll(params);
-      const schemes = response.data || response;
+      const schemes = response.data?.schemes || response.data || response || [];
       
       // Apply active filter on frontend if needed
       let filteredSchemes = schemes;
