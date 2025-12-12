@@ -45,7 +45,7 @@ export const customersAPI = {
 };
 
 export const schemesAPI = {
-  getAll: () => api.get('/schemes'),
+  getAll: (params) => api.get('/schemes', { params }),
   getById: (id) => api.get(`/schemes/${id}`),
   create: (data) => api.post('/schemes', data),
   update: (id, data) => api.put(`/schemes/${id}`, data),

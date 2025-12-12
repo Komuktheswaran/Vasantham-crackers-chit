@@ -385,6 +385,9 @@ const Customers = () => {
         loading={loading}
         pagination={{
           ...data.pagination,
+          total: data.pagination?.totalRecords || 0,
+          current: data.pagination?.currentPage || 1,
+          pageSize: data.pagination?.pageSize || 20,
           showSizeChanger: true,
           showQuickJumper: true,
         }}
@@ -419,7 +422,7 @@ const Customers = () => {
                   validateStatus={idExists ? "error" : ""}
                   help={idExists ? "This Customer ID already exists." : ""}
                 >
-                  <Input type="number" placeholder="Unique Customer ID" />
+                  <Input placeholder="Unique Customer ID" />
                 </Form.Item>
               )}
               <Form.Item

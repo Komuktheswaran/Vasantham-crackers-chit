@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 
 const Schemes = () => {
   const [schemes, setSchemes] = useState([]);
+  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
@@ -72,14 +73,38 @@ const Schemes = () => {
   const fetchSchemes = async (params = {}) => {
     setLoading(true);
     try {
-      const response = await schemesAPI.getAll(params);
-      setSchemes(response.data || []);
+      const queryParams = {
+        page: params.page || pagination.current,
+        limit: params.limit || pagination.pageSize,
+        search: searchText,
+        ...params
+      };
+      
+      const response = await schemesAPI.getAll(queryParams);
+      // Handle both old array format (fallback) and new object format
+      if (Array.isArray(response.data)) {
+         setSchemes(response.data);
+      } else {
+         setSchemes(response.data.schemes || []);
+         setPagination({
+            current: response.data.page || 1,
+            pageSize: response.data.limit || 15,
+            total: response.data.total || 0,
+         });
+      }
     } catch (error) {
       console.error("Fetch schemes error:", error);
       message.error("Failed to fetch schemes.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleTableChange = (newPagination) => {
+    fetchSchemes({
+      page: newPagination.current,
+      limit: newPagination.pageSize,
+    });
   };
 
   const handleOk = async (values) => {
@@ -228,7 +253,13 @@ const Schemes = () => {
         dataSource={schemes}
         rowKey="Scheme_ID"
         loading={loading}
-        pagination={{ pageSize: 15 }}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: pagination.total,
+          showSizeChanger: true,
+        }}
+        onChange={handleTableChange}
         scroll={{ x: 800 }}
       />
 

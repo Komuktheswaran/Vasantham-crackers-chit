@@ -4,15 +4,23 @@ const { dbConfig } = require('../config/database');
 let pool;
 
 const getPool = async () => {
-  if (!pool) {
-    pool = await sql.connect(dbConfig);
+  if (pool) return pool;
+  try {
+    pool = await new sql.ConnectionPool(dbConfig).connect();
+    pool.on('error', err => {
+      console.error('❌ Database Pool Error:', err);
+      pool = null; // Reset pool on error so next request tries to reconnect
+    });
+    return pool;
+  } catch (err) {
+    console.error('❌ Failed to create connection pool:', err);
+    throw err;
   }
-  return pool;
 };
 
 const executeQuery = async (query, params = []) => {
-  const connection = await sql.connect(dbConfig);  // ✅ Fresh connection EVERY time
-  const request = connection.request();  // ✅ Always works
+  const pool = await getPool();
+  const request = pool.request();
   
   if (params) {
     params.forEach((param, index) => {
@@ -22,14 +30,13 @@ const executeQuery = async (query, params = []) => {
   }
 
   const result = await request.query(query);
-  await connection.close();  // ✅ Clean up
   return result.recordset;
 };
 
 const executeInsertGetId = async (query, params = []) => {
-  const connection = await sql.connect(dbConfig);
+  const pool = await getPool();
   try {
-    const request = connection.request();
+    const request = pool.request();
     if (params) {
       params.forEach((param, index) => {
         const paramName = param.name || `param${index}`;
@@ -37,19 +44,18 @@ const executeInsertGetId = async (query, params = []) => {
       });
     }
     const result = await request.query(query);
-    await connection.close();
-    return result.recordset[0];
+    // return result.recordset[0]; // Logic depends on query having OUTPUT or similar, assuming original logic was correct about recordset[0]
+     return result.recordset && result.recordset.length > 0 ? result.recordset[0] : null;
   } catch (error) {
-    await connection.close();
     console.error('❌ Insert Error:', error);
     throw error;
   }
 };
 
 const executeUpdate = async (query, params = []) => {
-  const connection = await sql.connect(dbConfig);
+  const pool = await getPool();
   try {
-    const request = connection.request();
+    const request = pool.request();
     if (params) {
       params.forEach((param, index) => {
         const paramName = param.name || `param${index}`;
@@ -57,12 +63,10 @@ const executeUpdate = async (query, params = []) => {
       });
     }
     await request.query(query);
-    await connection.close();
     return { success: true };
   } catch (error) {
-    await connection.close();
     throw error;
   }
 };
 
-module.exports = { executeQuery, executeInsertGetId, executeUpdate };
+module.exports = { executeQuery, executeInsertGetId, executeUpdate, getPool };

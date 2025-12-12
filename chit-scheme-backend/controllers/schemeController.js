@@ -53,9 +53,12 @@ const getAllSchemes = async (req, res) => {
     const totalResult = await executeQuery(totalQuery);
 
     // ✅ FRONTEND EXPECTS: { schemes: [], total: 0 }
-    res.json( 
-      schemes
-    );
+    res.json({
+      schemes,
+      total: totalResult[0]?.total || 0,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    });
   } catch (error) {
     console.error('❌ getAllSchemes Error:', error);
     res.status(500).json({ error: error.message });
