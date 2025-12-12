@@ -2,13 +2,28 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
+import { getToken } from './authService';
+
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000000000,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+api.interceptors.request.use(
+  async (config) => {
+    const token = await getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 api.interceptors.response.use(
   (response) => response,
@@ -40,7 +55,7 @@ export const schemesAPI = {
 export const paymentsAPI = {
   getAll: (params) => api.get('/payments', { params }),
   getByCustomer: (customerId) => api.get(`/payments/customer/${customerId}`),
-  getDues: (customerId, schemeId) => api.get(`/payments/dues/${customerId}/${schemeId}`),
+  getDues: (fundNumber) => api.get(`/payments/dues/${fundNumber}`),
   create: (data) => api.post('/payments', data),
 };
 

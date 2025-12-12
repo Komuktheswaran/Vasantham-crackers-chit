@@ -19,16 +19,17 @@ const getPaymentsByCustomer = async (req, res) => {
   }
 };
 
-const getDuesByScheme = async (req, res) => {
+// Removed getDuesByCustomerAndScheme as we are strictly using Fund Number now
+
+const getDuesByFundNumber = async (req, res) => {
   try {
-    const { customerId, schemeId } = req.params;
+    const { fundNumber } = req.params;
     const result = await executeQuery(`
       SELECT * FROM Scheme_Due 
-      WHERE Customer_ID = @param0 AND Scheme_ID = @param1
+      WHERE Fund_Number = @param0
       ORDER BY Due_number ASC
     `, [
-      { value: customerId, type: sql.VarChar(50) },
-      { value: parseInt(schemeId), type: sql.Int }
+      { value: fundNumber, type: sql.VarChar(50) }
     ]);
     res.json(result);
   } catch (error) {
@@ -41,8 +42,26 @@ const recordPayment = async (req, res) => {
   const transaction = new sql.Transaction(connection);
 
   try {
-    const { Scheme_ID, Customer_ID, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number } = req.body;
+    // Simplified: Fund Number is now mandatory as per requirement
+    const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number } = req.body;
     
+    // Validate Fund_Number presence
+    if (!Fund_Number) {
+         return res.status(400).json({ error: 'Fund Number is required' });
+    }
+
+    // Lookup Scheme and Customer from Fund_Number to populate Payment_Master
+    // This maintains data integrity (we store IDs) while using Fund_Number as the key
+    const lookupReq = new sql.Request(connection);
+    const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), Fund_Number)
+        .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
+
+    if (memberCheck.recordset.length === 0) {
+        return res.status(404).json({ error: 'Invalid Fund Number' });
+    }
+
+    const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
+
     await transaction.begin();
 
     // 1. Insert into Payment_Master
@@ -50,23 +69,23 @@ const recordPayment = async (req, res) => {
     const result = await request
       .input('schemeId', sql.Int, Scheme_ID)
       .input('customerId', sql.VarChar(50), Customer_ID)
+      .input('fundNum', sql.VarChar(50), Fund_Number)
       .input('dueNumber', sql.Int, Due_number)
-      .input('transactionId', sql.VarChar(50), Transaction_ID)
+      .input('transactionId', sql.VarChar(50), Transaction_ID || null)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
       .input('paymentMode', sql.VarChar(50), Payment_Mode)
       .input('upiPhone', sql.VarChar(20), UPI_Phone_Number)
       .query(`
-        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
+        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
         OUTPUT INSERTED.Pay_ID
-        VALUES (@schemeId, @customerId, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
+        VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
       `);
 
-    // 2. Update Scheme_Due
+    // 2. Update Scheme_Due using Fund_Number
     const updateRequest = new sql.Request(transaction);
     await updateRequest
-      .input('schemeId', sql.Int, Scheme_ID)
-      .input('customerId', sql.VarChar(50), Customer_ID)
+      .input('fundNum', sql.VarChar(50), Fund_Number)
       .input('dueNumber', sql.Int, Due_number)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
@@ -74,7 +93,7 @@ const recordPayment = async (req, res) => {
         UPDATE Scheme_Due 
         SET Recd_amount = ISNULL(Recd_amount, 0) + @amount,
             amt_received_date = @date
-        WHERE Scheme_ID = @schemeId AND Customer_ID = @customerId AND Due_number = @dueNumber
+        WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
       `);
 
     await transaction.commit();
@@ -84,7 +103,7 @@ const recordPayment = async (req, res) => {
     console.error('❌ recordPayment Error:', error);
     res.status(500).json({ error: error.message });
   } finally {
-    await connection.close();
+    // await connection.close(); // Main pool handles management usually
   }
 };
 
@@ -103,8 +122,10 @@ const getAllPayments = async (req, res) => {
         pm.Amount_Received_date,
         pm.Transaction_ID,
         pm.Payment_Mode,
+        pm.Payment_Mode,
         pm.UPI_Phone_Number,
-        pm.Due_number
+        pm.Due_number,
+        pm.Fund_Number
       FROM Payment_Master pm
       JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
@@ -148,6 +169,13 @@ const getAllPayments = async (req, res) => {
       paramIndex++;
     }
 
+    // Add fund number filter
+    if (req.query.fund_number) {
+      whereClauses.push(`pm.Fund_Number LIKE @param${paramIndex}`);
+      params.push({ value: `%${req.query.fund_number}%`, type: sql.VarChar(50) });
+      paramIndex++;
+    }
+
     if (whereClauses.length > 0) {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
     }
@@ -179,4 +207,4 @@ const getAllPayments = async (req, res) => {
   }
 };
 
-module.exports = { getPaymentsByCustomer, recordPayment, getDuesByScheme, getAllPayments };
+module.exports = { getPaymentsByCustomer, recordPayment, getDuesByFundNumber, getAllPayments };

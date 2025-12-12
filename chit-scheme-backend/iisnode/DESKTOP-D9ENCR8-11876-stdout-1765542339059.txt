@@ -1,0 +1,31 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+
+🚀 Server: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3
+✅ Health: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/health
+🔐 Login: POST http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/auth/login
+👤 Users: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/users
+👥 Customers: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/customers
+📋 Schemes: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/schemes
+💰 Payments: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/payments
+🌍 States: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/states
+🏘️ Districts: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/districts
+📥 Exports: http://localhost:\\.\pipe\581e0fbb-a25b-4b86-8bb1-d10d5a41a8f3/api/exports
+- - - [12/Dec/2025:12:25:42 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:42 +0000] "DELETE /api/customers/CASH_TEST_USER HTTP/1.1" 200 58 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:43 +0000] "POST /api/customers HTTP/1.1" 201 88 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:44 +0000] "POST /api/customers/CASH_TEST_USER/schemes HTTP/1.1" 200 77 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:44 +0000] "GET /api/customers/CASH_TEST_USER/schemes HTTP/1.1" 200 89 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:44 +0000] "POST /api/payments HTTP/1.1" 400 202 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:50 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:50 +0000] "DELETE /api/customers/CASH_TEST_USER HTTP/1.1" 500 212 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:25:51 +0000] "POST /api/customers HTTP/1.1" 500 187 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:26:15 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:26:16 +0000] "GET /api/customers/check/12341 HTTP/1.1" 200 16 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:26:16 +0000] "GET /api/customers/check/123412 HTTP/1.1" 200 16 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:27:32 +0000] "GET /api/customers/check/123412 HTTP/1.1" 200 16 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:27:44 +0000] "GET /api/customers/check/123412 HTTP/1.1" 200 16 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:27:44 +0000] "POST /api/customers HTTP/1.1" 400 120 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:31:17 +0000] "GET /api/customers/check/123412 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:12:31:17 +0000] "DELETE /api/customers/CASH_TEST_USER HTTP/1.1" 500 59 "-" "axios/1.13.2"
+- - - [12/Dec/2025:12:36:18 +0000] "POST /api/customers HTTP/1.1" 500 59 "-" "axios/1.13.2"

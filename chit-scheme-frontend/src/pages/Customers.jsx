@@ -246,6 +246,7 @@ const Customers = () => {
       // Join Customer Types for storage
       const payload = {
         ...values,
+        Customer_ID: editingCustomer ? editingCustomer.Customer_ID : values.Customer_ID,
         Customer_Type: Array.isArray(values.Customer_Type) ? values.Customer_Type.join(',') : values.Customer_Type,
       };
 

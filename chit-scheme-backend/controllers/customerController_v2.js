@@ -418,11 +418,15 @@ const uploadCustomers = async (req, res) => {
 const getCustomerSchemes = async (req, res) => {
   try {
     const { id } = req.params;
+    // Simple JOIN to get Scheme details and Fund Number directly
     const schemes = await executeQuery(
-      'SELECT Scheme_ID FROM Scheme_Members WHERE Customer_ID = @param0',
+      `SELECT sm.Scheme_ID, sm.Fund_Number, cm.Name as Scheme_Name 
+       FROM Scheme_Members sm
+       JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
+       WHERE sm.Customer_ID = @param0`,
       [{ value: id, type: sql.VarChar(50) }]
     );
-    res.json(schemes.map(s => s.Scheme_ID));
+    res.json(schemes);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

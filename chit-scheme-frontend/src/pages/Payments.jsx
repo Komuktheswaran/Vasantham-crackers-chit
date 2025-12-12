@@ -16,6 +16,7 @@ const Payments = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [schemes, setSchemes] = useState([]);
   const [selectedScheme, setSelectedScheme] = useState(null);
+  const [selectedFundNumber, setSelectedFundNumber] = useState(null);
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -59,10 +60,8 @@ const Payments = () => {
     
     try {
       const response = await customersAPI.getSchemes(customerId);
-      const allSchemesRes = await schemesAPI.getAll();
-      const assignedIds = response.data;
-      const assignedSchemes = allSchemesRes.data.filter(s => assignedIds.includes(s.Scheme_ID));
-      setSchemes(assignedSchemes);
+      // Response now contains detailed scheme objects with Fund Number
+      setSchemes(response.data);
     } catch (error) {
       console.error("Error fetching customer schemes:", error);
       message.error("Failed to load customer schemes.");
@@ -70,15 +69,21 @@ const Payments = () => {
   };
 
   // Handle scheme selection
-  const handleSchemeSelect = async (schemeId) => {
+  const handleSchemeSelect = async (schemeId, option) => {
     setSelectedScheme(schemeId);
-    fetchDues(selectedCustomer, schemeId);
+    // Option value is Scheme_ID, but we can access the full object from state or option if stored
+    // Better way: Find scheme in schemes array
+    const scheme = schemes.find(s => s.Scheme_ID === schemeId);
+    if(scheme){
+        setSelectedFundNumber(scheme.Fund_Number);
+        fetchDues(scheme.Fund_Number);
+    }
   };
 
-  const fetchDues = async (customerId, schemeId) => {
+  const fetchDues = async (fundNumber) => {
     setLoading(true);
     try {
-      const response = await paymentsAPI.getDues(customerId, schemeId);
+      const response = await paymentsAPI.getDues(fundNumber);
       setDues(response.data);
     } catch (error) {
       console.error("Error fetching dues:", error);
@@ -92,8 +97,7 @@ const Payments = () => {
     setPaymentLoading(true);
     try {
       const payload = {
-        Scheme_ID: selectedScheme,
-        Customer_ID: selectedCustomer,
+        Fund_Number: selectedFundNumber,
         Due_number: values.dueNumber,
         Transaction_ID: values.transactionId,
         Amount_Received: values.amount,
@@ -106,7 +110,7 @@ const Payments = () => {
       message.success("Payment recorded successfully!");
       form.resetFields(['dueNumber', 'amount', 'transactionId', 'date', 'paymentMode']);
       setPaymentMode('Cash');
-      fetchDues(selectedCustomer, selectedScheme); // Refresh dues
+      fetchDues(selectedFundNumber); // Refresh dues
     } catch (error) {
       console.error("Payment error:", error);
       message.error("Failed to record payment.");
@@ -116,28 +120,32 @@ const Payments = () => {
   };
 
   const columns = [
-    { title: 'Due #', dataIndex: 'Due_number', key: 'Due_number' },
+    { title: 'Due #', dataIndex: 'Due_number', key: 'Due_number', width: 80 },
     { 
       title: 'Due Date', 
       dataIndex: 'Due_date', 
       key: 'Due_date',
+      width: 120,
       render: (text) => text ? dayjs(text).format('DD-MM-YYYY') : 'N/A'
     },
     { 
       title: 'Due Amount', 
       dataIndex: 'Due_amount', 
       key: 'Due_amount',
+      width: 100,
       render: (val) => `₹${val}`
     },
     { 
       title: 'Received', 
       dataIndex: 'Recd_amount', 
       key: 'Recd_amount',
+      width: 100,
       render: (val) => <Text type={val >= 0 ? "success" : "warning"}>₹{val || 0}</Text>
     },
     {
       title: 'Status',
       key: 'status',
+      width: 100,
       render: (_, record) => {
         const due = parseFloat(record.Due_amount || 0);
         const recd = parseFloat(record.Recd_amount || 0);
@@ -147,6 +155,7 @@ const Payments = () => {
     {
       title: 'Action',
       key: 'action',
+      width: 80,
       render: (_, record) => {
         const due = parseFloat(record.Due_amount || 0);
         const recd = parseFloat(record.Recd_amount || 0);
@@ -209,7 +218,7 @@ const Payments = () => {
                   >
                     {schemes.map(s => (
                       <Option key={s.Scheme_ID} value={s.Scheme_ID}>
-                        {s.Name}
+                        {s.Scheme_Name} (Fund: {s.Fund_Number})
                       </Option>
                     ))}
                   </Select>
@@ -300,7 +309,7 @@ const Payments = () => {
               rowKey="Due_number"
               loading={loading}
               pagination={false}
-              scroll={{ x: true, y: 500 }}
+              scroll={{ x: 600, y: 500 }}
             />
           </Card>
         </Col>

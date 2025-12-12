@@ -1,0 +1,56 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+🚀 Server: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4
+✅ Health: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/health
+🔐 Login: POST http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/auth/login
+👤 Users: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/users
+👥 Customers: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/customers
+📋 Schemes: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/schemes
+💰 Payments: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/payments
+🌍 States: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/states
+🏘️ Districts: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/districts
+📥 Exports: http://localhost:\\.\pipe\017f2150-7ed7-4d71-a51a-1bb237c783b4/api/exports
+- - - [12/Dec/2025:17:42:40 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:42:47 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1807 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:42:47 +0000] "GET /api/schemes HTTP/1.1" 200 1527 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:01 +0000] "GET /api/customers HTTP/1.1" 500 53 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:01 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:01 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:10 +0000] "GET /api/schemes HTTP/1.1" 200 1527 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:10 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1807 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:34 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1807 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:34 +0000] "GET /api/schemes HTTP/1.1" 200 1527 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:38 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1807 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:49 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:56 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1807 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:43:56 +0000] "GET /api/schemes HTTP/1.1" 200 1527 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:12 +0000] "GET /api/states HTTP/1.1" 200 119 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:12 +0000] "GET /api/districts HTTP/1.1" 200 295 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/districts HTTP/1.1" 500 19 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 500 53 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/schemes HTTP/1.1" 500 19 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 200 7095 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/customers HTTP/1.1" 200 7095 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:22 +0000] "GET /api/states HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [12/Dec/2025:17:44:25 +0000] "GET /api/dashboard/monthly-stats?year=2025 HTTP/1.1" 200 497 "http://localhost/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+🔍 Database Configuration: {
+  server: '103.38.50.73',
+  database: 'VASANTHAMDB',
+  user: 'vasantham',
+  password: '****',
+  port: 3141,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 },
+  stream: false,
+  parseJSON: false,
+  arrayRowMode: false,
+  validateConnection: true
+}
+- - - [12/Dec/2025:17:50:42 +0000] "GET /api/health HTTP/1.1" 200 244 "-" "Go-http-client/1.1"
+- - - [12/Dec/2025:17:51:47 +0000] "POST /api/auth/login HTTP/1.1" 401 31 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"

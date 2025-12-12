@@ -139,6 +139,27 @@ const updateScheme = async (req, res) => {
 const deleteScheme = async (req, res) => {
   try {
     const { id } = req.params;
+    
+    // Check for dependencies in Scheme_Members
+    const members = await executeQuery(
+      'SELECT COUNT(*) as count FROM Scheme_Members WHERE Scheme_ID = @param0',
+      [{ value: parseInt(id), type: sql.Int }]
+    );
+
+    if (members[0].count > 0) {
+      return res.status(400).json({ error: 'Cannot delete scheme. There are members assigned to this scheme.' });
+    }
+
+    // Check for dependencies in Payment_Master
+    const payments = await executeQuery(
+      'SELECT COUNT(*) as count FROM Payment_Master WHERE Scheme_ID = @param0',
+      [{ value: parseInt(id), type: sql.Int }]
+    );
+
+    if (payments[0].count > 0) {
+      return res.status(400).json({ error: 'Cannot delete scheme. There are payments associated with this scheme.' });
+    }
+
     await executeUpdate(
       'DELETE FROM Chit_Master WHERE Scheme_ID = @param0', 
       [{ value: parseInt(id), type: sql.Int }]

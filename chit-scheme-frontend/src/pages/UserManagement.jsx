@@ -120,18 +120,21 @@ const UserManagement = () => {
       title: 'Username',
       dataIndex: 'Username',
       key: 'Username',
+      width: 120,
       sorter: (a, b) => a.Username.localeCompare(b.Username)
     },
     {
       title: 'Full Name',
       dataIndex: 'Full_Name',
       key: 'Full_Name',
+      width: 150,
       render: (text) => text || '-'
     },
     {
       title: 'Role',
       dataIndex: 'Role',
       key: 'Role',
+      width: 100,
       render: (role) => (
         <Tag color={role === 'admin' ? 'red' : 'blue'}>
           {role?.toUpperCase()}
@@ -147,6 +150,7 @@ const UserManagement = () => {
       title: 'Created At',
       dataIndex: 'Created_At',
       key: 'Created_At',
+      width: 120,
       render: (date) => date ? new Date(date).toLocaleDateString() : '-',
       sorter: (a, b) => new Date(a.Created_At) - new Date(b.Created_At)
     },
@@ -211,6 +215,7 @@ const UserManagement = () => {
           showTotal: (total) => `Total ${total} users`,
           showSizeChanger: true
         }}
+        scroll={{ x: 800 }}
       />
 
       <Modal
