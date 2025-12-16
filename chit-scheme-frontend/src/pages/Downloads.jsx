@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import CustomerDownload from '../components/downloads/CustomerDownload';
 import PaymentDownload from '../components/downloads/PaymentDownload';
 import SchemeDownload from '../components/downloads/SchemeDownload';
+import './css/Downloads.css';
 
 const { TabPane } = Tabs;
 

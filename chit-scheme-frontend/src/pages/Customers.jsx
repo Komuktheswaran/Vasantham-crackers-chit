@@ -22,6 +22,7 @@ import {
 } from "@ant-design/icons";
 import { customersAPI, statesAPI, districtsAPI, schemesAPI } from "../services/api"; // Assuming api service is structured this way
 import Highlighter from "react-highlight-words";
+import './css/Customers.css';
 
 const { Option } = Select;
 
@@ -248,6 +249,11 @@ const Customers = () => {
         ...values,
         Customer_ID: editingCustomer ? editingCustomer.Customer_ID : values.Customer_ID,
         Customer_Type: Array.isArray(values.Customer_Type) ? values.Customer_Type.join(',') : values.Customer_Type,
+        PhoneNumber2: values.PhoneNumber2 ? values.PhoneNumber2 : null,
+        Reference_Name: values.Reference_Name || null,
+        District_ID: values.District_ID || null,
+        State_ID: values.State_ID || null,
+        Pincode: values.Pincode || null,
       };
 
       if (editingCustomer) {
@@ -296,7 +302,8 @@ const Customers = () => {
   const deleteCustomer = (id) => {
     Modal.confirm({
       title: "Are you sure you want to delete this customer?",
-      okText: "Yes",
+      content: "Deleting this customer will also delete all their Scheme Memberships, Payments, and Auction history. This action cannot be undone.",
+      okText: "Yes, Delete It",
       okType: "danger",
       onOk: async () => {
         try {
@@ -522,42 +529,53 @@ const Customers = () => {
           {!editingCustomer && (
               <>
                 <div style={{ margin: '10px 0', borderTop: '1px solid #f0f0f0', paddingTop: '10px' }}>
-                    <h4 style={{marginBottom: '10px'}}>Assign Initial Scheme (Optional)</h4>
+                    <h4 style={{marginBottom: '10px'}}>Assign Initial Schemes (Optional)</h4>
                 </div>
-                <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                        <Form.Item name="Scheme_ID" label="Select Scheme">
-                             <Select 
-                                placeholder="Select a scheme to assign"
-                                allowClear
-                                onChange={(val) => {
-                                    setSelectedSchemeForCreate(val);
-                                    if(val) {
-                                        const newFundNum = generateFundNumber();
-                                        form.setFieldsValue({ Fund_Number: newFundNum });
-                                    } else {
-                                        form.setFieldsValue({ Fund_Number: null });
-                                    }
-                                }}
-                             >
+                <Form.List name="Schemes">
+                  {(fields, { add, remove }) => (
+                    <>
+                      {fields.map(({ key, name, fieldKey, ...restField }) => (
+                        <Row gutter={16} key={key} align="middle">
+                          <Col xs={24} md={11}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'schemeId']}
+                              fieldKey={[fieldKey, 'schemeId']}
+                              label="Select Scheme"
+                              rules={[{ required: true, message: 'Missing scheme' }]}
+                            >
+                              <Select placeholder="Select Scheme">
                                 {availableSchemes.map(s => (
-                                    <Option key={s.Scheme_ID} value={s.Scheme_ID}>{s.Name} (₹{s.Total_Amount})</Option>
+                                  <Option key={s.Scheme_ID} value={s.Scheme_ID}>{s.Name} (₹{s.Total_Amount})</Option>
                                 ))}
-                             </Select>
-                        </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                        {selectedSchemeForCreate && (
-                             <Form.Item 
-                                name="Fund_Number" 
-                                label="Fund Number"
-                                rules={[{ required: true, message: "Fund Number is required for scheme assignment" }]}
-                             >
-                                <Input placeholder="YYYY_MM_RAND" />
-                             </Form.Item>
-                        )}
-                    </Col>
-                </Row>
+                              </Select>
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} md={11}>
+                            <Form.Item
+                              {...restField}
+                              name={[name, 'fundNumber']}
+                              fieldKey={[fieldKey, 'fundNumber']}
+                              label="Fund Number"
+                              initialValue={generateFundNumber()}
+                              rules={[{ required: true, message: 'Missing Fund Number' }]}
+                            >
+                              <Input placeholder="Fund Number" />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} md={2}>
+                            <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(name)} style={{ marginTop: 30 }} />
+                          </Col>
+                        </Row>
+                      ))}
+                      <Form.Item>
+                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                          Add Scheme
+                        </Button>
+                      </Form.Item>
+                    </>
+                  )}
+                </Form.List>
               </>
           )}
 

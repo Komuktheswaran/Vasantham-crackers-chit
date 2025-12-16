@@ -4,6 +4,7 @@ import { customersAPI, schemesAPI, dashboardAPI } from '../services/api';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from 'recharts';
 import { UserOutlined, MoneyCollectOutlined, BarChartOutlined, DollarOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import './css/Dashboard.css';
 
 const { Option } = Select;
 
@@ -25,8 +26,8 @@ const Dashboard = () => {
   const [allSchemes, setAllSchemes] = useState([]);
   
   // Graph filter states
-  const [selectedCustomerId, setSelectedCustomerId] = useState(null);
-  const [selectedSchemeId, setSelectedSchemeId] = useState(null);
+  // const [selectedCustomerId, setSelectedCustomerId] = useState(null); // Removed filter
+  // const [selectedSchemeId, setSelectedSchemeId] = useState(null); // Removed filter
 
   // Temporary selection states for drawers
   const [customerSelectorValue, setCustomerSelectorValue] = useState(undefined);
@@ -34,7 +35,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, [selectedYear, selectedCustomerId, selectedSchemeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedYear]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchDashboardData = async () => {
     setLoading(true);
@@ -44,27 +45,32 @@ const Dashboard = () => {
         schemesAPI.getAll()
       ]);
 
+      const schemesList = Array.isArray(schemesRes.data?.schemes) ? schemesRes.data.schemes : [];
+      const customersList = Array.isArray(customersRes.data?.customers) ? customersRes.data.customers : [];
+
       setStats({
         totalCustomers: customersRes.data.pagination?.totalRecords || 0,
-        totalSchemes: schemesRes.data.length || 0,
-        activeSchemes: schemesRes.data.filter(s => s.member_count > 0).length || 0,
+        totalSchemes: schemesList.length,
+        activeSchemes: schemesList.filter(s => s.member_count > 0).length,
       });
 
-      setRecentCustomers(customersRes.data.customers || []);
+      setRecentCustomers(customersList);
       
       // Fetch all customers and schemes for selectors
       const allCustomersRes = await customersAPI.getAll({});
-      setAllCustomers(allCustomersRes.data.customers || []);
-      setAllSchemes(schemesRes.data || []);
+      const allCustomersList = Array.isArray(allCustomersRes.data?.customers) ? allCustomersRes.data.customers : [];
       
-      setSchemeStats(schemesRes.data.map(scheme => ({
+      setAllCustomers(allCustomersList);
+      setAllSchemes(schemesList);
+      
+      setSchemeStats(schemesList.map(scheme => ({
         name: scheme.Name,
         members: scheme.member_count || 0,
         amount: scheme.Total_Amount || 0,
         key: scheme.Scheme_ID
       })));
 
-      const monthlyStatsRes = await dashboardAPI.getMonthlyStats(selectedYear, selectedCustomerId, selectedSchemeId);
+      const monthlyStatsRes = await dashboardAPI.getMonthlyStats(selectedYear, null, null);
       setMonthlyData(monthlyStatsRes.data);
       
     } catch (error) {
@@ -129,7 +135,7 @@ const Dashboard = () => {
       key: 'name',
       width: 150,
       ellipsis: true,
-      render: (_, record) => `${record.First_Name} ${record.Last_Name}`
+      render: (_, record) => record.Name || `${record.First_Name || ''} ${record.Last_Name || ''}`
     },
     { title: 'Phone', dataIndex: 'Phone_Number', key: 'phone', width: 120, render: (text) => `+91 ${text}` },
     { title: 'Area', dataIndex: 'Area', key: 'area', width: 100, ellipsis: true },
@@ -431,37 +437,6 @@ const Dashboard = () => {
             className="dashboard-chart-card"
             extra={
               <div className="flex-gap-8 responsive-filters">
-                <Select 
-                  allowClear
-                  showSearch
-                  className="dashboard-filter-select"
-                  placeholder="Filter by customer"
-                  optionFilterProp="children"
-                  value={selectedCustomerId}
-                  onChange={setSelectedCustomerId}
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                >
-                  {allCustomers.map(c => (
-                    <Option key={c.Customer_ID} value={c.Customer_ID}>
-                      {c.First_Name} {c.Last_Name}
-                    </Option>
-                  ))}
-                </Select>
-                <Select
-                  allowClear
-                  className="dashboard-filter-select"
-                  placeholder="Filter by scheme"
-                  value={selectedSchemeId}
-                  onChange={setSelectedSchemeId}
-                >
-                  {allSchemes.map(s => (
-                    <Option key={s.Scheme_ID} value={s.Scheme_ID}>
-                      {s.Name}
-                    </Option>
-                  ))}
-                </Select>
                 <Select value={selectedYear} onChange={setSelectedYear} style={{ width: 100 }}>
                   <Option value={2024}>2024</Option>
                   <Option value={2025}>2025</Option>
@@ -497,7 +472,7 @@ const Dashboard = () => {
       </Row>
 
       <Row gutter={[16, 16]}>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={24}>
           <Card title="Scheme Distribution">
             <ResponsiveContainer width="100%" height={300}>
               <PieChart>
@@ -517,7 +492,7 @@ const Dashboard = () => {
             </ResponsiveContainer>
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={24}>
           <Card title="Recent Customers">
             <Table
               dataSource={recentCustomers}
@@ -529,7 +504,7 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
-        <Col xs={24} md={8}>
+        <Col xs={24} lg={24}>
           <Card title="Scheme Statistics">
             <Table
               dataSource={schemeStats}

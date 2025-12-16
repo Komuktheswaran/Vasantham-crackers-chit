@@ -3,7 +3,7 @@ const multer = require('multer');
 const {
   getAllCustomers, getCustomerById, createCustomer,
   updateCustomer, deleteCustomer, checkCustomerId, downloadCustomers, uploadCustomers,
-  getCustomerSchemes, assignSchemes
+  getCustomerSchemes, assignSchemes, getCustomerByFundNumber
 } = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
 const router = express.Router();
@@ -13,6 +13,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post('/upload', upload.single('file'), uploadCustomers);
 router.get('/download', downloadCustomers);
 router.get('/', getAllCustomers);
+router.get('/fund/:fundNumber', getCustomerByFundNumber); // Specific route before generic :id
 router.get('/check/:id', checkCustomerId); // New route for checking ID
 router.get('/:id', getCustomerById);
 router.post('/', customerValidation, createCustomer);

@@ -5,6 +5,7 @@ import {
 } from 'antd';
 import { customersAPI, paymentsAPI, schemesAPI } from '../services/api';
 import dayjs from 'dayjs';
+import './css/Payments.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -189,6 +190,40 @@ const Payments = () => {
         <Col xs={24} md={8}>
           <Card title="Select Customer & Scheme">
             <Form layout="vertical">
+             {/* NEW: Search by Fund Number */}
+              <Form.Item label="Search by Fund Number">
+                <Input.Search
+                  placeholder="Enter Fund Number (e.g. 2024_12_1234)"
+                  enterButton="Search"
+                  onSearch={async (value) => {
+                    if (!value) return;
+                    try {
+                      const response = await customersAPI.getByFundNumber(value);
+                      const { Customer_ID, Scheme_ID, Fund_Number } = response.data;
+                      
+                      // 1. Set Customer
+                      await handleCustomerSelect(Customer_ID);
+                      
+                      // 2. Set Scheme & Dues
+                      // Small timeout to allow state updates (or better, make handleCustomerSelect return promise)
+                       setTimeout(() => {
+                         setSelectedScheme(Scheme_ID);
+                         setSelectedFundNumber(Fund_Number);
+                         fetchDues(Fund_Number);
+                         form.setFieldsValue({
+                            schemeId: Scheme_ID // If this field exists in form
+                         });
+                         message.success("Fund Number Found!");
+                       }, 500);
+                      
+                    } catch (error) {
+                      console.error("Fund Search Error:", error);
+                      message.error("Fund Number not found.");
+                    }
+                  }}
+                />
+              </Form.Item>
+
               <Form.Item label="Search Customer">
                 <Select
                   showSearch

@@ -20,6 +20,7 @@ import {
   
 } from '@ant-design/icons';
 import { getUsers, createUser, updateUser, deleteUser } from '../services/userService';
+import './css/UserManagement.css';
 
 const { Option } = Select;
 

@@ -180,41 +180,52 @@ const createCustomer = async (req, res) => {
       )
     `);
 
-    // 2. Assign Scheme (if provided)
-    if (Scheme_ID) {
-      const fundNum = Fund_Number || generateFundNumber();
+    // 2. Assign Schemes (Single or Multiple)
+    let schemesToAssign = [];
+    if (req.body.Schemes && Array.isArray(req.body.Schemes)) {
+        schemesToAssign = req.body.Schemes;
+    } else if (Scheme_ID) {
+        schemesToAssign.push({ schemeId: Scheme_ID, fundNumber: Fund_Number });
+    }
 
-      const assignReq = new sql.Request(transaction);
-      await assignReq.input('customerId', sql.VarChar(50), Customer_ID)
-                     .input('schemeId', sql.Int, Scheme_ID)
-                     .input('fundNum', sql.VarChar(50), fundNum)
-                     .query(`
-                        INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
-                        VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
-                     `);
-                     
-      // Generate Dues Logic (same as assignSchemes)
-      const schemeDetailsReq = new sql.Request(transaction);
-        const schemeResult = await schemeDetailsReq.input('schemeId', sql.Int, Scheme_ID)
-            .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
-        
-        const scheme = schemeResult.recordset[0];
-        if (scheme) {
-            for (let i = 1; i <= scheme.Number_of_due; i++) {
-                const dueDate = new Date(scheme.Month_from);
-                dueDate.setMonth(dueDate.getMonth() + (i - 1));
+    if (schemesToAssign.length > 0) {
+        for (const schemeItem of schemesToAssign) {
+            const schemeId = schemeItem.schemeId;
+            const fundNum = schemeItem.fundNumber || generateFundNumber();
 
-                const insertDueReq = new sql.Request(transaction);
-                await insertDueReq.input('schemeId', sql.Int, Scheme_ID)
-                                  .input('customerId', sql.VarChar(50), Customer_ID)
-                                  .input('fundNum', sql.VarChar(50), fundNum)
-                                  .input('dueNumber', sql.Int, i)
-                                  .input('dueDate', sql.Date, dueDate)
-                                  .input('dueAmount', sql.Decimal(15, 2), scheme.Amount_per_month)
-                                  .query(`
-                                      INSERT INTO Scheme_Due (Scheme_ID, Customer_ID, Fund_Number, Due_number, Due_date, Due_amount)
-                                      VALUES (@schemeId, @customerId, @fundNum, @dueNumber, @dueDate, @dueAmount)
-                                  `);
+            // Insert Member
+            const assignReq = new sql.Request(transaction);
+            await assignReq.input('customerId', sql.VarChar(50), Customer_ID)
+                           .input('schemeId', sql.Int, schemeId)
+                           .input('fundNum', sql.VarChar(50), fundNum)
+                           .query(`
+                              INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
+                              VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
+                           `);
+
+            // Generate Dues Logic
+            const schemeDetailsReq = new sql.Request(transaction);
+            const schemeResult = await schemeDetailsReq.input('schemeId', sql.Int, schemeId)
+                  .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
+              
+            const scheme = schemeResult.recordset[0];
+            if (scheme) {
+                for (let i = 1; i <= scheme.Number_of_due; i++) {
+                    const dueDate = new Date(scheme.Month_from);
+                    dueDate.setMonth(dueDate.getMonth() + (i - 1));
+
+                    const insertDueReq = new sql.Request(transaction);
+                    await insertDueReq.input('schemeId', sql.Int, schemeId)
+                                      .input('customerId', sql.VarChar(50), Customer_ID)
+                                      .input('fundNum', sql.VarChar(50), fundNum)
+                                      .input('dueNumber', sql.Int, i)
+                                      .input('dueDate', sql.Date, dueDate)
+                                      .input('dueAmount', sql.Decimal(15, 2), scheme.Amount_per_month)
+                                      .query(`
+                                          INSERT INTO Scheme_Due (Scheme_ID, Customer_ID, Fund_Number, Due_number, Due_date, Due_amount)
+                                          VALUES (@schemeId, @customerId, @fundNum, @dueNumber, @dueDate, @dueAmount)
+                                      `);
+                }
             }
         }
     }
@@ -288,13 +299,50 @@ const updateCustomer = async (req, res) => {
 };
 
 const deleteCustomer = async (req, res) => {
+  const connection = await sql.connect(require('../config/database').dbConfig);
+  const transaction = new sql.Transaction(connection);
+
   try {
     const { id } = req.params;
-    await executeUpdate('DELETE FROM Customer_Master WHERE Customer_ID = @param0', 
-      [{ value: id, type: sql.VarChar(50) }]);
-    res.json({ success: true, message: 'Customer deleted successfully' });
+    await transaction.begin();
+
+    const request = new sql.Request(transaction);
+
+    // 0. Delete Auction Participation/Wins
+    // Found via sys.foreign_keys: Auctions references Customer_Master
+    const req0 = new sql.Request(transaction);
+    await req0.input('customerId', sql.VarChar(50), id)
+              .query('DELETE FROM Auctions WHERE Customer_ID = @customerId');
+
+    // 1. Delete Payments
+    await request.input('customerId', sql.VarChar(50), id)
+                 .query('DELETE FROM Payment_Master WHERE Customer_ID = @customerId');
+
+    // 2. Delete Scheme Dues
+    // Re-create request for next query (or reuse if input params are identical, but safer to re-state or strictly reuse properly)
+    // Tedious/MSSQL often prefers fresh requests per query in a transaction or careful param mgmt.
+    const req2 = new sql.Request(transaction);
+    await req2.input('customerId', sql.VarChar(50), id)
+              .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId');
+
+    // 3. Delete Scheme Memberships
+    const req3 = new sql.Request(transaction);
+    await req3.input('customerId', sql.VarChar(50), id)
+              .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId');
+
+    // 4. Delete Customer
+    const req4 = new sql.Request(transaction);
+    await req4.input('customerId', sql.VarChar(50), id)
+              .query('DELETE FROM Customer_Master WHERE Customer_ID = @customerId');
+
+    await transaction.commit();
+    res.json({ success: true, message: 'Customer and all related data deleted successfully' });
   } catch (error) {
+    if (transaction.active) await transaction.rollback();
+    console.error('❌ deleteCustomer Error:', error);
     res.status(500).json({ error: error.message });
+  } finally {
+    // await connection.close(); // Optional based on pool config
   }
 };
 
@@ -415,6 +463,35 @@ const uploadCustomers = async (req, res) => {
     }
 };
 
+// Search Customer by Fund Number
+const getCustomerByFundNumber = async (req, res) => {
+    try {
+        const { fundNumber } = req.params;
+        const result = await executeQuery(`
+            SELECT 
+                c.Customer_ID, 
+                c.Name, 
+                c.Phone_Number,
+                sm.Scheme_ID, 
+                sm.Fund_Number, 
+                cm.Name as Scheme_Name
+            FROM Scheme_Members sm
+            JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
+            JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
+            WHERE sm.Fund_Number = @param0
+        `, [{ value: fundNumber, type: sql.VarChar(50) }]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Fund Number not found' });
+        }
+
+        res.json(result[0]);
+    } catch (error) {
+        console.error('❌ getCustomerByFundNumber Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const getCustomerSchemes = async (req, res) => {
   try {
     const { id } = req.params;
@@ -515,5 +592,5 @@ module.exports = {
   getAllCustomers, getCustomerById, 
   createCustomer, updateCustomer, deleteCustomer,
   checkCustomerId, downloadCustomers, uploadCustomers,
-  getCustomerSchemes, assignSchemes
+  getCustomerSchemes, assignSchemes, getCustomerByFundNumber
 };

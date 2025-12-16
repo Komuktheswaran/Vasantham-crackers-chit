@@ -116,7 +116,7 @@ const getAllPayments = async (req, res) => {
       SELECT 
         pm.Pay_ID,
         pm.Customer_ID,
-        c.First_Name + ' ' + c.Last_Name as Customer_Name,
+        c.Name as Customer_Name,
         cm.Name as Scheme_Name,
         pm.Amount_Received,
         pm.Amount_Received_date,
@@ -207,4 +207,98 @@ const getAllPayments = async (req, res) => {
   }
 };
 
-module.exports = { getPaymentsByCustomer, recordPayment, getDuesByFundNumber, getAllPayments };
+const payAllDues = async (req, res) => {
+  const connection = await sql.connect(require('../config/database').dbConfig);
+  const transaction = new sql.Transaction(connection);
+
+  try {
+    const { fundNumber } = req.body;
+    
+    if (!fundNumber) {
+      return res.status(400).json({ error: 'Fund Number is required' });
+    }
+
+    // Lookup Member Details
+    const lookupReq = new sql.Request(connection);
+    const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), fundNumber)
+        .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
+
+    if (memberCheck.recordset.length === 0) {
+        return res.status(404).json({ error: 'Invalid Fund Number' });
+    }
+
+    const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
+    
+    // Calculate Transaction ID
+    const date = new Date();
+    const transactionId = `auction_${date.getFullYear()}_${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+    await transaction.begin();
+
+    // Find all pending dues
+    const duesReq = new sql.Request(transaction);
+    const pendingDues = await duesReq.input('fundNum', sql.VarChar(50), fundNumber)
+        .query(`
+            SELECT * FROM Scheme_Due 
+            WHERE Fund_Number = @fundNum 
+            AND (Recd_amount IS NULL OR Recd_amount < Due_amount)
+        `);
+
+    if (pendingDues.recordset.length === 0) {
+        await transaction.rollback();
+        return res.json({ success: true, message: 'No pending dues found for this Fund Number.' });
+    }
+
+    let totalPaid = 0;
+
+    for (const due of pendingDues.recordset) {
+        const remainingAmount = due.Due_amount - (due.Recd_amount || 0);
+        
+        // 1. Insert into Payment_Master
+        const insertPayReq = new sql.Request(transaction);
+        await insertPayReq
+          .input('schemeId', sql.Int, Scheme_ID)
+          .input('customerId', sql.VarChar(50), Customer_ID)
+          .input('fundNum', sql.VarChar(50), fundNumber)
+          .input('dueNumber', sql.Int, due.Due_number)
+          .input('transactionId', sql.VarChar(50), transactionId)
+          .input('amount', sql.Decimal(15, 2), remainingAmount)
+          .input('date', sql.Date, date)
+          .input('paymentMode', sql.VarChar(50), 'Auction')
+          .query(`
+            INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode)
+            VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode)
+          `);
+
+        // 2. Update Scheme_Due
+        const updateDueReq = new sql.Request(transaction);
+        await updateDueReq
+          .input('fundNum', sql.VarChar(50), fundNumber)
+          .input('dueNumber', sql.Int, due.Due_number)
+          .input('amount', sql.Decimal(15, 2), remainingAmount)
+          .input('date', sql.Date, date)
+          .query(`
+            UPDATE Scheme_Due 
+            SET Recd_amount = ISNULL(Recd_amount, 0) + @amount,
+                amt_received_date = @date
+            WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
+          `);
+
+        totalPaid += remainingAmount;
+    }
+
+    await transaction.commit();
+    res.json({ 
+        success: true, 
+        message: `Successfully paid all dues. Total Amount: ₹${totalPaid}`, 
+        transactionId 
+    });
+
+  } catch (error) {
+    if (transaction.active) await transaction.rollback();
+    console.error('❌ payAllDues Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getPaymentsByCustomer, recordPayment, getDuesByFundNumber, getAllPayments, payAllDues };

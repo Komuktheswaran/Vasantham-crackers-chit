@@ -12,11 +12,10 @@ const exportCustomers = async (req, res) => {
     let query = `
       SELECT DISTINCT
         c.Customer_ID,
-        c.First_Name,
-        c.Last_Name,
+        c.Name,
         c.Phone_Number,
         c.Phone_Number2,
-        c.StreetAddress1,
+        c.Address1,
         c.Area,
         d.District_Name as District,
         s.State_Name as State,
@@ -89,8 +88,7 @@ const exportCustomers = async (req, res) => {
     // Define CSV columns
     const columns = [
       { key: 'Customer_ID', header: 'Customer ID' },
-      { key: 'First_Name', header: 'First Name' },
-      { key: 'Last_Name', header: 'Last Name' },
+      { key: 'Name', header: 'Customer Name' },
       { key: 'Phone_Number', header: 'Phone Number' },
       { key: 'Phone_Number2', header: 'Alternate Phone' },
       { key: 'StreetAddress1', header: 'Address' },
@@ -125,7 +123,7 @@ const exportPayments = async (req, res) => {
       SELECT 
         pm.Pay_ID,
         pm.Customer_ID,
-        c.First_Name + ' ' + c.Last_Name as Customer_Name,
+        c.Name as Customer_Name,
         cm.Name as Scheme_Name,
         pm.Amount_Received,
         pm.Amount_Received_date,

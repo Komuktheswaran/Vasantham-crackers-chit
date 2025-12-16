@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
 
 import { getToken } from './authService';
 
@@ -42,10 +42,12 @@ export const customersAPI = {
   delete: (id) => api.delete(`/customers/${id}`),
   getSchemes: (id) => api.get(`/customers/${id}/schemes`),
   assignSchemes: (id, schemeIds) => api.post(`/customers/${id}/schemes`, { schemeIds }),
+  getByFundNumber: (fundNumber) => api.get(`/customers/fund/${fundNumber}`),
 };
 
 export const schemesAPI = {
   getAll: (params) => api.get('/schemes', { params }),
+  getMembers: (params) => api.get('/schemes/members', { params }),
   getById: (id) => api.get(`/schemes/${id}`),
   create: (data) => api.post('/schemes', data),
   update: (id, data) => api.put(`/schemes/${id}`, data),
@@ -57,6 +59,7 @@ export const paymentsAPI = {
   getByCustomer: (customerId) => api.get(`/payments/customer/${customerId}`),
   getDues: (fundNumber) => api.get(`/payments/dues/${fundNumber}`),
   create: (data) => api.post('/payments', data),
+  payAll: (data) => api.post('/payments/pay-all', data),
 };
 
 export const statesAPI = {

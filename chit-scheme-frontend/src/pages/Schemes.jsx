@@ -12,6 +12,8 @@ import {
   Space,
   Dropdown,
   Menu,
+  Row,
+  Col,
 } from "antd";
 import {
   EditOutlined,
@@ -21,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import { schemesAPI, exportsAPI } from "../services/api";
 import dayjs from "dayjs";
+import './css/Schemes.css';
 
 const Schemes = () => {
   const [schemes, setSchemes] = useState([]);
@@ -34,7 +37,7 @@ const Schemes = () => {
 
   const uploadProps = {
     name: 'file',
-    action: `${process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}/schemes/upload`,
+    action: `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/schemes/upload`,
     accept: '.csv',
     onChange(info) {
       if (info.file.status === 'done') {
@@ -148,7 +151,8 @@ const Schemes = () => {
   const handleDelete = (schemeId) => {
     Modal.confirm({
       title: "Are you sure you want to delete this scheme?",
-      okText: "Yes",
+      content: "This scheme may have members and payments associated with it. Deleting it will PERMANENTLY DELETE all associated Member and Payment records. This action cannot be undone.",
+      okText: "Yes, Delete It",
       okType: "danger",
       onOk: async () => {
         try {
@@ -302,48 +306,103 @@ const Schemes = () => {
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="Total_Amount"
-            label="Total Amount"
-            rules={[{ required: true }]}
-          >
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="Amount_per_month"
-            label="Amount Per Month"
-            rules={[{ required: true }]}
-          >
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="Period"
-            label="Period (in months)"
-            rules={[{ required: true }]}
-          >
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="Number_of_due"
-            label="Number of Dues"
-            rules={[{ required: true }]}
-          >
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="Month_from"
-            label="Start Month"
-            rules={[{ required: true }]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item
-            name="Month_to"
-            label="End Month"
-            rules={[{ required: true }]}
-          >
-            <DatePicker style={{ width: "100%" }} />
-          </Form.Item>
+          
+          <Row gutter={16}>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Total_Amount"
+                    label="Total Amount"
+                    rules={[{ required: true }]}
+                >
+                    <InputNumber 
+                        style={{ width: "100%" }} 
+                        onChange={(val) => {
+                            const period = form.getFieldValue('Period');
+                            if (period && val) {
+                                form.setFieldsValue({ Amount_per_month: (val / period).toFixed(2) });
+                            }
+                        }}
+                    />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Period"
+                    label="Period (Months)"
+                    rules={[{ required: true }]}
+                >
+                    <InputNumber 
+                        style={{ width: "100%" }} 
+                        onChange={(val) => {
+                            // 1. Calculate Amount Per Month
+                            const total = form.getFieldValue('Total_Amount');
+                            if (total && val) {
+                                form.setFieldsValue({ Amount_per_month: (total / val).toFixed(2) });
+                            }
+                            // 2. Sync Number of Due
+                            form.setFieldsValue({ Number_of_due: val });
+                            
+                            // 3. Calculate End Date
+                            const start = form.getFieldValue('Month_from');
+                            if (start && val) {
+                                form.setFieldsValue({ Month_to: dayjs(start).add(val, 'month') });
+                            }
+                        }}
+                    />
+                </Form.Item>
+              </Col>
+          </Row>
+
+          <Row gutter={16}>
+             <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Amount_per_month"
+                    label="Amount Per Month"
+                    rules={[{ required: true }]}
+                >
+                    <InputNumber style={{ width: "100%" }} readOnly />
+                </Form.Item>
+             </Col>
+             <Col xs={24} sm={12}>
+                 <Form.Item
+                    name="Number_of_due"
+                    label="Number of Dues"
+                    rules={[{ required: true }]}
+                >
+                    <InputNumber style={{ width: "100%" }} />
+                </Form.Item>
+             </Col>
+          </Row>
+
+          <Row gutter={16}>
+             <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Month_from"
+                    label="Start Month"
+                    rules={[{ required: true }]}
+                >
+                    <DatePicker 
+                        style={{ width: "100%" }} 
+                        onChange={(date) => {
+                            const period = form.getFieldValue('Period');
+                            if (period && date) {
+                                form.setFieldsValue({ Month_to: dayjs(date).add(period, 'month') });
+                            }
+                        }}
+                    />
+                </Form.Item>
+             </Col>
+             <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Month_to"
+                    label="End Month"
+                    rules={[{ required: true }]}
+                >
+                    <DatePicker style={{ width: "100%" }} disabled />
+                </Form.Item>
+             </Col>
+          </Row>
+
         </Form>
       </Modal>
 

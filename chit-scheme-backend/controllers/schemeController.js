@@ -142,33 +142,36 @@ const updateScheme = async (req, res) => {
 const deleteScheme = async (req, res) => {
   try {
     const { id } = req.params;
+    const schemeId = parseInt(id);
     
-    // Check for dependencies in Scheme_Members
-    const members = await executeQuery(
-      'SELECT COUNT(*) as count FROM Scheme_Members WHERE Scheme_ID = @param0',
-      [{ value: parseInt(id), type: sql.Int }]
+    // We using a sequential delete approach instead of strict transaction object for simplicity with the current db helper
+    // 1. Delete dependent Payments
+    await executeUpdate(
+      'DELETE FROM Payment_Master WHERE Scheme_ID = @param0',
+      [{ value: schemeId, type: sql.Int }]
     );
 
-    if (members[0].count > 0) {
-      return res.status(400).json({ error: 'Cannot delete scheme. There are members assigned to this scheme.' });
-    }
-
-    // Check for dependencies in Payment_Master
-    const payments = await executeQuery(
-      'SELECT COUNT(*) as count FROM Payment_Master WHERE Scheme_ID = @param0',
-      [{ value: parseInt(id), type: sql.Int }]
+    // 2. Delete dependent Scheme Dues
+    await executeUpdate(
+      'DELETE FROM Scheme_Due WHERE Scheme_ID = @param0',
+      [{ value: schemeId, type: sql.Int }]
     );
 
-    if (payments[0].count > 0) {
-      return res.status(400).json({ error: 'Cannot delete scheme. There are payments associated with this scheme.' });
-    }
+    // 3. Delete dependent Scheme Members
+    await executeUpdate(
+      'DELETE FROM Scheme_Members WHERE Scheme_ID = @param0',
+      [{ value: schemeId, type: sql.Int }]
+    );
 
+    // 4. Delete the Scheme itself
     await executeUpdate(
       'DELETE FROM Chit_Master WHERE Scheme_ID = @param0', 
-      [{ value: parseInt(id), type: sql.Int }]
+      [{ value: schemeId, type: sql.Int }]
     );
-    res.json({ success: true, message: 'Scheme deleted successfully' });
+    
+    res.json({ success: true, message: 'Scheme and all associated data deleted successfully' });
   } catch (error) {
+    console.error('Delete scheme error:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -187,11 +190,148 @@ const downloadSchemes = async (req, res) => {
   }
 };
 
+const getSchemeMembers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, scheme_id, customer_id, fund_number, search } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    let query = `
+      SELECT 
+        sm.Fund_Number, 
+        sm.Status, 
+        sm.Join_date, 
+        c.Customer_ID,
+        c.Name as Customer_Name, 
+        c.Phone_Number, 
+        cm.Scheme_ID,
+        cm.Name as Scheme_Name,
+        cm.Amount_per_month,
+        cm.Month_from,
+        cm.Month_to
+      FROM Scheme_Members sm
+      JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
+      JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramIndex = 0;
+
+    if (scheme_id && scheme_id !== 'null' && scheme_id !== 'undefined') {
+      query += ` AND sm.Scheme_ID = @param${paramIndex}`;
+      params.push({ value: parseInt(scheme_id), type: sql.Int });
+      paramIndex++;
+    }
+
+    if (customer_id && customer_id !== 'null' && customer_id !== 'undefined') {
+      query += ` AND sm.Customer_ID = @param${paramIndex}`;
+      params.push({ value: customer_id, type: sql.VarChar(50) });
+      paramIndex++;
+    }
+
+    if (fund_number && fund_number !== 'null' && fund_number !== 'undefined') {
+      query += ` AND sm.Fund_Number LIKE @param${paramIndex}`;
+      params.push({ value: `%${fund_number}%`, type: sql.VarChar(50) });
+      paramIndex++;
+    }
+    
+    if (search) {
+        query += ` AND (c.Name LIKE @param${paramIndex} OR c.Phone_Number LIKE @param${paramIndex} OR sm.Fund_Number LIKE @param${paramIndex})`;
+        params.push({ value: `%${search}%`, type: sql.VarChar });
+        paramIndex++;
+    }
+
+    // Total Count Query
+    const countQueryStr = `SELECT COUNT(*) as total FROM Scheme_Members sm 
+                           JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
+                           JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
+                           WHERE ` + query.split('WHERE')[1]; // Reuse WHERE clause
+
+    query += ` ORDER BY sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+
+    const [members, totalResult] = await Promise.all([
+      executeQuery(query, params),
+      executeQuery(countQueryStr, params)
+    ]);
+
+    res.json({
+      members,
+      pagination: {
+        totalRecords: totalResult[0]?.total || 0,
+        totalPages: Math.ceil((totalResult[0]?.total || 0) / limit),
+        currentPage: parseInt(page),
+        pageSize: parseInt(limit)
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ getSchemeMembers Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const uploadSchemes = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const schemes = parseExcel(req.file.buffer);
+    
+    if (!schemes || schemes.length === 0) {
+      return res.status(400).json({ error: 'No schemes found in file' });
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const scheme of schemes) {
+      try {
+         // Basic validation
+         if (!scheme.Name || !scheme.Total_Amount) {
+             console.warn('Skipping invalid scheme row:', scheme);
+             errorCount++;
+             continue;
+         }
+
+         await executeInsertGetId(
+          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to) 
+           VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6)`,
+          [
+            { value: scheme.Name, type: sql.VarChar(100) },
+            { value: parseFloat(scheme.Total_Amount), type: sql.Decimal(15,2) },
+            { value: parseFloat(scheme.Amount_per_month), type: sql.Decimal(15,2) },
+            { value: parseInt(scheme.Period), type: sql.Int },
+            { value: parseInt(scheme.Number_of_due), type: sql.Int },
+            { value: scheme.Month_from ? new Date(scheme.Month_from) : null, type: sql.Date },
+            { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date }
+          ]
+        );
+        successCount++;
+      } catch (err) {
+          console.error('Error inserting scheme:', err);
+          errorCount++;
+      }
+    }
+
+    res.json({ 
+        success: true, 
+        message: `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount}` 
+    });
+
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = { 
   getAllSchemes, 
   getSchemeById, 
   createScheme, 
   updateScheme, 
   deleteScheme, 
-  downloadSchemes 
+  downloadSchemes,
+  getSchemeMembers,
+  uploadSchemes
 };

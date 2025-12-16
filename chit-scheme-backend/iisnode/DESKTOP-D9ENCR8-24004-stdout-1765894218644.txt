@@ -1,0 +1,16 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🔐 encrypt with Dotenvx: https://dotenvx.com
+
+🚀 Server: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2
+✅ Health: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/health
+🔐 Login: POST http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/auth/login
+👤 Users: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/users
+👥 Customers: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/customers
+📋 Schemes: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/schemes
+💰 Payments: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/payments
+🌍 States: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/states
+🏘️ Districts: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/districts
+📥 Exports: http://localhost:\\.\pipe\62b85257-d7d6-4c6c-8047-75d5f7964ed2/api/exports
+- - - [16/Dec/2025:14:10:26 +0000] "GET /api/schemes HTTP/1.1" 200 1793 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [16/Dec/2025:14:10:26 +0000] "GET /api/customers?limit=1000 HTTP/1.1" 200 10469 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"
+- - - [16/Dec/2025:14:10:29 +0000] "GET /api/schemes/members?page=1&limit=20 HTTP/1.1" 200 2030 "http://localhost:3000/" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1 Edg/143.0.0.0"

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Appbar, Card, Text, Button, Title, Paragraph } from 'react-native-paper';
+import './css/Dashboard.native.css';
 
 const Dashboard = ({ onLogout, user }) => {
   return (

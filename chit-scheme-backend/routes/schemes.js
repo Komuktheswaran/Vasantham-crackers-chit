@@ -9,11 +9,18 @@ const {
   createScheme,
   updateScheme,
   deleteScheme,
-  downloadSchemes
+  downloadSchemes,
+  getSchemeMembers,
+  uploadSchemes
 } = require('../controllers/schemeController');
 
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
+
 // ✅ Route definitions - ALL functions exist
+router.get('/members', getSchemeMembers);
 router.get('/', getAllSchemes);
+router.post('/upload', upload.single('file'), uploadSchemes);
 router.get('/:id', getSchemeById);
 router.post('/', schemeValidation, createScheme);
 router.put('/:id', schemeValidation, updateScheme);

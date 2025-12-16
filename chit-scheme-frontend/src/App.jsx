@@ -17,6 +17,8 @@ import Customers from './pages/Customers';
 import Schemes from './pages/Schemes';
 import Payments from './pages/Payments';
 import Downloads from './pages/Downloads';
+import Auction from './pages/Auction';
+import SchemeMembers from './pages/SchemeMembers';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
 import { isAuthenticated, logout, getUserInfo } from './services/authService';
@@ -108,7 +110,9 @@ const App = () => {
     { key: '/', icon: <HomeOutlined />, label: 'Dashboard' },
     { key: '/customers', icon: <UsergroupAddOutlined />, label: 'Customers' },
     { key: '/schemes', icon: <MoneyCollectOutlined />, label: 'Schemes' },
+    { key: '/scheme-members', icon: <UsergroupAddOutlined />, label: 'Assigned Schemes' },
     { key: '/payments', icon: <BarChartOutlined />, label: 'Payments' },
+    { key: '/auction', icon: <MoneyCollectOutlined />, label: 'Auction' },
     { key: '/downloads', icon: <DownloadOutlined />, label: 'Downloads' },
   ];
 
@@ -191,7 +195,9 @@ const App = () => {
             <Route path="/" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Dashboard /></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Customers /></ProtectedRoute>} />
             <Route path="/schemes" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Schemes /></ProtectedRoute>} />
+            <Route path="/scheme-members" element={<ProtectedRoute authenticated={authenticated} loading={loading}><SchemeMembers /></ProtectedRoute>} />
             <Route path="/payments" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Payments /></ProtectedRoute>} />
+            <Route path="/auction" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Auction /></ProtectedRoute>} />
             <Route path="/downloads" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Downloads /></ProtectedRoute>} />
             <Route path="/users" element={<AdminRoute authenticated={authenticated} user={user} loading={loading}><UserManagement /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />

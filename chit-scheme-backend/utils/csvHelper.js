@@ -30,12 +30,12 @@ const escapeCSVField = (field) => {
  * @returns {string} - CSV formatted string
  */
 const convertToCSV = (data, columns) => {
-  if (!data || data.length === 0) {
-    return '';
-  }
-
   // Create header row
   const headers = columns.map(col => escapeCSVField(col.header)).join(',');
+
+  if (!data || data.length === 0) {
+    return headers;
+  }
   
   // Create data rows
   const rows = data.map(row => {

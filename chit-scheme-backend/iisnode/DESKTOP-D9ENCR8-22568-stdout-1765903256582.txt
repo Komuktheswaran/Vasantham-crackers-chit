@@ -1,0 +1,14 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ✅ audit secrets and track compliance: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+🚀 Server: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370
+✅ Health: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/health
+🔐 Login: POST http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/auth/login
+👤 Users: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/users
+👥 Customers: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/customers
+📋 Schemes: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/schemes
+💰 Payments: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/payments
+🌍 States: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/states
+🏘️ Districts: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/districts
+📥 Exports: http://localhost:\\.\pipe\0a877abe-3cf3-4631-bf41-06276b629370/api/exports
+- - - [16/Dec/2025:16:40:58 +0000] "GET /api/exports/customers?scheme_id=3&customer_type=Regular+Customer HTTP/1.1" 500 44 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
