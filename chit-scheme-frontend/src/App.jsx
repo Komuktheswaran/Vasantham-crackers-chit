@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { Button, Layout, Menu, Avatar, Dropdown, Spin } from 'antd';
+import { Button, Layout, Menu, Avatar, Dropdown, Spin, Tag } from 'antd';
 import {
   UserOutlined,
   HomeOutlined,
@@ -9,7 +9,9 @@ import {
   BarChartOutlined,
   DownloadOutlined,
   LogoutOutlined,
-  SettingOutlined
+  SettingOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
 } from '@ant-design/icons';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -127,6 +129,18 @@ const App = () => {
 
   const userMenuItems = [
     {
+      key: 'user-info',
+      label: (
+        <div style={{ cursor: 'default', padding: '4px 0' }}>
+            <div style={{ fontSize: '12px', color: '#888' }}>Signed in as</div>
+            <div style={{ fontWeight: 'bold' }}>{user?.name || user?.username}</div>
+            {user?.role === 'admin' && <Tag color="red" style={{marginTop: 4}}>Admin</Tag>}
+        </div>
+      ),
+      disabled: true,
+    },
+    { type: 'divider' },
+    {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: 'Logout',
@@ -147,7 +161,8 @@ const App = () => {
           onBreakpoint={(broken) => {
             setCollapsed(broken);
           }}
-          zeroWidthTriggerStyle={{ top: '64px' }}
+          width={220}
+          trigger={null}
         >
           <div className="app-logo-container">
             {collapsed ? (
@@ -168,15 +183,23 @@ const App = () => {
       <Layout className="app-content-layout">
         {authenticated && (
           <Header className="app-header">
-            <Button 
-              type="link"
-              href="http://www.vasanthamcrackersworld.com" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="app-header-title"
-            >
-              VasanthamCrackersWorlds Chit Scheme
-            </Button>
+            <div className="header-left-section">
+                <Button
+                  type="text"
+                  icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="mobile-menu-trigger"
+                />
+                <Button 
+                  type="link"
+                  href="http://www.vasanthamcrackersworld.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="app-header-title"
+                >
+                  VasanthamCrackersWorlds Chit Scheme
+                </Button>
+            </div>
 
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div className="app-user-menu">

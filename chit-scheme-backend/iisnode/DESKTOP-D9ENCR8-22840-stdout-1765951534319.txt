@@ -1,0 +1,75 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: 🔐 prevent building .env in docker: https://dotenvx.com/prebuild
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+🚀 Server: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a
+✅ Health: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/health
+🔐 Login: POST http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/auth/login
+👤 Users: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/users
+👥 Customers: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/customers
+📋 Schemes: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/schemes
+💰 Payments: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/payments
+🌍 States: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/states
+🏘️ Districts: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/districts
+📥 Exports: http://localhost:\\.\pipe\d6b1f8eb-01a9-4d28-b155-34918f25b85a/api/exports
+- - - [17/Dec/2025:06:05:39 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+⚠️ Audit Log: User ID missing. req.user: {} Headers: {
+  connection: 'keep-alive',
+  'content-length': '42',
+  'content-type': 'application/json',
+  accept: 'application/json, text/plain, */*',
+  'accept-encoding': 'gzip, deflate, br, zstd',
+  'accept-language': 'en-US,en;q=0.9,ta;q=0.8,en-IN;q=0.7,sm;q=0.6',
+  host: 'localhost:5000',
+  referer: 'http://localhost:3000/',
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+  'sec-ch-ua-platform': '"Windows"',
+  'sec-ch-ua': '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+  dnt: '1',
+  'sec-ch-ua-mobile': '?0',
+  origin: 'http://localhost:3000',
+  'sec-fetch-site': 'same-site',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-dest': 'empty',
+  'x-original-url': '/api/auth/login'
+}
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/schemes HTTP/1.1" 200 706 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 200 1803 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/customers HTTP/1.1" 200 6969 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/dashboard/monthly-stats?year=2025 HTTP/1.1" 200 498 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/customers HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:05:40 +0000] "GET /api/dashboard/monthly-stats?year=2025 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:36 +0000] "GET /api/dashboard/customer/TEST_REF_1765443760841 HTTP/1.1" 200 325 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/states HTTP/1.1" 200 119 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/districts HTTP/1.1" 200 295 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 200 6969 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/states HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/districts HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:08:46 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:09:12 +0000] "GET /api/customers/check/CUST_1765951728176 HTTP/1.1" 200 16 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:09:12 +0000] "POST /api/customers HTTP/1.1" 201 92 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+⚠️ Audit Log: User ID missing. req.user: {} Headers: {
+  connection: 'keep-alive',
+  'content-length': '204',
+  'content-type': 'application/json',
+  accept: 'application/json, text/plain, */*',
+  'accept-encoding': 'gzip, deflate, br, zstd',
+  'accept-language': 'en-US,en;q=0.9,ta;q=0.8,en-IN;q=0.7,sm;q=0.6',
+  authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NTk1MTUzOSwiZXhwIjoxNzY1OTgwMzM5fQ.Zzc70xMHmp-0PiSFQUFH3dNPko8yHibzi8L-wXMymPU',
+  host: 'localhost:5000',
+  referer: 'http://localhost:3000/',
+  'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0',
+  'sec-ch-ua-platform': '"Windows"',
+  'sec-ch-ua': '"Microsoft Edge";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
+  'sec-ch-ua-mobile': '?0',
+  dnt: '1',
+  origin: 'http://localhost:3000',
+  'sec-fetch-site': 'same-site',
+  'sec-fetch-mode': 'cors',
+  'sec-fetch-dest': 'empty',
+  'x-original-url': '/api/customers'
+}
+- - - [17/Dec/2025:06:09:13 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 200 6969 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"

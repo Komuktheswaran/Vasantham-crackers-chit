@@ -97,8 +97,8 @@ const Auction = () => {
     const pendingTotal = calculatePendingAmount();
 
     return (
-        <div className="auction-container">
-            <div className="page-header-container">
+        <div className="page-container">
+            <div className="page-header-row">
                 <h2 className="page-title">Auction & Bulk Payment</h2>
             </div>
 

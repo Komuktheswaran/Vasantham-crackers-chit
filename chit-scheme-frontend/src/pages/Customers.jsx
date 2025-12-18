@@ -342,8 +342,7 @@ const Customers = () => {
                   setSearchText(value);
                   fetchCustomers({ search: value });
                 }}
-                className="full-width-mobile"
-                style={{ width: '100%' }}
+                  className="search-input"
               />
           </Col>
           <Col xs={24} sm={12} md={8} lg={8}>
@@ -360,7 +359,7 @@ const Customers = () => {
                         fetchCustomers({ fund_number: "", page: 1 });
                     }
                 }}
-                style={{ width: '100%' }}
+                className="search-input"
               />
           </Col>
           <Col xs={24} sm={12} md={8} lg={8}>

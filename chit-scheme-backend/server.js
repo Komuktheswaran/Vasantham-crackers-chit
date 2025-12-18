@@ -20,6 +20,7 @@ app.use(bodyParser.urlencoded({ limit: "1mb", extended: true }));
 // Security middleware
 app.use(helmet());
 app.use(morgan('combined')); // Log HTTP requests
+app.use(require('./middleware/auditLogger')); // Audit Log for operations
 
 // Rate limiting
 const limiter = rateLimit({

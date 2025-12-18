@@ -246,9 +246,10 @@ const Schemes = () => {
 
   return (
     <>
+    <div className="page-container">
       <div className="page-header-row">
-        <h2>Chit Schemes</h2>
-        <Space className="w-100 flex-wrap">
+        <h2 className="page-title">Chit Schemes</h2>
+        <div className="page-action-bar">
           <Input.Search
             placeholder="Search schemes"
             allowClear
@@ -258,18 +259,20 @@ const Schemes = () => {
             }}
             className="search-input"
           />
-          <Button type="primary" onClick={() => openModal()}>
-            + New Scheme
-          </Button>
-          <Button onClick={() => setUploadModalVisible(true)}>
-            <UploadOutlined /> Upload
-          </Button>
-          <Dropdown overlay={downloadMenu}>
-            <Button>
-              <DownloadOutlined /> Download
+          <Space wrap>
+            <Button type="primary" onClick={() => openModal()}>
+                + New Scheme
             </Button>
-          </Dropdown>
-        </Space>
+            <Button onClick={() => setUploadModalVisible(true)}>
+                <UploadOutlined /> Upload
+            </Button>
+            <Dropdown overlay={downloadMenu}>
+                <Button>
+                <DownloadOutlined /> Download
+                </Button>
+            </Dropdown>
+          </Space>
+        </div>
       </div>
 
       <Table
@@ -284,8 +287,9 @@ const Schemes = () => {
           showSizeChanger: true,
         }}
         onChange={handleTableChange}
-        scroll={{ x: 800 }}
+        scroll={{ x: 'max-content' }}
       />
+    </div>
 
       <Modal
         title={editingScheme ? "Edit Scheme" : "Create New Scheme"}

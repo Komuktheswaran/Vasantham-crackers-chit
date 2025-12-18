@@ -1,8 +1,0 @@
-(node:10584) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
-❌ getAllCustomers Error: Error: aborted
-    at PendingOperation.abort (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\tarn\dist\PendingOperation.js:25:21)
-    at D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\tarn\dist\Pool.js:208:25
-    at Array.map (<anonymous>)
-    at D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\tarn\dist\Pool.js:207:53
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)

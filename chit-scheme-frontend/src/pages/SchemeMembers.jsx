@@ -158,8 +158,8 @@ const SchemeMembers = () => {
     ];
 
     return (
-        <div className="scheme-members-container">
-            <div className="page-header-container">
+        <div className="page-container scheme-members-container">
+            <div className="page-header-row">
                 <h2 className="page-title">Assigned Schemes Report</h2>
             </div>
 
@@ -219,7 +219,7 @@ const SchemeMembers = () => {
                 loading={loading}
                 pagination={pagination}
                 onChange={handleTableChange}
-                scroll={{ x: 800 }}
+                scroll={{ x: 'max-content' }}
             />
         </div>
     );

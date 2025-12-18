@@ -1,1 +1,10 @@
 /* Customers Page Styles */
+.page-container {
+    height: 100%;
+}
+
+@media (max-width: 768px) {
+    .ant-table-wrapper {
+        margin-bottom: 24px;
+    }
+}

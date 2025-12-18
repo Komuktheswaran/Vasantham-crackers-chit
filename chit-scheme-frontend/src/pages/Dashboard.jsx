@@ -507,12 +507,13 @@ const Dashboard = () => {
         <Col xs={24} lg={24}>
           <Card title="Scheme Statistics">
             <Table
+              className="scheme-stats-table"
               dataSource={schemeStats}
               columns={schemeStatsColumns}
               rowKey="key"
               pagination={false}
               size="small"
-              scroll={{ x: true, y: 240 }}
+              scroll={{ x: 'max-content', y: 240 }}
             />
           </Card>
         </Col>

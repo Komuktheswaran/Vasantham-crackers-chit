@@ -1,0 +1,30 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+
+🚀 Server: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593
+✅ Health: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/health
+🔐 Login: POST http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/auth/login
+👤 Users: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/users
+👥 Customers: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/customers
+📋 Schemes: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/schemes
+💰 Payments: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/payments
+🌍 States: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/states
+🏘️ Districts: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/districts
+📥 Exports: http://localhost:\\.\pipe\2a03fa3e-736c-41c2-94d8-b5138fc5d593/api/exports
+- - - [17/Dec/2025:07:39:38 +0000] "POST /api/auth/login HTTP/1.1" 200 275 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/customers?page=1&limit=5 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/customers HTTP/1.1" 200 6969 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/dashboard/monthly-stats?year=2025 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:38 +0000] "GET /api/customers HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:39:39 +0000] "GET /api/dashboard/monthly-stats?year=2025 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/districts HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/states HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/states HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/districts HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:07:41:44 +0000] "GET /api/schemes HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"

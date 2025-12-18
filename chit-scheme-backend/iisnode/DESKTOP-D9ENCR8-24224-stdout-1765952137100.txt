@@ -1,0 +1,16 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+🚀 Server: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea
+✅ Health: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/health
+🔐 Login: POST http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/auth/login
+👤 Users: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/users
+👥 Customers: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/customers
+📋 Schemes: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/schemes
+💰 Payments: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/payments
+🌍 States: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/states
+🏘️ Districts: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/districts
+📥 Exports: http://localhost:\\.\pipe\42537c98-1cc1-4d1a-ba5e-376fa3a554ea/api/exports
+- - - [17/Dec/2025:06:15:42 +0000] "GET /api/customers?page=2&limit=20&search=&fund_number= HTTP/1.1" 200 4399 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:15:55 +0000] "DELETE /api/customers/CUST_1765896001291 HTTP/1.1" 200 79 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [17/Dec/2025:06:15:55 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 200 6969 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"

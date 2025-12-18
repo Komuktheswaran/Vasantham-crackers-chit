@@ -1,1 +1,22 @@
 /* Schemes Page Styles */
+.page-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-input {
+    width: 250px;
+}
+
+@media (max-width: 576px) {
+    .search-input {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .ant-space {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
