@@ -12,45 +12,111 @@ const app = express();
 
 // Enable trust proxy for rate limiting behind proxies (e.g., Heroku, Nginx, or local dev)
 app.set("trust proxy", 1);
-app.use(cors());
+
+// ====================================================================
+// SECURITY FIX: Secure CORS Configuration
+// ====================================================================
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:3000',
+      'https://103.38.50.149:3000'
+    ];
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// ====================================================================
+// SECURITY FIX: HTTPS Enforcement in Production
+// ====================================================================
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      next();
+    } else {
+      res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+  });
+}
+
 app.use(express.json());
 app.use(bodyParser.json({ limit: "1mb" }));
 app.use(bodyParser.urlencoded({ limit: "1mb", extended: true }));
 
-// Security middleware
-app.use(helmet());
+// ====================================================================
+// SECURITY FIX: Enhanced Helmet.js Configuration
+// ====================================================================
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: {
+    action: 'deny'
+  },
+  noSniff: true,
+  xssFilter: true
+}));
+
 app.use(morgan('combined')); // Log HTTP requests
 app.use(require('./middleware/auditLogger')); // Audit Log for operations
 
-// Rate limiting
+// ====================================================================
+// SECURITY FIX: Effective Rate Limiting
+// ====================================================================
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 10000,
-  max: 1000,
-  validate: { 
-    ip: false,
-    trustProxy: false,
-    xForwardedForHeader: false,
-    keyGeneratorIpFallback: false
-  },
+  windowMs: 15 * 60 * 1000, // 15 minutes (FIXED TYPO: was 10000)
+  max: 100, // Limit each IP to 100 requests per 15 minutes (was 1000)
+  message: 'Too many requests from this IP, please try again after 15 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false,
   keyGenerator: (req) => {
-    return req.ip || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown_ip";
+    return req.ip || 
+           req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+           req.socket?.remoteAddress || 
+           'unknown';
   },
 });
 app.use("/api/", limiter);
 
-// Stricter rate limiting for auth
+// Stricter rate limiting for authentication endpoints
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10000, // Limit each IP to 5 login requests per windowMs
-  message: "Too many login attempts, please try again after 15 minutes",
-  validate: { 
-    ip: false,
-    trustProxy: false,
-    xForwardedForHeader: false,
-    keyGeneratorIpFallback: false
-  },
+  max: 5, // Limit each IP to 5 login attempts per 15 minutes (was 10000!)
+  message: "Too many login attempts from this IP, please try again after 15 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful logins
   keyGenerator: (req) => {
-    return req.ip || req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown_ip";
+    return req.ip || 
+           req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+           req.socket?.remoteAddress || 
+           'unknown';
   },
 });
 app.use('/api/auth/', authLimiter);

@@ -334,10 +334,11 @@ const Customers = () => {
         </Row>
         
         <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6} lg={5}>
+          <Col xs={24} sm={12} md={6} lg={6}>
               <Input.Search
                 placeholder="Search customers"
                 allowClear
+                enterButton="Search"
                 onSearch={(value) => {
                   setSearchText(value);
                   fetchCustomers({ search: value });
@@ -345,10 +346,11 @@ const Customers = () => {
                   className="search-input"
               />
           </Col>
-          <Col xs={24} sm={12} md={8} lg={8}>
+          <Col xs={24} sm={12} md={6} lg={6}>
                <Input.Search
                 placeholder="Search Fund Number"
                 allowClear
+                enterButton="Search"
                 onSearch={(value) => {
                   setFundNumberSearch(value);
                   fetchCustomers({ fund_number: value, page: 1 });
@@ -362,7 +364,7 @@ const Customers = () => {
                 className="search-input"
               />
           </Col>
-          <Col xs={24} sm={12} md={8} lg={8}>
+          <Col xs={24} sm={12} md={6} lg={5}>
                <Button
                 type="primary"
                 icon={<PlusOutlined />}
@@ -415,7 +417,7 @@ const Customers = () => {
         style={{ top: 20, maxWidth: 800 }}
       >
         <Form form={form} onFinish={createCustomer} layout="vertical">
-          <Row gutter={16}>
+          <Row gutter={[16, 0]}>
             <Col xs={24} md={12}>
               {!editingCustomer && (
                 <Form.Item
@@ -432,51 +434,32 @@ const Customers = () => {
                 </Form.Item>
               )}
               <Form.Item
-                name="Name"
-                label="Full Name"
-                rules={[{ required: true, message: "Please enter full name" }]}
-              >
-                <Input placeholder="Customer's full name" />
-              </Form.Item>
-               <Form.Item
-                name="Reference_Name"
-                label="Reference Name"
-              >
-                <Input placeholder="Reference name" />
-              </Form.Item>
-              <Form.Item
-                name="Customer_Type"
-                label="Customer Type"
-                rules={[{ required: true, message: "Select at least one customer type" }]}
-              >
-                <Select mode="multiple" placeholder="Select type(s)">
-                    <Option value="New">New</Option>
-                    <Option value="Regular Customer">Regular Customer</Option>
-                    <Option value="Wholesale">Wholesale</Option>
-                    <Option value="Giftbox">Giftbox</Option>
-                    <Option value="Fund Scheme">Fund Scheme</Option>
-                </Select>
-              </Form.Item>
-              <Form.Item
                 name="PhoneNumber"
                 label="Phone Number"
                 rules={[{ required: true, message: "Please enter phone number" }]}
               >
                 <Input type="number" placeholder="10 digit phone" />
               </Form.Item>
+              <Form.Item
+                name="Name"
+                label="Full Name"
+                rules={[{ required: true, message: "Please enter full name" }]}
+              >
+                <Input placeholder="Customer's full name" />
+              </Form.Item>
               <Form.Item name="Address1" label="Address Line 1">
                 <Input placeholder="Address Line 1" />
               </Form.Item>
+              <Form.Item name="Address2" label="Address Line 2">
+                <Input placeholder="Address Line 2" />
+              </Form.Item>
+              <Form.Item name="Area" label="Area">
+                <Input placeholder="Customer area" />
+              </Form.Item>
             </Col>
             <Col xs={24} md={12}>
-                <Form.Item name="PhoneNumber2" label="Secondary Phone">
-                    <Input type="number" placeholder="10 digit phone (Optional)" />
-                </Form.Item>
-                <Form.Item name="Address2" label="Address Line 2">
-                    <Input placeholder="Address Line 2" />
-                </Form.Item>
-               <Form.Item name="Area" label="Area">
-                <Input placeholder="Customer area" />
+              <Form.Item name="Pincode" label="Pincode">
+                <Input type="number" placeholder="6 digit pincode" />
               </Form.Item>
               <Form.Item
                 name="State_ID"
@@ -518,8 +501,27 @@ const Customers = () => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item name="Pincode" label="Pincode">
-                <Input type="number" placeholder="6 digit pincode" />
+              <Form.Item
+                name="Customer_Type"
+                label="Customer Type"
+                rules={[{ required: true, message: "Select at least one customer type" }]}
+              >
+                <Select mode="multiple" placeholder="Select type(s)">
+                    <Option value="New">New</Option>
+                    <Option value="Regular Customer">Regular Customer</Option>
+                    <Option value="Wholesale">Wholesale</Option>
+                    <Option value="Giftbox">Giftbox</Option>
+                    <Option value="Fund Scheme">Fund Scheme</Option>
+                </Select>
+              </Form.Item>
+              <Form.Item
+                name="Reference_Name"
+                label="Reference Name"
+              >
+                <Input placeholder="Reference name" />
+              </Form.Item>
+              <Form.Item name="PhoneNumber2" label="Secondary Phone">
+                <Input type="number" placeholder="10 digit phone (Optional)" />
               </Form.Item>
             </Col>
           </Row>

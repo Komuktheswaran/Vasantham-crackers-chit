@@ -6,8 +6,7 @@ const path = require('path');
 
 const getAllCustomers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '', state, district, area, scheme_id } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const { page = 1, limit, search = '', state, district, area, scheme_id } = req.query;
 
     // Build base query
     let baseQuery = `
@@ -39,8 +38,7 @@ const getAllCustomers = async (req, res) => {
       paramIndex++;
     }
 
-    // State, District, Area, Scheme filters (paramIndex increments logic remains same as original if used, 
-    // but easier to keep simple logic here)
+    // State, District, Area, Scheme filters
     if (state) {
       whereClause += ` AND s.State_Name = @param${paramIndex}`;
       params.push({ value: state, type: sql.VarChar(100) });
@@ -78,15 +76,20 @@ const getAllCustomers = async (req, res) => {
         whereClause += ` AND EXISTS (SELECT 1 FROM Scheme_Members sm WHERE sm.Customer_ID = c.Customer_ID)`;
     }
 
-    const customersQuery = `
+    let customersQuery = `
       ${baseQuery},
       ISNULL((SELECT COUNT(*) FROM Scheme_Members WHERE Customer_ID = c.Customer_ID), 0) as total_schemes,
       ISNULL((SELECT COUNT(*) FROM Payment_Master WHERE Customer_ID = c.Customer_ID), 0) as total_payments
       ${fromQuery}
       ${whereClause}
       ORDER BY c.Customer_ID DESC
-      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
+
+    // Only add pagination if limit is provided
+    if (limit) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      customersQuery += ` OFFSET ${offset} ROWS FETCH NEXT ${parseInt(limit)} ROWS ONLY`;
+    }
 
     const customers = await executeQuery(customersQuery, params);
 
@@ -101,9 +104,9 @@ const getAllCustomers = async (req, res) => {
       customers,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
-        totalPages: Math.ceil((totalResult[0]?.total || 0) / limit),
+        totalPages: limit ? Math.ceil((totalResult[0]?.total || 0) / parseInt(limit)) : 1,
         currentPage: parseInt(page),
-        pageSize: parseInt(limit)
+        pageSize: limit ? parseInt(limit) : (totalResult[0]?.total || 0)
       }
     });
   } catch (error) {

@@ -1,0 +1,16 @@
+Application has thrown an uncaught exception and is terminated:
+D:\Developer\React Dev\chit\chit-scheme-backend\controllers\schemeController.js:26
+    const { page = 1, limit = *, search = '' } = req.query;
+                              ^
+
+SyntaxError: Unexpected token '*'
+    at internalCompileFunction (node:internal/vm:77:18)
+    at wrapSafe (node:internal/modules/cjs/loader:1290:20)
+    at Module._compile (node:internal/modules/cjs/loader:1342:27)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1437:10)
+    at Module.load (node:internal/modules/cjs/loader:1212:32)
+    at Module._load (node:internal/modules/cjs/loader:1028:12)
+    at Module.require (node:internal/modules/cjs/loader:1237:19)
+    at require (node:internal/modules/helpers:176:18)
+    at Object.<anonymous> (D:\Developer\React Dev\chit\chit-scheme-backend\routes\schemes.js:15:5)
+    at Module._compile (node:internal/modules/cjs/loader:1378:14)

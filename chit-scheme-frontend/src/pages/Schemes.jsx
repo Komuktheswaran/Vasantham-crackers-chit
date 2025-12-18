@@ -248,11 +248,12 @@ const Schemes = () => {
     <>
     <div className="page-container">
       <div className="page-header-row">
-        <h2 className="page-title">Chit Schemes</h2>
+        <h2 className="page-title">Chit Schemes ({pagination.total} total)</h2>
         <div className="page-action-bar">
           <Input.Search
             placeholder="Search schemes"
             allowClear
+            enterButton="Search"
             onSearch={(value) => {
               setSearchText(value);
               fetchSchemes({ search: value });

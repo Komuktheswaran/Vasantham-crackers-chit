@@ -109,8 +109,7 @@ const recordPayment = async (req, res) => {
 
 const getAllPayments = async (req, res) => {
   try {
-    const { page = 1, limit = 20, date_from, date_to, customer_id, scheme_id, transaction_id } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const { page = 1, limit, date_from, date_to, customer_id, scheme_id, transaction_id } = req.query;
 
     let query = `
       SELECT 
@@ -185,7 +184,13 @@ const getAllPayments = async (req, res) => {
                         JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
                         ${whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : ''}`;
 
-    query += ` ORDER BY pm.Amount_Received_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+    query += ` ORDER BY pm.Amount_Received_date DESC`;
+    
+    // Only add pagination if limit is provided
+    if (limit) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      query += ` OFFSET ${offset} ROWS FETCH NEXT ${parseInt(limit)} ROWS ONLY`;
+    }
 
     const [payments, totalResult] = await Promise.all([
       executeQuery(query, params),
@@ -196,9 +201,9 @@ const getAllPayments = async (req, res) => {
       payments,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
-        totalPages: Math.ceil((totalResult[0]?.total || 0) / limit),
+        totalPages: limit ? Math.ceil((totalResult[0]?.total || 0) / parseInt(limit)) : 1,
         currentPage: parseInt(page),
-        pageSize: parseInt(limit)
+        pageSize: limit ? parseInt(limit) : (totalResult[0]?.total || 0)
       }
     });
   } catch (error) {

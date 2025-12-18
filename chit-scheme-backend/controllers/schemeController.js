@@ -23,8 +23,7 @@ const parseExcel = (buffer) => {
 
 const getAllSchemes = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '' } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const { page = 1, limit, search = '' } = req.query;
 
     let query = `
       SELECT cm.*, 
@@ -43,13 +42,18 @@ const getAllSchemes = async (req, res) => {
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
                cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to
       ORDER BY cm.Scheme_ID DESC 
-      OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
+
+    // Only add pagination if limit is provided
+    if (limit) {
+      const offset = (parseInt(page) - 1) * parseInt(limit);
+      query += `OFFSET ${offset} ROWS FETCH NEXT ${parseInt(limit)} ROWS ONLY`;
+    }
 
     const schemes = await executeQuery(query, params);
 
     // Total count
-    const totalQuery = `SELECT COUNT(*) as total FROM Chit_Master cm ${search ? `WHERE cm.Name LIKE '${search.replace(/'/g, "''")}%'` : ''}`;
+    const totalQuery = `SELECT COUNT(*) as total FROM Chit_Master cm ${search ? `WHERE cm.Name LIKE '%${search.replace(/'/g, "''")}%'` : ''}`;
     const totalResult = await executeQuery(totalQuery);
 
     // ✅ FRONTEND EXPECTS: { schemes: [], total: 0 }
@@ -57,7 +61,7 @@ const getAllSchemes = async (req, res) => {
       schemes,
       total: totalResult[0]?.total || 0,
       page: parseInt(page),
-      limit: parseInt(limit)
+      limit: limit ? parseInt(limit) : schemes.length
     });
   } catch (error) {
     console.error('❌ getAllSchemes Error:', error);
