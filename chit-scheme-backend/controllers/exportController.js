@@ -16,10 +16,21 @@ const exportCustomers = async (req, res) => {
         c.Phone_Number,
         c.Phone_Number2,
         c.Address1,
+        c.Address2,
+        concat(c.Address1, ' ', c.Address2) as Combined_Address,
         c.Area,
         d.District_Name as District,
         s.State_Name as State,
-        c.Pincode
+        c.Pincode,
+        c.Customer_Type,
+        c.Reference_Name,
+        (SELECT STRING_AGG(cm.Name, ', ') 
+         FROM Scheme_Members sm 
+         JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes,
+        (SELECT STRING_AGG(sm.Fund_Number, ', ') 
+         FROM Scheme_Members sm 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Fund_Numbers
       FROM Customer_Master c
       LEFT JOIN District_Master d ON c.District_ID = d.District_ID
       LEFT JOIN State_Master s ON c.State_ID = s.State_ID
@@ -90,12 +101,14 @@ const exportCustomers = async (req, res) => {
       { key: 'Customer_ID', header: 'Customer ID' },
       { key: 'Name', header: 'Customer Name' },
       { key: 'Phone_Number', header: 'Phone Number' },
-      { key: 'Phone_Number2', header: 'Alternate Phone' },
-      { key: 'StreetAddress1', header: 'Address' },
+      { key: 'Combined_Address', header: 'Address' },
       { key: 'Area', header: 'Area' },
-      { key: 'District', header: 'District' },
+      { key: 'Pincode', header: 'Pincode' },
       { key: 'State', header: 'State' },
-      { key: 'Pincode', header: 'Pincode' }
+      { key: 'Customer_Type', header: 'Customer Type' },
+      { key: 'Reference_Name', header: 'Reference Name' },
+      { key: 'Assigned_Schemes', header: 'Schemes Assigned' },
+      { key: 'Assigned_Fund_Numbers', header: 'Fund Number' }
     ];
 
     const csv = convertToCSV(customers, columns);
@@ -128,10 +141,28 @@ const exportPayments = async (req, res) => {
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
-        pm.Due_number
+        pm.Due_number,
+        pm.Fund_Number,
+        pm.Payment_Mode,
+        pm.UPI_Phone_Number,
+        sd.Due_date,
+        sd.Due_amount,
+        c.Phone_Number,
+        concat(c.Address1, ' ', c.Address2) as Combined_Address,
+        c.Area,
+        c.Pincode,
+        s.State_Name as State,
+        c.Customer_Type,
+        c.Reference_Name,
+        (SELECT STRING_AGG(cm2.Name, ', ') 
+         FROM Scheme_Members sm 
+         JOIN Chit_Master cm2 ON sm.Scheme_ID = cm2.Scheme_ID 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes
       FROM Payment_Master pm
       JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      LEFT JOIN Scheme_Due sd ON pm.Scheme_ID = sd.Scheme_ID AND pm.Due_number = sd.Due_number
     `;
 
     const params = [];
@@ -185,22 +216,45 @@ const exportPayments = async (req, res) => {
     
     console.log(`✅ Found ${payments.length} payment records`);
 
-    // Format dates
-    const formattedPayments = payments.map(p => ({
-      ...p,
-      Amount_Received_date: formatDateForCSV(p.Amount_Received_date)
-    }));
+    // Format dates and handle Transaction ID logic
+    const formattedPayments = payments.map(p => {
+      let paymentMode = p.Payment_Mode || 'Cash'; // Default to Cash if null
+      
+      let transactionDisplay = p.Transaction_ID;
+      if (paymentMode.toLowerCase() === 'cash') {
+        transactionDisplay = 'Cash';
+      } else if (!transactionDisplay) {
+         transactionDisplay = '-';
+      }
+
+      return {
+        ...p,
+        Payment_Mode: paymentMode,
+        Amount_Received_date: formatDateForCSV(p.Amount_Received_date),
+        Due_date: formatDateForCSV(p.Due_date),
+        Transaction_Display: transactionDisplay
+      };
+    });
 
     // Define CSV columns
     const columns = [
-      { key: 'Pay_ID', header: 'Payment ID' },
+      { key: 'Due_number', header: 'Due Number' },
+      { key: 'Amount_Received', header: 'Amount Received' },
+      { key: 'Payment_Mode', header: 'Payment Mode' },
+      { key: 'UPI_Phone_Number', header: 'UPI Number' },
+      { key: 'Transaction_Display', header: 'Transaction Number' },
+      { key: 'Amount_Received_date', header: 'Payment Date' },
+      { key: 'Assigned_Schemes', header: 'Assigned Schemes' },
+      { key: 'Fund_Number', header: 'Fund Number' },
       { key: 'Customer_ID', header: 'Customer ID' },
       { key: 'Customer_Name', header: 'Customer Name' },
-      { key: 'Scheme_Name', header: 'Scheme Name' },
-      { key: 'Amount_Received', header: 'Amount Received' },
-      { key: 'Amount_Received_date', header: 'Date Received' },
-      { key: 'Transaction_ID', header: 'Transaction ID' },
-      { key: 'Due_number', header: 'Due Number' }
+      { key: 'Phone_Number', header: 'Phone Number' },
+      { key: 'Combined_Address', header: 'Address' },
+      { key: 'Area', header: 'Area' },
+      { key: 'Pincode', header: 'Pincode' },
+      { key: 'State', header: 'State' },
+      { key: 'Customer_Type', header: 'Customer Type' },
+      { key: 'Reference_Name', header: 'Reference Name' }
     ];
 
     const csv = convertToCSV(formattedPayments, columns);
@@ -226,9 +280,9 @@ const exportSchemes = async (req, res) => {
         cm.Scheme_ID,
         cm.Name,
         cm.Total_Amount,
+        cm.Period,
         cm.Amount_per_month,
         cm.Number_of_due,
-        cm.Period,
         cm.Month_from,
         cm.Month_to,
         COUNT(DISTINCT sm.Customer_ID) as Member_Count
@@ -265,15 +319,14 @@ const exportSchemes = async (req, res) => {
     // Define CSV columns
     const columns = [
       { key: 'Scheme_ID', header: 'Scheme ID' },
-      { key: 'Name', header: 'Scheme Name' },
+      { key: 'Name', header: 'Name' },
       { key: 'Total_Amount', header: 'Total Amount' },
+      { key: 'Period', header: 'Period' },
       { key: 'Amount_per_month', header: 'Amount Per Month' },
       { key: 'Number_of_due', header: 'Number of Dues' },
-      { key: 'Period', header: 'Period (Months)' },
-      { key: 'Member_Count', header: 'Total Members' },
-      { key: 'Status', header: 'Status' },
-      { key: 'Month_from', header: 'Start Month' },
-      { key: 'Month_to', header: 'End Month' }
+      { key: 'Month_from', header: 'Start Month Date' },
+      { key: 'Month_to', header: 'End Month Date' },
+      { key: 'Member_Count', header: 'Customer Assigned' }
     ];
 
     const csv = convertToCSV(formattedSchemes, columns);

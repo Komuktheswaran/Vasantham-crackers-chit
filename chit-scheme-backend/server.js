@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
+// const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
 
 const bodyParser = require("body-parser");
@@ -23,7 +23,8 @@ const corsOptions = {
     
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
       'http://localhost:3000',
-      'https://103.38.50.149:3000'
+      'https://103.38.50.149:5005',
+      'http://0.0.0.0:0000'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -89,37 +90,10 @@ app.use(require('./middleware/auditLogger')); // Audit Log for operations
 // ====================================================================
 // SECURITY FIX: Effective Rate Limiting
 // ====================================================================
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes (FIXED TYPO: was 10000)
-  max: 100, // Limit each IP to 100 requests per 15 minutes (was 1000)
-  message: 'Too many requests from this IP, please try again after 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req) => {
-    return req.ip || 
-           req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-           req.socket?.remoteAddress || 
-           'unknown';
-  },
-});
-app.use("/api/", limiter);
+
 
 // Stricter rate limiting for authentication endpoints
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login attempts per 15 minutes (was 10000!)
-  message: "Too many login attempts from this IP, please try again after 15 minutes",
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful logins
-  keyGenerator: (req) => {
-    return req.ip || 
-           req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
-           req.socket?.remoteAddress || 
-           'unknown';
-  },
-});
-app.use('/api/auth/', authLimiter);
+// Auth rate limiting removed by user request
 
 // Health check
 app.get('/api/health', async (req, res) => {

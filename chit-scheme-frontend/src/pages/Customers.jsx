@@ -126,10 +126,18 @@ const Customers = () => {
     },
     {
       title: "Schemes",
-      dataIndex: "total_schemes",
-      key: "total_schemes",
-      render: (count) => (
-        <Tag color={count > 0 ? "green" : "default"}>{count}</Tag>
+      dataIndex: "Assigned_Schemes",
+      key: "Assigned_Schemes",
+      render: (text, record) => (
+        <Space size="small" wrap>
+          {text ? (
+            text.split(', ').map((scheme, index) => (
+               <Tag key={index} color="green">{scheme}</Tag>
+            ))
+          ) : (
+             <Tag color="default">{record.total_schemes || 0}</Tag>
+          )}
+        </Space>
       ),
     },
     {
@@ -280,7 +288,8 @@ const Customers = () => {
     try {
       // Fetch currently assigned schemes for this customer
       const assignedResponse = await customersAPI.getSchemes(customerId);
-      setSelectedSchemes(assignedResponse.data);
+      // Map to just IDs for the Select component
+      setSelectedSchemes(assignedResponse.data.map(s => s.Scheme_ID));
     } catch (error) {
       console.error("Error fetching schemes:", error);
       message.error("Failed to load schemes.");

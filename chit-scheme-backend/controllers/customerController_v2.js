@@ -79,6 +79,7 @@ const getAllCustomers = async (req, res) => {
     let customersQuery = `
       ${baseQuery},
       ISNULL((SELECT COUNT(*) FROM Scheme_Members WHERE Customer_ID = c.Customer_ID), 0) as total_schemes,
+      (SELECT STRING_AGG(cm.Name, ', ') FROM Scheme_Members sm JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes,
       ISNULL((SELECT COUNT(*) FROM Payment_Master WHERE Customer_ID = c.Customer_ID), 0) as total_payments
       ${fromQuery}
       ${whereClause}

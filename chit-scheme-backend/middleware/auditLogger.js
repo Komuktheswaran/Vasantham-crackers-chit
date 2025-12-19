@@ -7,7 +7,8 @@ const auditLogger = (req, res, next) => {
   // Debug: Check if middleware is hit
   // console.log(`AuditLogger MiddleWare Hit: ${req.method} ${req.url}`);
 
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+  // if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
+  if (true) {
     
     res.on('finish', async () => {
       // console.log(`AuditLogger Finish Event: ${req.method} ${req.url} Status: ${res.statusCode}`);
@@ -61,14 +62,30 @@ const auditLogger = (req, res, next) => {
         }
 
         // payload
-        let payload = JSON.stringify(req.body);
+        let payload = '{}';
+        try {
+            if (req.body) {
+                payload = JSON.stringify(req.body);
+            }
+        } catch (e) {
+            console.error('AuditLogger Payload Stringify Error:', e.message);
+        }
+
         if (payload && payload.length > 2000) payload = payload.substring(0, 2000) + '...';
         
-        if (payload.includes('password')) {
-             const bodyObj = { ...req.body };
-             delete bodyObj.password;
-             payload = JSON.stringify(bodyObj);
+        if (payload && payload.includes('password')) {
+             try {
+                 const bodyObj = { ...req.body };
+                 if (bodyObj.password) bodyObj.password = '***';
+                 payload = JSON.stringify(bodyObj);
+             } catch (e) {
+                 // Fallback if structured clone fails (rare for req.body)
+                 payload = '{"masked": "password hidden"}';
+             }
         }
+
+        // Extract Resource ID (Best Effort)
+        const resourceId = req.params?.id || req.body?.id || req.query?.id || null;
 
         // Debug before insert
         // console.log('AuditLogger Inserting:', { userIdInt, userName, endpoint: req.originalUrl, ipAddress });
