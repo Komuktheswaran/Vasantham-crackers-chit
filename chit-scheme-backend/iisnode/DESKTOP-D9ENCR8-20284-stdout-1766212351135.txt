@@ -1,0 +1,152 @@
+[dotenv@17.2.3] injecting env (13) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+🚀 Server: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab
+✅ Health: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/health
+🔐 Login: POST http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/auth/login
+👤 Users: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/users
+👥 Customers: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/customers
+📋 Schemes: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/schemes
+💰 Payments: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/payments
+🌍 States: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/states
+🏘️ Districts: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/districts
+📥 Exports: http://localhost:\\.\pipe\052f418c-4711-4440-9cba-acbb0ffa39ab/api/exports
+- - - [20/Dec/2025:06:32:51 +0000] "GET /api/exports/customers HTTP/1.1" 200 14219 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:34:48 +0000] "GET /api/exports/customers HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:35:24 +0000] "GET /api/exports/customers HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:36:08 +0000] "GET /api/exports/customers HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:36:20 +0000] "GET / HTTP/1.1" 404 38 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:36:20 +0000] "GET /favicon.ico HTTP/1.1" 404 49 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:36:51 +0000] "GET /api/exports/customers HTTP/1.1" 304 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:37:03 +0000] "GET /api/exports HTTP/1.1" 404 49 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:37:10 +0000] "GET /api/exports/schemes HTTP/1.1" 200 17511 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:37:17 +0000] "GET /api/exports/scheme HTTP/1.1" 404 56 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0"
+- - - [20/Dec/2025:06:38:51 +0000] "GET /api/exports/customers HTTP/1.1" 200 14219 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.19041.6691"
+📥 Payment Export Filters: {
+  date_from: undefined,
+  date_to: undefined,
+  customer_id: undefined,
+  scheme_id: undefined,
+  transaction_id: undefined
+}
+📊 Payment Export Query: 
+      SELECT 
+        pm.Pay_ID,
+        pm.Customer_ID,
+        c.Name as Customer_Name,
+        cm.Name as Scheme_Name,
+        pm.Amount_Received,
+        pm.Amount_Received_date,
+        pm.Transaction_ID,
+        pm.Due_number,
+        pm.Fund_Number,
+        pm.Payment_Mode,
+        pm.UPI_Phone_Number,
+        sd.Due_date,
+        sd.Due_amount,
+        c.Phone_Number,
+        concat(c.Address1, ' ', c.Address2) as Combined_Address,
+        c.Area,
+        c.Pincode,
+        s.State_Name as State,
+        c.Customer_Type,
+        c.Reference_Name,
+        (SELECT STRING_AGG(cm2.Name, ', ') 
+         FROM Scheme_Members sm 
+         JOIN Chit_Master cm2 ON sm.Scheme_ID = cm2.Scheme_ID 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes
+      FROM Payment_Master pm
+      JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
+      JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      LEFT JOIN Scheme_Due sd ON pm.Scheme_ID = sd.Scheme_ID AND pm.Due_number = sd.Due_number
+     ORDER BY pm.Amount_Received_date DESC
+📊 Payment Export Params: []
+✅ Found 199 payment records
+- - - [20/Dec/2025:06:38:59 +0000] "GET /api/exports/payments HTTP/1.1" 200 33206 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.19041.6691"
+- - - [20/Dec/2025:06:40:09 +0000] "GET /api/exports/customers HTTP/1.1" 200 14219 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.19041.6691"
+📥 Payment Export Filters: {
+  date_from: undefined,
+  date_to: undefined,
+  customer_id: undefined,
+  scheme_id: undefined,
+  transaction_id: undefined
+}
+📊 Payment Export Query: 
+      SELECT 
+        pm.Pay_ID,
+        pm.Customer_ID,
+        c.Name as Customer_Name,
+        cm.Name as Scheme_Name,
+        pm.Amount_Received,
+        pm.Amount_Received_date,
+        pm.Transaction_ID,
+        pm.Due_number,
+        pm.Fund_Number,
+        pm.Payment_Mode,
+        pm.UPI_Phone_Number,
+        sd.Due_date,
+        sd.Due_amount,
+        c.Phone_Number,
+        concat(c.Address1, ' ', c.Address2) as Combined_Address,
+        c.Area,
+        c.Pincode,
+        s.State_Name as State,
+        c.Customer_Type,
+        c.Reference_Name,
+        (SELECT STRING_AGG(cm2.Name, ', ') 
+         FROM Scheme_Members sm 
+         JOIN Chit_Master cm2 ON sm.Scheme_ID = cm2.Scheme_ID 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes
+      FROM Payment_Master pm
+      JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
+      JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      LEFT JOIN Scheme_Due sd ON pm.Scheme_ID = sd.Scheme_ID AND pm.Due_number = sd.Due_number
+     ORDER BY pm.Amount_Received_date DESC
+📊 Payment Export Params: []
+✅ Found 199 payment records
+- - - [20/Dec/2025:06:40:11 +0000] "GET /api/exports/payments HTTP/1.1" 200 33206 "-" "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.19041.6691"
+- - - [20/Dec/2025:06:41:00 +0000] "GET /api/exports/customers HTTP/1.1" 200 14219 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"
+📥 Payment Export Filters: {
+  date_from: undefined,
+  date_to: undefined,
+  customer_id: undefined,
+  scheme_id: undefined,
+  transaction_id: undefined
+}
+📊 Payment Export Query: 
+      SELECT 
+        pm.Pay_ID,
+        pm.Customer_ID,
+        c.Name as Customer_Name,
+        cm.Name as Scheme_Name,
+        pm.Amount_Received,
+        pm.Amount_Received_date,
+        pm.Transaction_ID,
+        pm.Due_number,
+        pm.Fund_Number,
+        pm.Payment_Mode,
+        pm.UPI_Phone_Number,
+        sd.Due_date,
+        sd.Due_amount,
+        c.Phone_Number,
+        concat(c.Address1, ' ', c.Address2) as Combined_Address,
+        c.Area,
+        c.Pincode,
+        s.State_Name as State,
+        c.Customer_Type,
+        c.Reference_Name,
+        (SELECT STRING_AGG(cm2.Name, ', ') 
+         FROM Scheme_Members sm 
+         JOIN Chit_Master cm2 ON sm.Scheme_ID = cm2.Scheme_ID 
+         WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes
+      FROM Payment_Master pm
+      JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
+      JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      LEFT JOIN Scheme_Due sd ON pm.Scheme_ID = sd.Scheme_ID AND pm.Due_number = sd.Due_number
+     ORDER BY pm.Amount_Received_date DESC
+📊 Payment Export Params: []
+✅ Found 199 payment records
+- - - [20/Dec/2025:06:42:19 +0000] "GET /api/exports/payments HTTP/1.1" 200 33206 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"

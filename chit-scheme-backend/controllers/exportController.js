@@ -101,6 +101,7 @@ const exportCustomers = async (req, res) => {
       { key: 'Customer_ID', header: 'Customer ID' },
       { key: 'Name', header: 'Customer Name' },
       { key: 'Phone_Number', header: 'Phone Number' },
+      { key: 'Phone_Number2', header: 'Alternate Number' },
       { key: 'Combined_Address', header: 'Address' },
       { key: 'Area', header: 'Area' },
       { key: 'Pincode', header: 'Pincode' },
@@ -133,7 +134,7 @@ const exportPayments = async (req, res) => {
     console.log('📥 Payment Export Filters:', { date_from, date_to, customer_id, scheme_id, transaction_id });
 
     let query = `
-      SELECT 
+      SELECT DISTINCT 
         pm.Pay_ID,
         pm.Customer_ID,
         c.Name as Customer_Name,
@@ -238,6 +239,7 @@ const exportPayments = async (req, res) => {
 
     // Define CSV columns
     const columns = [
+      { key: 'Pay_ID', header: 'Payment ID' },
       { key: 'Due_number', header: 'Due Number' },
       { key: 'Amount_Received', header: 'Amount Received' },
       { key: 'Payment_Mode', header: 'Payment Mode' },
