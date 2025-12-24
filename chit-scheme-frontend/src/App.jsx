@@ -23,6 +23,7 @@ import Auction from './pages/Auction';
 import SchemeMembers from './pages/SchemeMembers';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
+import TrackingOrder from './pages/TrackingOrder';
 import { isAuthenticated, logout, getUserInfo } from './services/authService';
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -115,6 +116,7 @@ const App = () => {
     { key: '/scheme-members', icon: <UsergroupAddOutlined />, label: 'Assigned Schemes' },
     { key: '/payments', icon: <BarChartOutlined />, label: 'Payments' },
     { key: '/auction', icon: <MoneyCollectOutlined />, label: 'Auction' },
+    { key: '/tracking-order', icon: <BarChartOutlined />, label: 'Tracking Order' },
     { key: '/downloads', icon: <DownloadOutlined />, label: 'Downloads' },
   ];
 
@@ -221,6 +223,7 @@ const App = () => {
             <Route path="/scheme-members" element={<ProtectedRoute authenticated={authenticated} loading={loading}><SchemeMembers /></ProtectedRoute>} />
             <Route path="/payments" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Payments /></ProtectedRoute>} />
             <Route path="/auction" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Auction /></ProtectedRoute>} />
+            <Route path="/tracking-order" element={<ProtectedRoute authenticated={authenticated} loading={loading}><TrackingOrder /></ProtectedRoute>} />
             <Route path="/downloads" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Downloads /></ProtectedRoute>} />
             <Route path="/users" element={<AdminRoute authenticated={authenticated} user={user} loading={loading}><UserManagement /></AdminRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />

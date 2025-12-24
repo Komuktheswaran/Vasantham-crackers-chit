@@ -4,6 +4,7 @@ import { DownloadOutlined } from '@ant-design/icons';
 import CustomerDownload from '../components/downloads/CustomerDownload';
 import PaymentDownload from '../components/downloads/PaymentDownload';
 import SchemeDownload from '../components/downloads/SchemeDownload';
+import OrderDownload from '../components/downloads/OrderDownload';
 import './css/Downloads.css';
 
 const { TabPane } = Tabs;
@@ -29,6 +30,9 @@ const Downloads = () => {
             </TabPane>
             <TabPane tab="Schemes" key="schemes">
             <SchemeDownload />
+            </TabPane>
+            <TabPane tab="Order Tracking" key="orders">
+            <OrderDownload />
             </TabPane>
         </Tabs>
       </div>

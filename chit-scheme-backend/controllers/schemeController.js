@@ -4,7 +4,7 @@ const xlsx = require('xlsx');
 
 // ✅ INLINE CSV/Excel utils - NO external dependencies
 const convertToCsv = (data) => {
-  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to\n';
+  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to,Bonus_Percentage\n';
   const headers = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
     Object.values(row).map(val => 
@@ -40,7 +40,7 @@ const getAllSchemes = async (req, res) => {
 
     query += `
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
-               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to
+               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Percentage
       ORDER BY cm.Scheme_ID DESC 
     `;
 
@@ -88,12 +88,12 @@ const getSchemeById = async (req, res) => {
 
 const createScheme = async (req, res) => {
   try {
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
     
     const result = await executeInsertGetId(
-      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to) 
+      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
        OUTPUT INSERTED.Scheme_ID
-       VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6)`,
+       VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
       [
         { value: Name, type: sql.VarChar(100) },
         { value: parseFloat(Total_Amount), type: sql.Decimal(15,2) },
@@ -101,7 +101,8 @@ const createScheme = async (req, res) => {
         { value: parseInt(Period), type: sql.Int },
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
-        { value: Month_to, type: sql.Date }
+        { value: Month_to, type: sql.Date },
+        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
       ]
     );
     
@@ -118,12 +119,12 @@ const createScheme = async (req, res) => {
 const updateScheme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
     
     await executeUpdate(
       `UPDATE Chit_Master SET 
        Name=@param1, Total_Amount=@param2, Amount_per_month=@param3, 
-       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7
+       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7, Bonus_Percentage=@param8
        WHERE Scheme_ID = @param0`,
       [
         { value: parseInt(id), type: sql.Int },
@@ -133,7 +134,8 @@ const updateScheme = async (req, res) => {
         { value: parseInt(Period), type: sql.Int },
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
-        { value: Month_to, type: sql.Date }
+        { value: Month_to, type: sql.Date },
+        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
       ]
     );
     
@@ -211,7 +213,9 @@ const getSchemeMembers = async (req, res) => {
         cm.Name as Scheme_Name,
         cm.Amount_per_month,
         cm.Month_from,
-        cm.Month_to
+        cm.Month_to,
+        cm.Total_Amount,
+        cm.Bonus_Percentage
       FROM Scheme_Members sm
       JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
@@ -299,8 +303,8 @@ const uploadSchemes = async (req, res) => {
          }
 
          await executeInsertGetId(
-          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to) 
-           VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6)`,
+          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
+           VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
           [
             { value: scheme.Name, type: sql.VarChar(100) },
             { value: parseFloat(scheme.Total_Amount), type: sql.Decimal(15,2) },
@@ -308,7 +312,8 @@ const uploadSchemes = async (req, res) => {
             { value: parseInt(scheme.Period), type: sql.Int },
             { value: parseInt(scheme.Number_of_due), type: sql.Int },
             { value: scheme.Month_from ? new Date(scheme.Month_from) : null, type: sql.Date },
-            { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date }
+            { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date },
+            { value: scheme.Bonus_Percentage ? parseFloat(scheme.Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
           ]
         );
         successCount++;

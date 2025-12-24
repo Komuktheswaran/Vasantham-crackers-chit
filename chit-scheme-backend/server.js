@@ -24,7 +24,9 @@ const corsOptions = {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
       'http://localhost:3000',
       'https://103.38.50.149:5005',
-      'http://0.0.0.0:0000'
+      'https://103.38.50.149:5006',
+      'http://0.0.0.0:0000',
+      'https://0.0.0.0:0000'
     ];
     
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -150,6 +152,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/exports', require('./routes/exports'));
 app.use('/api/states', require('./routes/states'));
 app.use('/api/districts', require('./routes/districts'));
+app.use('/api/order-tracking', require('./routes/orderTracking'));
 
 // 404 handler - FIXED (no wildcard parameter issue)
 app.use((req, res) => {

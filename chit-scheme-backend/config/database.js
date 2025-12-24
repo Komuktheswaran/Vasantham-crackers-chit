@@ -4,10 +4,10 @@ dotenv.config();
 
 const dbConfig = {
   
-  server: process.env.DB_SERVER ,
-  database: process.env.DB_NAME ,
-  user: process.env.DB_USER ,
-  password: process.env.DB_PASSWORD ,
+  server: '103.38.50.73',
+  database: 'VASANTHAMDB',
+  user: 'vasantham',
+  password: 'Vasantham@Sa',
   port: parseInt(process.env.DB_PORT) ,
   options: {
     encrypt: false,

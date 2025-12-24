@@ -342,8 +342,106 @@ const exportSchemes = async (req, res) => {
   }
 };
 
+/**
+ * Export orders with optional filters
+ */
+const exportOrders = async (req, res) => {
+  try {
+    const { date_from, date_to, source, search } = req.query;
+
+    let query = `
+      SELECT 
+        ot.Tracking_Number,
+        ot.Order_Number,
+        ot.Customer_ID,
+        c.Name as Customer_Name,
+        c.Phone_Number,
+        ot.Fund_Number,
+        ot.Order_Received_Date,
+        ot.Payment_Received_Date,
+        ot.Payment_Amount,
+        ot.Transporter_Name,
+        ot.Transporter_Contact,
+        ot.Source
+      FROM Order_Tracking ot
+      LEFT JOIN Customer_Master c ON ot.Customer_ID = c.Customer_ID
+    `;
+
+    const params = [];
+    const whereClauses = [];
+    let paramIndex = 0;
+
+    // Date filters (based on Order Received Date)
+    if (date_from) {
+      whereClauses.push(`ot.Order_Received_Date >= @param${paramIndex}`);
+      params.push({ value: date_from, type: sql.Date });
+      paramIndex++;
+    }
+
+    if (date_to) {
+      whereClauses.push(`ot.Order_Received_Date <= @param${paramIndex}`);
+      params.push({ value: date_to, type: sql.Date });
+      paramIndex++;
+    }
+
+    // Source filter
+    if (source) {
+      whereClauses.push(`ot.Source = @param${paramIndex}`);
+      params.push({ value: source, type: sql.VarChar(50) });
+      paramIndex++;
+    }
+
+    // Search filter
+    if (search) {
+      whereClauses.push(`(ot.Tracking_Number LIKE @param${paramIndex} OR ot.Order_Number LIKE @param${paramIndex} OR c.Name LIKE @param${paramIndex})`);
+      params.push({ value: `%${search}%`, type: sql.VarChar(100) });
+      paramIndex++;
+    }
+
+    if (whereClauses.length > 0) {
+      query += ` WHERE ${whereClauses.join(' AND ')}`;
+    }
+
+    query += ` ORDER BY ot.Order_Received_Date DESC`;
+
+    const orders = await executeQuery(query, params);
+
+    // Format fields
+    const formattedOrders = orders.map(o => ({
+      ...o,
+      Order_Received_Date: formatDateForCSV(o.Order_Received_Date),
+      Payment_Received_Date: formatDateForCSV(o.Payment_Received_Date),
+    }));
+
+    // Define CSV columns
+    const columns = [
+      { key: 'Tracking_Number', header: 'Tracking Number' },
+      { key: 'Order_Number', header: 'Order Number' },
+      { key: 'Customer_Name', header: 'Customer Name' },
+      { key: 'Phone_Number', header: 'Phone' },
+      { key: 'Fund_Number', header: 'Fund Number' },
+      { key: 'Order_Received_Date', header: 'Order Date' },
+      { key: 'Payment_Received_Date', header: 'Payment Date' },
+      { key: 'Payment_Amount', header: 'Payment Amount' },
+      { key: 'Transporter_Name', header: 'Transporter' },
+      { key: 'Transporter_Contact', header: 'Transporter Contact' },
+      { key: 'Source', header: 'Source' }
+    ];
+
+    const csv = convertToCSV(formattedOrders, columns);
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=orders.csv');
+    res.send('\ufeff' + csv);
+  } catch (error) {
+    console.error('❌ exportOrders Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   exportCustomers,
   exportPayments,
-  exportSchemes
+  exportSchemes,
+  exportOrders
 };

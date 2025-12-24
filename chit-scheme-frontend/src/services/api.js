@@ -87,6 +87,14 @@ export const exportsAPI = {
   exportCustomers: (filters) => api.get('/exports/customers', { params: filters, responseType: 'blob' }),
   exportPayments: (filters) => api.get('/exports/payments', { params: filters, responseType: 'blob' }),
   exportSchemes: (filters) => api.get('/exports/schemes', { params: filters, responseType: 'blob' }),
+  exportOrders: (filters) => api.get('/exports/orders', { params: filters, responseType: 'blob' }),
+};
+
+export const orderTrackingAPI = {
+  getAll: (params) => api.get('/order-tracking', { params }),
+  create: (data) => api.post('/order-tracking', data),
+  update: (id, data) => api.put(`/order-tracking/${id}`, data),
+  delete: (id) => api.delete(`/order-tracking/${id}`),
 };
 
 export default api;

@@ -6,5 +6,6 @@ const exportController = require('../controllers/exportController');
 router.get('/customers', exportController.exportCustomers);
 router.get('/payments', exportController.exportPayments);
 router.get('/schemes', exportController.exportSchemes);
+router.get('/orders', exportController.exportOrders);
 
 module.exports = router;

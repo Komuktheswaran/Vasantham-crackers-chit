@@ -107,19 +107,9 @@ const SchemeMembers = () => {
             key: 'Phone_Number',
         },
         {
-            title: 'Cust ID',
-            dataIndex: 'Customer_ID',
-            key: 'Customer_ID',
-        },
-        {
             title: 'Scheme',
             dataIndex: 'Scheme_Name',
             key: 'Scheme_Name',
-        },
-        {
-            title: 'Scheme ID',
-            dataIndex: 'Scheme_ID',
-            key: 'Scheme_ID',
         },
         {
             title: 'Monthly Amt',
@@ -128,16 +118,34 @@ const SchemeMembers = () => {
             render: (amt) => `₹${amt}`
         },
         {
-            title: 'Start Date',
-            dataIndex: 'Month_from',
-            key: 'Month_from',
-            render: (date) => new Date(date).toLocaleDateString()
+            title: 'Total Amount',
+            dataIndex: 'Total_Amount',
+            key: 'Total_Amount',
+            render: (amt) => `₹${amt}`
         },
         {
-            title: 'End Date',
-            dataIndex: 'Month_to',
-            key: 'Month_to',
-            render: (date) => new Date(date).toLocaleDateString()
+            title: 'Bonus',
+            key: 'Bonus_Amount',
+            render: (_, record) => {
+                const bonus = record.Bonus_Percentage ? (record.Total_Amount * record.Bonus_Percentage / 100) : 0;
+                return (
+                    <div>
+                        <div>₹{bonus.toFixed(2)}</div>
+                        {record.Bonus_Percentage && (
+                            <small className="text-muted">({record.Bonus_Percentage}%)</small>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            title: 'Maturity Amt',
+            key: 'Maturity_Amount',
+            render: (_, record) => {
+                const bonus = record.Bonus_Percentage ? (record.Total_Amount * record.Bonus_Percentage / 100) : 0;
+                const total = parseFloat(record.Total_Amount) + parseFloat(bonus);
+                return <Tag color="green">₹{total.toFixed(2)}</Tag>;
+            }
         },
         {
             title: 'Join Date',

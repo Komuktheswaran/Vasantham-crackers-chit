@@ -196,6 +196,12 @@ const Schemes = () => {
       render: (text) => `₹${parseFloat(text).toLocaleString()}`,
     },
     {
+      title: "Bonus %",
+      dataIndex: "Bonus_Percentage",
+      key: "Bonus_Percentage",
+      render: (text) => text ? `${text}%` : '-',
+    },
+    {
       title: "Members",
       dataIndex: "member_count",
       key: "member_count",
@@ -375,6 +381,17 @@ const Schemes = () => {
                     rules={[{ required: true }]}
                 >
                     <InputNumber style={{ width: "100%" }} />
+                </Form.Item>
+             </Col>
+          </Row>
+
+          <Row gutter={16}>
+             <Col xs={24} sm={12}>
+                <Form.Item
+                    name="Bonus_Percentage"
+                    label="Bonus Percentage (%)"
+                >
+                    <InputNumber style={{ width: "100%" }} min={0} max={100} />
                 </Form.Item>
              </Col>
           </Row>

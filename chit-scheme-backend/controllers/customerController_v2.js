@@ -3,6 +3,16 @@ const sql = require('mssql');
 const { convertToCsv, parseExcel } = require('../utils');
 const xlsx = require('xlsx');
 const path = require('path');
+const { sendWhatsappMessage } = require('../services/whatsappService');
+
+// Helper to generate Fund Number
+const generateFundNumber = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
+    return `${year}_${month}_${random}`;
+};
 
 const getAllCustomers = async (req, res) => {
   try {
@@ -153,7 +163,6 @@ const createCustomer = async (req, res) => {
       PhoneNumber2,
       Address1,
       Address2,
-      // Support legacy/frontend variations
       StreetAddress1, 
       StreetAddress2,
       Area,
@@ -161,7 +170,7 @@ const createCustomer = async (req, res) => {
       State_ID,
       Pincode,
       Scheme_ID,
-      Fund_Number // Optional: Use if provided, else generate
+      Fund_Number
     } = req.body;
 
     const finalAddress1 = Address1 || StreetAddress1;
@@ -203,8 +212,8 @@ const createCustomer = async (req, res) => {
                            .input('schemeId', sql.Int, schemeId)
                            .input('fundNum', sql.VarChar(50), fundNum)
                            .query(`
-                              INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
-                              VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
+                               INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
+                               VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
                            `);
 
             // Generate Dues Logic
@@ -235,6 +244,14 @@ const createCustomer = async (req, res) => {
     }
 
     await transaction.commit();
+
+    // 📱 Send WhatsApp Notification (User Created) - Async, don't block response
+    // Template Params: ["Customer Name"]
+    if (PhoneNumber) {
+        sendWhatsappMessage(String(PhoneNumber), "welcomecccc", [String(Customer_ID), Name], Name)
+            .catch(err => console.error("WA Send Failed (Create Customer):", err.message));
+    }
+
     res.status(201).json({
       success: true,
       customerId: Customer_ID,
@@ -244,7 +261,7 @@ const createCustomer = async (req, res) => {
     if (transaction.active) await transaction.rollback();
     res.status(500).json({ error: error.message });
   } finally {
-    // await connection.close(); // Keep specific connection handling if needed, usually pool handles it
+    // connection cleanup handled by pool usually
   }
 };
 
@@ -323,8 +340,6 @@ const deleteCustomer = async (req, res) => {
                  .query('DELETE FROM Payment_Master WHERE Customer_ID = @customerId');
 
     // 2. Delete Scheme Dues
-    // Re-create request for next query (or reuse if input params are identical, but safer to re-state or strictly reuse properly)
-    // Tedious/MSSQL often prefers fresh requests per query in a transaction or careful param mgmt.
     const req2 = new sql.Request(transaction);
     await req2.input('customerId', sql.VarChar(50), id)
               .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId');
@@ -345,19 +360,15 @@ const deleteCustomer = async (req, res) => {
     if (transaction.active) await transaction.rollback();
     console.error('❌ deleteCustomer Error:', error);
     res.status(500).json({ error: error.message });
-  } finally {
-    // await connection.close(); // Optional based on pool config
   }
 };
 
-// ✅ FIXED: Handle VARCHAR Customer_ID
 const checkCustomerId = async (req, res) => {
   try {
     const { id } = req.params;
-    // ✅ NO parseInt() - Customer_ID is VARCHAR(50)
     const customer = await executeQuery(
       'SELECT Customer_ID FROM Customer_Master WHERE Customer_ID = @param0',
-      [{ value: id, type: sql.VarChar(50) }]  // ✅ VarChar, not Int
+      [{ value: id, type: sql.VarChar(50) }]
     );
     res.json({ exists: customer.length > 0 });
   } catch (error) {
@@ -365,7 +376,6 @@ const checkCustomerId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 const downloadCustomers = async (req, res) => {
     try {
@@ -467,7 +477,6 @@ const uploadCustomers = async (req, res) => {
     }
 };
 
-// Search Customer by Fund Number
 const getCustomerByFundNumber = async (req, res) => {
     try {
         const { fundNumber } = req.params;
@@ -513,15 +522,6 @@ const getCustomerSchemes = async (req, res) => {
   }
 };
 
-// Helper to generate Fund Number
-const generateFundNumber = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
-    return `${year}_${month}_${random}`;
-};
-
 const assignSchemes = async (req, res) => {
   const connection = await sql.connect(require('../config/database').dbConfig);
   const transaction = new sql.Transaction(connection);
@@ -533,6 +533,13 @@ const assignSchemes = async (req, res) => {
     await transaction.begin();
     const request = new sql.Request(transaction);
 
+    // Fetch Phone Number for WA
+    const customerReq = new sql.Request(transaction);
+    const customerRes = await customerReq.input('cid', sql.VarChar(50), id)
+        .query('SELECT Phone_Number, Name FROM Customer_Master WHERE Customer_ID = @cid');
+    const customer = customerRes.recordset[0];
+
+
     // 1. Delete existing assignments
     await request.input('customerId', sql.VarChar(50), id)
                  .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId');
@@ -543,6 +550,7 @@ const assignSchemes = async (req, res) => {
                        .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId');
 
     // 3. Insert new assignments and generate dues
+    let assignedSchemesList = [];
     if (schemeIds && schemeIds.length > 0) {
       for (const schemeId of schemeIds) {
         const fundNum = fundNumber || generateFundNumber(); // Use provided or generate
@@ -553,11 +561,13 @@ const assignSchemes = async (req, res) => {
                              .input('schemeId', sql.Int, schemeId)
                              .input('fundNum', sql.VarChar(50), fundNum)
                              .query('INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number) VALUES (@customerId, @schemeId, @fundNum)');
+        
+        assignedSchemesList.push(fundNum);
 
         // Fetch Scheme Details for Dues
         const schemeDetailsReq = new sql.Request(transaction);
         const schemeResult = await schemeDetailsReq.input('schemeId', sql.Int, schemeId)
-            .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
+            .query('SELECT Name, Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
         
         const scheme = schemeResult.recordset[0];
         if (scheme) {
@@ -582,6 +592,14 @@ const assignSchemes = async (req, res) => {
     }
 
     await transaction.commit();
+
+    // 📱 Send WhatsApp Notification (Scheme Assigned)
+    if (customer && customer.Phone_Number && assignedSchemesList.length > 0) {
+         // Sending one global assignment msg or per scheme? Usually one is better or just the first.
+         sendWhatsappMessage(String(customer.Phone_Number), "welcomecccc", [id, "Scheme Assigned: " + assignedSchemesList.join(', ')], customer.Name)
+            .catch(err => console.error("WA Send Failed (Assign Scheme):", err.message));
+    }
+
     res.json({ success: true, message: 'Schemes assigned and dues generated successfully' });
   } catch (error) {
     if (transaction.active) await transaction.rollback();
@@ -592,9 +610,17 @@ const assignSchemes = async (req, res) => {
   }
 };
 
-module.exports = { 
-  getAllCustomers, getCustomerById, 
-  createCustomer, updateCustomer, deleteCustomer,
-  checkCustomerId, downloadCustomers, uploadCustomers,
-  getCustomerSchemes, assignSchemes, getCustomerByFundNumber
+module.exports = {
+  getAllCustomers,
+  getCustomerById,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+  checkCustomerId,
+  downloadCustomers,
+  uploadCustomers,
+  getCustomerByFundNumber,
+  getCustomerSchemes,
+  generateFundNumber,
+  assignSchemes
 };

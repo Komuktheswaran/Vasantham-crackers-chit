@@ -37,6 +37,10 @@ const getDuesByFundNumber = async (req, res) => {
   }
 };
 
+const { sendWhatsappMessage } = require('../services/whatsappService');
+
+// ... other imports ...
+
 const recordPayment = async (req, res) => {
   const connection = await sql.connect(require('../config/database').dbConfig);
   const transaction = new sql.Transaction(connection);
@@ -51,16 +55,20 @@ const recordPayment = async (req, res) => {
     }
 
     // Lookup Scheme and Customer from Fund_Number to populate Payment_Master
-    // This maintains data integrity (we store IDs) while using Fund_Number as the key
     const lookupReq = new sql.Request(connection);
     const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), Fund_Number)
-        .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
+        .query(`
+            SELECT sm.Customer_ID, sm.Scheme_ID, c.Phone_Number, c.Name 
+            FROM Scheme_Members sm
+            JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
+            WHERE sm.Fund_Number = @fundNum
+        `);
 
     if (memberCheck.recordset.length === 0) {
         return res.status(404).json({ error: 'Invalid Fund Number' });
     }
 
-    const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
+    const { Customer_ID, Scheme_ID, Phone_Number, Name } = memberCheck.recordset[0];
 
     await transaction.begin();
 
@@ -97,6 +105,13 @@ const recordPayment = async (req, res) => {
       `);
 
     await transaction.commit();
+
+    // 📱 Send WhatsApp Notification (Payment Received) 
+    if (Phone_Number) {
+        sendWhatsappMessage(String(Phone_Number), "welcomecccc", [Fund_Number, `Payment Received: Rs.${Amount_Received}`], Name)
+            .catch(err => console.error("WA Send Failed (Payment):", err.message));
+    }
+
     res.status(201).json({ message: 'Payment recorded successfully', payId: result.recordset[0].Pay_ID });
   } catch (error) {
     if (transaction.active) await transaction.rollback();
