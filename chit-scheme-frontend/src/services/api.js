@@ -1,12 +1,11 @@
 import axios from 'axios';
+import { getToken } from './authService';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
 
-import { getToken } from './authService';
-
 const api = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 1000000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -35,14 +34,23 @@ api.interceptors.response.use(
 
 export const customersAPI = {
   getAll: (params) => api.get('/customers', { params }),
-  getById: (id) => api.get(`/customers/${id}`),
-  checkId: (id) => api.get(`/customers/check/${id}`), // Check for ID existence
+  getById: (id) => api.get(`/customers/${encodeURIComponent(id)}`),
   create: (data) => api.post('/customers', data),
-  update: (id, data) => api.put(`/customers/${id}`, data),
-  delete: (id) => api.delete(`/customers/${id}`),
-  getSchemes: (id) => api.get(`/customers/${id}/schemes`),
-  assignSchemes: (id, schemeIds) => api.post(`/customers/${id}/schemes`, { schemeIds }),
-  getByFundNumber: (fundNumber) => api.get(`/customers/fund/${fundNumber}`),
+  update: (id, data) => api.put(`/customers/${encodeURIComponent(id)}`, data),
+  delete: (id) => api.delete(`/customers/${encodeURIComponent(id)}`),
+  checkId: (id) => api.get('/customers/check-id', { params: { id } }),
+  assignSchemes: (customerId, schemeIds, sendWhatsapp) =>
+    api.post(`/customers/${encodeURIComponent(customerId)}/schemes`, { schemeIds, sendWhatsapp }),
+  getSchemes: (customerId) => api.get(`/customers/${encodeURIComponent(customerId)}/schemes`),
+  removeScheme: (customerId, schemeId) =>
+    api.delete(`/customers/${encodeURIComponent(customerId)}/schemes/${schemeId}`),
+  export: (params) => api.get('/customers/export', { params, responseType: 'blob' }),
+  bulkUpload: (formData) => api.post('/customers/bulk-upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getNextCustomerId: () => api.get('/customers/next-customer-id'),
+  getNextFundNumber: () => api.get('/customers/next-fund-number'),
+  getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
 };
 
 export const schemesAPI = {
@@ -95,6 +103,18 @@ export const orderTrackingAPI = {
   create: (data) => api.post('/order-tracking', data),
   update: (id, data) => api.put(`/order-tracking/${id}`, data),
   delete: (id) => api.delete(`/order-tracking/${id}`),
+};
+
+export const transportersAPI = {
+  getAll: () => api.get('/transporters'),
+  getById: (id) => api.get(`/transporters/${id}`),
+  create: (data) => api.post('/transporters', data),
+  update: (id, data) => api.put(`/transporters/${id}`, data),
+  delete: (id) => api.delete(`/transporters/${id}`),
+  getDeliveryPoints: (transporterId) => api.get(`/transporters/${transporterId}/delivery-points`),
+  addDeliveryPoint: (transporterId, data) => api.post(`/transporters/${transporterId}/delivery-points`, data),
+  deleteDeliveryPoint: (id) => api.delete(`/transporters/delivery-points/${id}`),
+  getAllDeliveryPoints: () => api.get('/transporters/delivery-points/all'),
 };
 
 export default api;

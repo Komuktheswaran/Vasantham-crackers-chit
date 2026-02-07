@@ -70,21 +70,56 @@ const TrackingOrder = () => {
   };
 
   const handleOk = async (values) => {
-    try {
-      if (editingOrder) {
-        await orderTrackingAPI.update(editingOrder.Tracking_ID, values);
-        message.success('Order updated successfully');
-      } else {
-        await orderTrackingAPI.create(values);
-        message.success('Order created successfully');
-      }
-      setModalVisible(false);
-      fetchOrders();
-      form.resetFields();
-    } catch (error) {
-      console.error('Save order error:', error);
-      message.error('Failed to save order');
+    const performSave = async (sendWhatsapp) => {
+        try {
+            const payload = { ...values, sendWhatsapp };
+            if (editingOrder) {
+                await orderTrackingAPI.update(editingOrder.Tracking_ID, payload);
+                message.success('Order updated successfully');
+            } else {
+                await orderTrackingAPI.create(payload);
+                message.success('Order created successfully');
+            }
+            setModalVisible(false);
+            fetchOrders(); // Refresh list
+            form.resetFields();
+            setEditingOrder(null);
+        } catch (error) {
+            console.error('Save order error:', error);
+            message.error('Failed to save order: ' + (error.response?.data?.error || error.message));
+        }
+    };
+
+    // Confirmation Logic
+    // If Creating: Prompt for "Order Received" WA.
+    // If Updating: Prompt for "Order Dispatched" WA (technically only if dispatched, but consistent choice is better).
+    // Or we can check if Transporter_Name is present in values to change the prompt text.
+    
+    let title = editingOrder ? 'Update Order' : 'Create Order';
+    let promptText = editingOrder 
+        ? 'Do you want to send an "Order Update/Dispatch" WhatsApp notification?' 
+        : 'Do you want to send an "Order Received" WhatsApp notification?';
+    
+    // Customize prompt based on data
+    if (editingOrder && values.Transporter_Name) {
+        promptText = `Dispatched via ${values.Transporter_Name}. Send WhatsApp notification?`;
     }
+
+    Modal.confirm({
+        title: title,
+        content: (
+            <div>
+                <p>Are you sure you want to {editingOrder ? 'update' : 'create'} this order?</p>
+                <p>{promptText}</p>
+            </div>
+        ),
+        okText: editingOrder ? 'Yes, Update & Notify' : 'Yes, Create & Notify',
+        cancelText: editingOrder ? 'No, Update Only' : 'No, Create Only',
+        maskClosable: false,
+        closable: false,
+        onOk: () => performSave(true),
+        onCancel: () => performSave(false)
+    });
   };
 
   const handleDelete = (id) => {
@@ -112,9 +147,12 @@ const TrackingOrder = () => {
         ...order,
         Order_Received_Date: order.Order_Received_Date ? dayjs(order.Order_Received_Date) : null,
         Payment_Received_Date: order.Payment_Received_Date ? dayjs(order.Payment_Received_Date) : null,
+        Parcel_Quantity: order.Parcel_Quantity || 0,
+        Packing_Status: order.Packing_Status || 'Pending'
       });
     } else {
       form.resetFields();
+      form.setFieldsValue({ Parcel_Quantity: 0, Packing_Status: 'Pending' }); // Default params
     }
     setModalVisible(true);
   };
@@ -141,6 +179,12 @@ const TrackingOrder = () => {
       key: 'Order_Number',
     },
     {
+      title: 'Parcel Qty',
+      dataIndex: 'Parcel_Quantity',
+      key: 'Parcel_Quantity',
+      render: (text) => text || '0'
+    },
+    {
       title: 'Customer',
       dataIndex: 'Customer_Name',
       key: 'Customer_Name',
@@ -162,6 +206,30 @@ const TrackingOrder = () => {
       dataIndex: 'Payment_Amount',
       key: 'Payment_Amount',
       render: (amt) => amt ? `₹${parseFloat(amt).toLocaleString()}` : '-'
+    },
+    {
+      title: 'Transporter',
+      dataIndex: 'Transporter_Name',
+      key: 'Transporter_Name',
+      render: (text) => text || '-'
+    },
+    {
+      title: 'Transport Contact',
+      dataIndex: 'Transporter_Contact',
+      key: 'Transporter_Contact',
+      render: (text) => text || '-'
+    },
+    {
+       title: 'Packing Status',
+       dataIndex: 'Packing_Status',
+       key: 'Packing_Status',
+       render: (text) => {
+           let color = 'default';
+           if (text === 'Pending') color = 'orange';
+           if (text === 'Packed') color = 'blue';
+           if (text === 'Dispatched') color = 'green';
+           return <Tag color={color}>{text || 'Pending'}</Tag>;
+       }
     },
     {
       title: 'Source',
@@ -299,6 +367,24 @@ const TrackingOrder = () => {
                  </Select>
               </Form.Item>
             </Col>
+          </Row>
+
+          <Row gutter={16}>
+             <Col span={8}>
+               <Form.Item name="Packing_Status" label="Packing Status">
+                 <Select placeholder="Select Status">
+                    <Option value="Pending">Pending</Option>
+                    <Option value="Packed">Packed</Option>
+                    <Option value="Dispatched">Dispatched</Option>
+                 </Select>
+               </Form.Item>
+             </Col>
+             <Col span={8}>
+               <Form.Item name="Parcel_Quantity" label="Parcel Quantity">
+                 <InputNumber style={{ width: '100%' }} min={0} />
+               </Form.Item>
+             </Col>
+             <Col span={8}/> 
           </Row>
         </Form>
       </Modal>

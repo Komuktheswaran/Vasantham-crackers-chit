@@ -23,11 +23,15 @@ import {
 } from "@ant-design/icons";
 import { schemesAPI, exportsAPI } from "../services/api";
 import dayjs from "dayjs";
-import './css/Schemes.css';
+import "./css/Schemes.css";
 
 const Schemes = () => {
   const [schemes, setSchemes] = useState([]);
-  const [pagination, setPagination] = useState({ current: 1, pageSize: 15, total: 0 });
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 15,
+    total: 0,
+  });
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
@@ -36,15 +40,15 @@ const Schemes = () => {
   const [form] = Form.useForm();
 
   const uploadProps = {
-    name: 'file',
-    action: `${process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api'}/schemes/upload`,
-    accept: '.csv',
+    name: "file",
+    action: `${process.env.REACT_APP_API_URL || "https://103.38.50.149:5006/api"}/schemes/upload`,
+    accept: ".csv",
     onChange(info) {
-      if (info.file.status === 'done') {
+      if (info.file.status === "done") {
         message.success(`${info.file.name} file uploaded successfully`);
         setUploadModalVisible(false);
         fetchSchemes();
-      } else if (info.file.status === 'error') {
+      } else if (info.file.status === "error") {
         message.error(`${info.file.name} file upload failed.`);
       }
     },
@@ -57,24 +61,27 @@ const Schemes = () => {
       if (filtered && searchText) {
         filters.search = searchText;
       }
-      
+
       const response = await exportsAPI.exportSchemes(filters);
-      
+
       // Create download link
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', `schemes_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute(
+        "download",
+        `schemes_${new Date().toISOString().split("T")[0]}.csv`,
+      );
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
-      message.success('Schemes exported successfully');
+
+      message.success("Schemes exported successfully");
     } catch (error) {
-       console.error("Export error:", error);
-       message.error("Failed to export schemes.");
+      console.error("Export error:", error);
+      message.error("Failed to export schemes.");
     } finally {
-       setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -100,20 +107,20 @@ const Schemes = () => {
         page: params.page || pagination.current,
         limit: params.limit || pagination.pageSize,
         search: searchText,
-        ...params
+        ...params,
       };
-      
+
       const response = await schemesAPI.getAll(queryParams);
       // Handle both old array format (fallback) and new object format
       if (Array.isArray(response.data)) {
-         setSchemes(response.data);
+        setSchemes(response.data);
       } else {
-         setSchemes(response.data.schemes || []);
-         setPagination({
-            current: response.data.page || 1,
-            pageSize: response.data.limit || 15,
-            total: response.data.total || 0,
-         });
+        setSchemes(response.data.schemes || []);
+        setPagination({
+          current: response.data.page || 1,
+          pageSize: response.data.limit || 15,
+          total: response.data.total || 0,
+        });
       }
     } catch (error) {
       console.error("Fetch schemes error:", error);
@@ -132,11 +139,20 @@ const Schemes = () => {
 
   const handleOk = async (values) => {
     try {
+      // Format dates to YYYY-MM-DD to avoid timezone issues before sending
+      const payload = {
+        ...values,
+        Month_from: values.Month_from
+          ? values.Month_from.format("YYYY-MM-DD")
+          : null,
+        Month_to: values.Month_to ? values.Month_to.format("YYYY-MM-DD") : null,
+      };
+
       if (editingScheme) {
-        await schemesAPI.update(editingScheme.Scheme_ID, values);
+        await schemesAPI.update(editingScheme.Scheme_ID, payload);
         message.success("Scheme updated successfully!");
       } else {
-        await schemesAPI.create(values);
+        await schemesAPI.create(payload);
         message.success("Scheme created successfully!");
       }
       setModalVisible(false);
@@ -151,7 +167,8 @@ const Schemes = () => {
   const handleDelete = (schemeId) => {
     Modal.confirm({
       title: "Are you sure you want to delete this scheme?",
-      content: "This scheme may have members and payments associated with it. Deleting it will PERMANENTLY DELETE all associated Member and Payment records. This action cannot be undone.",
+      content:
+        "This scheme may have members and payments associated with it. Deleting it will PERMANENTLY DELETE all associated Member and Payment records. This action cannot be undone.",
       okText: "Yes, Delete It",
       okType: "danger",
       onOk: async () => {
@@ -184,22 +201,22 @@ const Schemes = () => {
   const columns = [
     { title: "Scheme Name", dataIndex: "Name", key: "Name" },
     {
-      title: "Total Amount",
-      dataIndex: "Total_Amount",
-      key: "Total_Amount",
-      render: (text) => `₹${parseFloat(text).toLocaleString()}`,
-    },
-    {
       title: "Monthly Amount",
       dataIndex: "Amount_per_month",
       key: "Amount_per_month",
       render: (text) => `₹${parseFloat(text).toLocaleString()}`,
     },
     {
-      title: "Bonus %",
-      dataIndex: "Bonus_Percentage",
-      key: "Bonus_Percentage",
-      render: (text) => text ? `${text}%` : '-',
+      title: "Bonus Amount",
+      dataIndex: "Bonus_Amount",
+      key: "Bonus_Amount",
+      render: (text) => (text ? `₹${parseFloat(text).toLocaleString()}` : "-"),
+    },
+    {
+      title: "Total Amount",
+      dataIndex: "Total_Amount",
+      key: "Total_Amount",
+      render: (text) => `₹${parseFloat(text).toLocaleString()}`,
     },
     {
       title: "Members",
@@ -221,13 +238,13 @@ const Schemes = () => {
       title: "Start Date",
       dataIndex: "Month_from",
       key: "Month_from",
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "End Date",
       dataIndex: "Month_to",
       key: "Month_to",
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "Action",
@@ -252,51 +269,53 @@ const Schemes = () => {
 
   return (
     <>
-    <div className="page-container">
-      <div className="page-header-row">
-        <h2 className="page-title">Chit Schemes ({pagination.total} total)</h2>
-        <div className="page-action-bar">
-          <Input.Search
-            placeholder="Search schemes"
-            allowClear
-            enterButton="Search"
-            onSearch={(value) => {
-              setSearchText(value);
-              fetchSchemes({ search: value });
-            }}
-            className="search-input"
-          />
-          <Space wrap>
-            <Button type="primary" onClick={() => openModal()}>
+      <div className="page-container">
+        <div className="page-header-row">
+          <h2 className="page-title">
+            Chit Schemes ({pagination.total} total)
+          </h2>
+          <div className="page-action-bar">
+            <Input.Search
+              placeholder="Search schemes"
+              allowClear
+              enterButton="Search"
+              onSearch={(value) => {
+                setSearchText(value);
+                fetchSchemes({ search: value });
+              }}
+              className="search-input"
+            />
+            <Space wrap>
+              <Button type="primary" onClick={() => openModal()}>
                 + New Scheme
-            </Button>
-            <Button onClick={() => setUploadModalVisible(true)}>
+              </Button>
+              <Button onClick={() => setUploadModalVisible(true)}>
                 <UploadOutlined /> Upload
-            </Button>
-            <Dropdown overlay={downloadMenu}>
+              </Button>
+              <Dropdown overlay={downloadMenu}>
                 <Button>
-                <DownloadOutlined /> Download
+                  <DownloadOutlined /> Download
                 </Button>
-            </Dropdown>
-          </Space>
+              </Dropdown>
+            </Space>
+          </div>
         </div>
-      </div>
 
-      <Table
-        columns={columns}
-        dataSource={schemes}
-        rowKey="Scheme_ID"
-        loading={loading}
-        pagination={{
-          current: pagination.current,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: true,
-        }}
-        onChange={handleTableChange}
-        scroll={{ x: 'max-content' }}
-      />
-    </div>
+        <Table
+          columns={columns}
+          dataSource={schemes}
+          rowKey="Scheme_ID"
+          loading={loading}
+          pagination={{
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+          }}
+          onChange={handleTableChange}
+          scroll={{ x: "max-content" }}
+        />
+      </div>
 
       <Modal
         title={editingScheme ? "Edit Scheme" : "Create New Scheme"}
@@ -317,114 +336,151 @@ const Schemes = () => {
           >
             <Input />
           </Form.Item>
-          
+
           <Row gutter={16}>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Total_Amount"
-                    label="Total Amount"
-                    rules={[{ required: true }]}
-                >
-                    <InputNumber 
-                        style={{ width: "100%" }} 
-                        onChange={(val) => {
-                            const period = form.getFieldValue('Period');
-                            if (period && val) {
-                                form.setFieldsValue({ Amount_per_month: (val / period).toFixed(2) });
-                            }
-                        }}
-                    />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Period"
-                    label="Period (Months)"
-                    rules={[{ required: true }]}
-                >
-                    <InputNumber 
-                        style={{ width: "100%" }} 
-                        onChange={(val) => {
-                            // 1. Calculate Amount Per Month
-                            const total = form.getFieldValue('Total_Amount');
-                            if (total && val) {
-                                form.setFieldsValue({ Amount_per_month: (total / val).toFixed(2) });
-                            }
-                            // 2. Sync Number of Due
-                            form.setFieldsValue({ Number_of_due: val });
-                            
-                            // 3. Calculate End Date
-                            const start = form.getFieldValue('Month_from');
-                            if (start && val) {
-                                form.setFieldsValue({ Month_to: dayjs(start).add(val, 'month') });
-                            }
-                        }}
-                    />
-                </Form.Item>
-              </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Amount_per_month"
+                label="Amount Per Month"
+                rules={[{ required: true }]}
+              >
+                <InputNumber
+                  style={{ width: "100%" }}
+                  onChange={(val) => {
+                    const period = form.getFieldValue("Period");
+                    if (period && val) {
+                      const bonus = form.getFieldValue("Bonus_Amount") || 0;
+                      const total =
+                        val * period +
+                        (typeof bonus === "string" ? parseFloat(bonus) : bonus);
+                      form.setFieldsValue({
+                        Total_Amount: total.toFixed(2),
+                      });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Period"
+                label="Period (Months)"
+                rules={[{ required: true }]}
+              >
+                <InputNumber
+                  style={{ width: "100%" }}
+                  onChange={(val) => {
+                    // 1. Calculate Total Amount
+                    const monthly = form.getFieldValue("Amount_per_month");
+                    if (monthly && val) {
+                      const bonus = form.getFieldValue("Bonus_Amount") || 0;
+                      const total =
+                        monthly * val +
+                        (typeof bonus === "string" ? parseFloat(bonus) : bonus);
+                      form.setFieldsValue({
+                        Total_Amount: total.toFixed(2),
+                      });
+                    }
+                    // 2. Sync Number of Due
+                    form.setFieldsValue({ Number_of_due: val });
+
+                    // 3. Calculate End Date (if Start Date exists)
+                    // End date should be last day of final month, not first day of next month
+                    const start = form.getFieldValue("Month_from");
+                    if (start && val) {
+                      const endDate = dayjs(start)
+                        .add(val - 1, "month")
+                        .endOf("month");
+                      form.setFieldsValue({
+                        Month_to: endDate,
+                      });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
           </Row>
 
           <Row gutter={16}>
-             <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Amount_per_month"
-                    label="Amount Per Month"
-                    rules={[{ required: true }]}
-                >
-                    <InputNumber style={{ width: "100%" }} readOnly />
-                </Form.Item>
-             </Col>
-             <Col xs={24} sm={12}>
-                 <Form.Item
-                    name="Number_of_due"
-                    label="Number of Dues"
-                    rules={[{ required: true }]}
-                >
-                    <InputNumber style={{ width: "100%" }} />
-                </Form.Item>
-             </Col>
+            {/* New Field: Bonus Amount */}
+            <Col xs={24} sm={12}>
+              <Form.Item name="Bonus_Amount" label="Bonus Amount">
+                <InputNumber
+                  style={{ width: "100%" }}
+                  onChange={(val) => {
+                    const monthly = form.getFieldValue("Amount_per_month");
+                    const period = form.getFieldValue("Period");
+                    if (monthly && period) {
+                      // Total = (Monthly * Period) + Bonus
+                      const bonus = val || 0;
+                      const total =
+                        monthly * period +
+                        (typeof bonus === "string" ? parseFloat(bonus) : bonus);
+                      form.setFieldsValue({ Total_Amount: total.toFixed(2) });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Total_Amount"
+                label="Total Amount"
+                rules={[{ required: true }]}
+              >
+                <InputNumber style={{ width: "100%" }} readOnly />
+              </Form.Item>
+            </Col>
           </Row>
 
           <Row gutter={16}>
-             <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Bonus_Percentage"
-                    label="Bonus Percentage (%)"
-                >
-                    <InputNumber style={{ width: "100%" }} min={0} max={100} />
-                </Form.Item>
-             </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Number_of_due"
+                label="Number of Dues"
+                rules={[{ required: true }]}
+              >
+                <InputNumber style={{ width: "100%" }} />
+              </Form.Item>
+            </Col>
+            {/* Hidden or removed Bonus Percentage if replaced by Amount, keeping hidden or just Amount */}
           </Row>
 
           <Row gutter={16}>
-             <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Month_from"
-                    label="Start Month"
-                    rules={[{ required: true }]}
-                >
-                    <DatePicker 
-                        style={{ width: "100%" }} 
-                        onChange={(date) => {
-                            const period = form.getFieldValue('Period');
-                            if (period && date) {
-                                form.setFieldsValue({ Month_to: dayjs(date).add(period, 'month') });
-                            }
-                        }}
-                    />
-                </Form.Item>
-             </Col>
-             <Col xs={24} sm={12}>
-                <Form.Item
-                    name="Month_to"
-                    label="End Month"
-                    rules={[{ required: true }]}
-                >
-                    <DatePicker style={{ width: "100%" }} disabled />
-                </Form.Item>
-             </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Month_from"
+                label="Start Month"
+                // Optional as requested
+              >
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD-MM-YYYY"
+                  onChange={(date) => {
+                    const period = form.getFieldValue("Period");
+                    if (period && date) {
+                      // End date = last day of (start month + period - 1)
+                      const endDate = dayjs(date)
+                        .add(period - 1, "month")
+                        .endOf("month");
+                      form.setFieldsValue({
+                        Month_to: endDate,
+                      });
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="Month_to"
+                label="End Month"
+                // Optional as requested
+              >
+                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+              </Form.Item>
+            </Col>
           </Row>
-
         </Form>
       </Modal>
 
@@ -438,7 +494,9 @@ const Schemes = () => {
           <p className="ant-upload-drag-icon">
             <UploadOutlined />
           </p>
-          <p className="ant-upload-text">Click or drag CSV file to this area to upload</p>
+          <p className="ant-upload-text">
+            Click or drag CSV file to this area to upload
+          </p>
         </Upload.Dragger>
       </Modal>
     </>
@@ -446,4 +504,3 @@ const Schemes = () => {
 };
 
 export default Schemes;
-

@@ -47,7 +47,7 @@ const recordPayment = async (req, res) => {
 
   try {
     // Simplified: Fund Number is now mandatory as per requirement
-    const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number } = req.body;
+    const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number, sendWhatsapp } = req.body;
     
     // Validate Fund_Number presence
     if (!Fund_Number) {
@@ -107,7 +107,7 @@ const recordPayment = async (req, res) => {
     await transaction.commit();
 
     // 📱 Send WhatsApp Notification (Payment Received) 
-    if (Phone_Number) {
+    if (Phone_Number && sendWhatsapp !== false) {
         sendWhatsappMessage(String(Phone_Number), "welcomecccc", [Fund_Number, `Payment Received: Rs.${Amount_Received}`], Name)
             .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }

@@ -3,11 +3,18 @@ const axios = require('axios');
 const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDJmZGE0YzllMGQyMzhlOGZjYzA4YyIsIm5hbWUiOiJDb21tZXJjaWFsIENvbW11bmljYXRpb24gQ29tcGFueS4iLCJhcHBOYW1lIjoiQWlTZW5zeSIsImNsaWVudElkIjoiNjVkMmZkYTRjOWUwZDIzOGU4ZmNjMDg1IiwiYWN0aXZlUGxhbiI6Ik5PTkUiLCJpYXQiOjE3MDgzMjYzMDh9.2cOar4lW4b3_z5tlgUhdgYkdCYdVOK4c0rhqpYeAC_0";
 const API_URL = "https://backend.api-wa.co/campaign/smartping/api";
 
+const readline = require('readline');
+
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
+
 const testSend = async () => {
     const payload = {
         apiKey: API_KEY,
         campaignName: "welcomecccc",
-        destination: "+919659130215",
+        destination: "+919003568114",
         userName: "TestUser",
         templateParams: [
             "123456",
@@ -26,4 +33,11 @@ const testSend = async () => {
     }
 };
 
-testSend();
+rl.question('Are you sure you want to send the WhatsApp message? (y/n): ', (answer) => {
+    if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+        testSend().then(() => rl.close());
+    } else {
+        console.log('❌ Cancelled.');
+        rl.close();
+    }
+});

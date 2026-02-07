@@ -12,6 +12,7 @@ import {
   SettingOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
@@ -20,29 +21,26 @@ import Schemes from './pages/Schemes';
 import Payments from './pages/Payments';
 import Downloads from './pages/Downloads';
 import Auction from './pages/Auction';
+import Reports from './pages/Reports';
 import SchemeMembers from './pages/SchemeMembers';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
+
 import TrackingOrder from './pages/TrackingOrder';
+import TransportMaster from './pages/TransportMaster';
 import { isAuthenticated, logout, getUserInfo } from './services/authService';
 
 const { Header, Content, Footer, Sider } = Layout;
 
 // Protected Route Component
-const ProtectedRoute = ({ children, authenticated, loading }) => {
+const ProtectedRoute = ({ children, loading }) => {
   if (loading) return <div className="loading-container"><Spin size="large" /></div>;
-  if (!authenticated) {
-    return <Navigate to="/login" replace />;
-  }
   return children;
 };
 
 // Admin-Only Route Component
-const AdminRoute = ({ children, authenticated, user, loading }) => {
+const AdminRoute = ({ children, user, loading }) => {
   if (loading) return <div className="loading-container"><Spin size="large" /></div>;
-  if (!authenticated) {
-    return <Navigate to="/login" replace />;
-  }
   if (user?.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
@@ -50,13 +48,7 @@ const AdminRoute = ({ children, authenticated, user, loading }) => {
 };
 
 // Component to handle forced logout for /login route
-const LogoutHandler = ({ onLogout }) => {
-  useEffect(() => {
-    onLogout();
-  }, [onLogout]);
 
-  return <div className="loading-container"><Spin size="large" tip="Logging out..." /></div>;
-};
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -70,13 +62,21 @@ const App = () => {
     checkAuth();
   }, [location]);
 
+
+
   const checkAuth = async () => {
     // setLoading(true); // Don't reload on every nav, just check status
-    const authStatus = await isAuthenticated();
-    const userInfo = await getUserInfo();
-    setAuthenticated(authStatus);
-    setUser(userInfo);
-    setLoading(false);
+    try {
+      const authStatus = await isAuthenticated();
+      const userInfo = await getUserInfo();
+      setAuthenticated(authStatus);
+      setUser(userInfo);
+    } catch {
+      setAuthenticated(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = (userData) => {
@@ -111,11 +111,14 @@ const App = () => {
 
   const menuItems = [
     { key: '/', icon: <HomeOutlined />, label: 'Dashboard' },
+    { key: '/reports', icon: <BarChartOutlined />, label: 'Reports' },
     { key: '/customers', icon: <UsergroupAddOutlined />, label: 'Customers' },
     { key: '/schemes', icon: <MoneyCollectOutlined />, label: 'Schemes' },
     { key: '/scheme-members', icon: <UsergroupAddOutlined />, label: 'Assigned Schemes' },
     { key: '/payments', icon: <BarChartOutlined />, label: 'Payments' },
     { key: '/auction', icon: <MoneyCollectOutlined />, label: 'Auction' },
+
+    { key: '/transport', icon: <EnvironmentOutlined />, label: 'Transport' },
     { key: '/tracking-order', icon: <BarChartOutlined />, label: 'Tracking Order' },
     { key: '/downloads', icon: <DownloadOutlined />, label: 'Downloads' },
   ];
@@ -199,7 +202,7 @@ const App = () => {
                   rel="noopener noreferrer"
                   className="app-header-title"
                 >
-                  VasanthamCrackersWorlds Chit Scheme
+                  Vasantham Crackers Worlds
                 </Button>
             </div>
 
@@ -216,13 +219,15 @@ const App = () => {
         )}
         <Content className={authenticated ? "app-content-wrapper" : ""}>
           <Routes>
-            <Route path="/login" element={<LogoutHandler onLogout={handleLogout} />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Dashboard /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Reports /></ProtectedRoute>} />
             <Route path="/customers" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Customers /></ProtectedRoute>} />
             <Route path="/schemes" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Schemes /></ProtectedRoute>} />
             <Route path="/scheme-members" element={<ProtectedRoute authenticated={authenticated} loading={loading}><SchemeMembers /></ProtectedRoute>} />
             <Route path="/payments" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Payments /></ProtectedRoute>} />
             <Route path="/auction" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Auction /></ProtectedRoute>} />
+            <Route path="/transport" element={<ProtectedRoute authenticated={authenticated} loading={loading}><TransportMaster /></ProtectedRoute>} />
             <Route path="/tracking-order" element={<ProtectedRoute authenticated={authenticated} loading={loading}><TrackingOrder /></ProtectedRoute>} />
             <Route path="/downloads" element={<ProtectedRoute authenticated={authenticated} loading={loading}><Downloads /></ProtectedRoute>} />
             <Route path="/users" element={<AdminRoute authenticated={authenticated} user={user} loading={loading}><UserManagement /></AdminRoute>} />

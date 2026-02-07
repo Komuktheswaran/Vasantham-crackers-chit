@@ -153,6 +153,7 @@ app.use('/api/exports', require('./routes/exports'));
 app.use('/api/states', require('./routes/states'));
 app.use('/api/districts', require('./routes/districts'));
 app.use('/api/order-tracking', require('./routes/orderTracking'));
+app.use('/api/transporters', require('./routes/transporters'));
 
 // 404 handler - FIXED (no wildcard parameter issue)
 app.use((req, res) => {
@@ -163,15 +164,20 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 Server: http://localhost:${PORT}`);
-  console.log(`✅ Health: http://localhost:${PORT}/api/health`);
-  console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
-  console.log(`👤 Users: http://localhost:${PORT}/api/users`);
-  console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
-  console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
-  console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
-  console.log(`🌍 States: http://localhost:${PORT}/api/states`);
-  console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
-  console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
-});
+// if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 Server: http://localhost:${PORT}`);
+    console.log(`✅ Health: http://localhost:${PORT}/api/health`);
+    console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
+    console.log(`👤 Users: http://localhost:${PORT}/api/users`);
+    console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
+    console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
+    console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
+    console.log(`🌍 States: http://localhost:${PORT}/api/states`);
+    console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
+    console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
+    console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
+  });
+// }
+
+module.exports = app;

@@ -1,10 +1,10 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
-const xlsx = require('xlsx');
+const ExcelJS = require('exceljs');
 
 // ✅ INLINE CSV/Excel utils - NO external dependencies
 const convertToCsv = (data) => {
-  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to,Bonus_Percentage\n';
+  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to,Bonus_Amount\n';
   const headers = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
     Object.values(row).map(val => 
@@ -14,11 +14,35 @@ const convertToCsv = (data) => {
   return `${headers}\n${rows}`;
 };
 
-const parseExcel = (buffer) => {
-  const workbook = require('xlsx').read(buffer, { type: 'buffer' });
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
-  return require('xlsx').utils.sheet_to_json(worksheet);
+const parseExcel = async (buffer) => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const worksheet = workbook.worksheets[0]; // Get first sheet
+  const jsonData = [];
+
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber === 1) return; // Skip headers
+
+    // exceljs row.values is 1-indexed, so index 1 is column A
+    // We need to map this carefully based on expected columns
+    // Assuming columns order: Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage
+    
+    // row.values might look like [empty, val1, val2, ...] because of 1-indexing
+    const rowVal = row.values;
+    
+    const rowData = {
+        Name: rowVal[1],
+        Total_Amount: rowVal[2],
+        Amount_per_month: rowVal[3],
+        Period: rowVal[4],
+        Number_of_due: rowVal[5],
+        Month_from: rowVal[6],
+        Month_to: rowVal[7],
+        Bonus_Amount: rowVal[8]
+    };
+    jsonData.push(rowData);
+  });
+  return jsonData;
 };
 
 const getAllSchemes = async (req, res) => {
@@ -26,7 +50,8 @@ const getAllSchemes = async (req, res) => {
     const { page = 1, limit, search = '' } = req.query;
 
     let query = `
-      SELECT cm.*, 
+      SELECT cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
+             cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Amount,
              ISNULL(COUNT(sm.Customer_ID), 0) as member_count
       FROM Chit_Master cm
       LEFT JOIN Scheme_Members sm ON cm.Scheme_ID = sm.Scheme_ID
@@ -40,7 +65,7 @@ const getAllSchemes = async (req, res) => {
 
     query += `
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
-               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Percentage
+               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Amount
       ORDER BY cm.Scheme_ID DESC 
     `;
 
@@ -88,10 +113,10 @@ const getSchemeById = async (req, res) => {
 
 const createScheme = async (req, res) => {
   try {
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount } = req.body;
     
     const result = await executeInsertGetId(
-      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
+      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount) 
        OUTPUT INSERTED.Scheme_ID
        VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
       [
@@ -102,7 +127,7 @@ const createScheme = async (req, res) => {
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
         { value: Month_to, type: sql.Date },
-        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
+        { value: Bonus_Amount ? parseFloat(Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
       ]
     );
     
@@ -119,12 +144,12 @@ const createScheme = async (req, res) => {
 const updateScheme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount } = req.body;
     
     await executeUpdate(
       `UPDATE Chit_Master SET 
        Name=@param1, Total_Amount=@param2, Amount_per_month=@param3, 
-       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7, Bonus_Percentage=@param8
+       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7, Bonus_Amount=@param8
        WHERE Scheme_ID = @param0`,
       [
         { value: parseInt(id), type: sql.Int },
@@ -135,7 +160,7 @@ const updateScheme = async (req, res) => {
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
         { value: Month_to, type: sql.Date },
-        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
+        { value: Bonus_Amount ? parseFloat(Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
       ]
     );
     
@@ -214,8 +239,9 @@ const getSchemeMembers = async (req, res) => {
         cm.Amount_per_month,
         cm.Month_from,
         cm.Month_to,
+        cm.Month_to,
         cm.Total_Amount,
-        cm.Bonus_Percentage
+        cm.Bonus_Amount
       FROM Scheme_Members sm
       JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
@@ -284,7 +310,7 @@ const uploadSchemes = async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const schemes = parseExcel(req.file.buffer);
+    const schemes = await parseExcel(req.file.buffer);
     
     if (!schemes || schemes.length === 0) {
       return res.status(400).json({ error: 'No schemes found in file' });
@@ -303,7 +329,7 @@ const uploadSchemes = async (req, res) => {
          }
 
          await executeInsertGetId(
-          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
+          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount) 
            VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
           [
             { value: scheme.Name, type: sql.VarChar(100) },
@@ -313,7 +339,7 @@ const uploadSchemes = async (req, res) => {
             { value: parseInt(scheme.Number_of_due), type: sql.Int },
             { value: scheme.Month_from ? new Date(scheme.Month_from) : null, type: sql.Date },
             { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date },
-            { value: scheme.Bonus_Percentage ? parseFloat(scheme.Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
+            { value: scheme.Bonus_Amount ? parseFloat(scheme.Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
           ]
         );
         successCount++;

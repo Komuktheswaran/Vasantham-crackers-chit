@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <system.webServer>
     <handlers>
@@ -38,4 +39,4 @@
     <iisnode watchedFiles="web.config;*.js" debuggingEnabled="false" />
   </system.webServer>
 </configuration>
-<!-- Trigger Restart v11 -->
+<!-- Trigger Restart v10 -->

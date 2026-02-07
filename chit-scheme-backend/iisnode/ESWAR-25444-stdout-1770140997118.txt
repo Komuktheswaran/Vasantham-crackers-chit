@@ -1,0 +1,36 @@
+
+🚀 Server: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49
+✅ Health: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/health
+🔐 Login: POST http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/auth/login
+👤 Users: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/users
+👥 Customers: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/customers
+📋 Schemes: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/schemes
+💰 Payments: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/payments
+🌍 States: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/states
+🏘️ Districts: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/transporters
+📥 Exports: http://localhost:\\.\pipe\692e3064-78ae-410c-b65f-09e990556f49/api/exports
+- - - [03/Feb/2026:17:50:00 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:00 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:05 +0000] "GET /api/customers?fund_number=fund%2F2026%2F001&limit=1 HTTP/1.1" 200 450 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:05 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:05 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:06 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:18 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:36 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:36 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:38 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:50:39 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:51:53 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:53:27 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:53:27 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:53:50 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:53:53 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:06 +0000] "GET /api/customers?fund_number=fund%2F2026%2F001&limit=1 HTTP/1.1" 200 450 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:06 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:06 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:06 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:39 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:39 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 453 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:47 +0000] "GET /api/customers/custid/2026/001/schemes HTTP/1.1" 200 91 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"
+- - - [03/Feb/2026:17:54:49 +0000] "GET /api/payments/dues/fund/2026/001 HTTP/1.1" 404 69 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36"

@@ -50,7 +50,7 @@ const Login = ({ onLogin }) => {
           <Form.Item
             name="username"
             rules={[
-              { required: true, message: 'Please input your username!' },
+              { required: false, message: 'Please input your username!' },
               { min: 3, message: 'Username must be at least 3 characters' }
             ]}
           >

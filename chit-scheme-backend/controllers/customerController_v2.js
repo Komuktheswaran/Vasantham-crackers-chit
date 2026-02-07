@@ -5,13 +5,54 @@ const xlsx = require('xlsx');
 const path = require('path');
 const { sendWhatsappMessage } = require('../services/whatsappService');
 
-// Helper to generate Fund Number
-const generateFundNumber = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000); // 4 digit random
-    return `${year}_${month}_${random}`;
+// Helper to generate Customer ID in format: custid/2026/001
+const generateCustomerId = async () => {
+  const year = new Date().getFullYear();
+  const prefix = `custid/${year}/`;
+  
+  // Query for latest customer ID with this year's prefix
+  const result = await executeQuery(`
+    SELECT TOP 1 Customer_ID 
+    FROM Customer_Master 
+    WHERE Customer_ID LIKE @param0
+    ORDER BY Customer_ID DESC
+  `, [{ value: `${prefix}%`, type: sql.VarChar }]);
+  
+  let nextNumber = 1;
+  if (result.length > 0) {
+    const lastId = result[0].Customer_ID;
+    const match = lastId.match(/\/(\d+)$/);
+    if (match) {
+      nextNumber = parseInt(match[1]) + 1;
+    }
+  }
+  
+  return `${prefix}${String(nextNumber).padStart(3, '0')}`;
+};
+
+// Helper to generate Fund Number in format: fund/2026/001
+const generateFundNumber = async () => {
+  const year = new Date().getFullYear();
+  const prefix = `fund/${year}/`;
+  
+  // Query for latest fund number with this year's prefix
+  const result = await executeQuery(`
+    SELECT TOP 1 Fund_Number 
+    FROM Scheme_Members
+    WHERE Fund_Number LIKE @param0
+    ORDER BY Fund_Number DESC
+  `, [{ value: `${prefix}%`, type: sql.VarChar }]);
+  
+  let nextNumber = 1;
+  if (result.length > 0) {
+    const lastFund = result[0].Fund_Number;
+    const match = lastFund.match(/\/(\d+)$/);
+    if (match) {
+      nextNumber = parseInt(match[1]) + 1;
+    }
+  }
+  
+  return `${prefix}${String(nextNumber).padStart(3, '0')}`;
 };
 
 const getAllCustomers = async (req, res) => {
@@ -20,7 +61,7 @@ const getAllCustomers = async (req, res) => {
 
     // Build base query
     let baseQuery = `
-      SELECT c.Customer_ID, c.Name, c.Reference_Name, c.Customer_Type, 
+      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Customer_Type, 
              c.Phone_Number, c.Area, c.State_ID, c.District_ID, c.Pincode,
              c.Address1, c.Address2,
              ISNULL(d.District_Name, 'N/A') as District_Name, 
@@ -41,9 +82,19 @@ const getAllCustomers = async (req, res) => {
     const params = [];
     let paramIndex = 0;
 
-    // Search functionality - Updated for Name
+    // Search functionality - Updated for Name, Phone, omer Code, omer ID, and Fund Number
     if (search) {
-      whereClause += ` AND (c.Name LIKE @param${paramIndex} OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @param${paramIndex})`;
+      whereClause += ` AND (
+        c.Name LIKE @param${paramIndex} 
+        OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @param${paramIndex}
+        OR c.Customer_Code LIKE @param${paramIndex}
+        OR c.Customer_ID LIKE @param${paramIndex}
+        OR EXISTS (
+          SELECT 1 FROM Scheme_Members sm 
+          WHERE sm.Customer_ID = c.Customer_ID 
+          AND sm.Fund_Number LIKE @param${paramIndex}
+        )
+      )`;
       params.push({ value: `%${search}%`, type: sql.VarChar });
       paramIndex++;
     }
@@ -74,11 +125,11 @@ const getAllCustomers = async (req, res) => {
       params.push({ value: `%${req.query.fund_number}%`, type: sql.VarChar });
       paramIndex++;
     }
-    if (req.query.customer_type) {
+    if (req.query.Customer_Type) {
         // Handle filter for multiple types if sent as array, or single partial match
         // Assuming simple string match for now as stored in CSV
         whereClause += ` AND c.Customer_Type LIKE @param${paramIndex}`;
-        params.push({ value: `%${req.query.customer_type}%`, type: sql.VarChar });
+        params.push({ value: `%${req.query.Customer_Type}%`, type: sql.VarChar });
         paramIndex++;
     }
 
@@ -154,8 +205,9 @@ const createCustomer = async (req, res) => {
   const transaction = new sql.Transaction(connection);
 
   try {
-    const {
+    let {
       Customer_ID,
+      Customer_Code, // Extract new Field
       Name,
       Reference_Name,
       Customer_Type,
@@ -170,8 +222,14 @@ const createCustomer = async (req, res) => {
       State_ID,
       Pincode,
       Scheme_ID,
-      Fund_Number
+      Fund_Number,
+      sendWhatsapp // Extract flag
     } = req.body;
+
+    // Auto-generate Customer_ID if not provided
+    if (!Customer_ID) {
+      Customer_ID = await generateCustomerId();
+    }
 
     const finalAddress1 = Address1 || StreetAddress1;
     const finalAddress2 = Address2 || StreetAddress2;
@@ -182,12 +240,12 @@ const createCustomer = async (req, res) => {
     const insertReq = new sql.Request(transaction);
     await insertReq.query(`
       INSERT INTO Customer_Master (
-        Customer_ID, Name, Reference_Name, Customer_Type, 
+        Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, 
         Phone_Number, Phone_Number2, Address1, Address2, 
         Area, District_ID, State_ID, Pincode
       )
       VALUES (
-        '${Customer_ID}', '${Name}', '${Reference_Name || ''}', '${Customer_Type}', 
+        '${Customer_ID}', '${Customer_Code || ''}', '${Name}', '${Reference_Name || ''}', '${Customer_Type || ''}', 
         ${PhoneNumber}, ${PhoneNumber2 || 'NULL'}, '${finalAddress1 || ''}', '${finalAddress2 || ''}', 
         '${Area || ''}', ${District_ID || 'NULL'}, ${State_ID || 'NULL'}, ${Pincode || 'NULL'}
       )
@@ -204,7 +262,7 @@ const createCustomer = async (req, res) => {
     if (schemesToAssign.length > 0) {
         for (const schemeItem of schemesToAssign) {
             const schemeId = schemeItem.schemeId;
-            const fundNum = schemeItem.fundNumber || generateFundNumber();
+            const fundNum = schemeItem.fundNumber || await generateFundNumber();
 
             // Insert Member
             const assignReq = new sql.Request(transaction);
@@ -226,6 +284,7 @@ const createCustomer = async (req, res) => {
                 for (let i = 1; i <= scheme.Number_of_due; i++) {
                     const dueDate = new Date(scheme.Month_from);
                     dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                    dueDate.setDate(10); // Set due date to 10th of the month
 
                     const insertDueReq = new sql.Request(transaction);
                     await insertDueReq.input('schemeId', sql.Int, schemeId)
@@ -247,7 +306,7 @@ const createCustomer = async (req, res) => {
 
     // 📱 Send WhatsApp Notification (User Created) - Async, don't block response
     // Template Params: ["Customer Name"]
-    if (PhoneNumber) {
+    if (PhoneNumber && sendWhatsapp !== false) {
         sendWhatsappMessage(String(PhoneNumber), "welcomecccc", [String(Customer_ID), Name], Name)
             .catch(err => console.error("WA Send Failed (Create Customer):", err.message));
     }
@@ -269,6 +328,7 @@ const updateCustomer = async (req, res) => {
   try {
     const { id } = req.params;
     const {
+      Customer_Code, // Update Code
       Name,
       Reference_Name,
       Customer_Type,
@@ -290,6 +350,7 @@ const updateCustomer = async (req, res) => {
     await executeUpdate(
       `
       UPDATE Customer_Master SET 
+        Customer_Code = @param12,
         Name = @param1, Reference_Name = @param2, Customer_Type = @param3, 
         Phone_Number = @param4, Phone_Number2 = @param5, 
         Address1 = @param6, Address2 = @param7,
@@ -309,7 +370,8 @@ const updateCustomer = async (req, res) => {
         { value: Area, type: sql.VarChar },
         { value: District_ID || null, type: sql.Int },
         { value: State_ID || null, type: sql.Int },
-        { value: Pincode, type: sql.Int }
+        { value: Pincode, type: sql.Int },
+        { value: Customer_Code, type: sql.VarChar }
       ]
     );
 
@@ -365,7 +427,10 @@ const deleteCustomer = async (req, res) => {
 
 const checkCustomerId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
+    if (!id) {
+      return res.status(400).json({ error: 'Customer ID is required' });
+    }
     const customer = await executeQuery(
       'SELECT Customer_ID FROM Customer_Master WHERE Customer_ID = @param0',
       [{ value: id, type: sql.VarChar(50) }]
@@ -379,7 +444,7 @@ const checkCustomerId = async (req, res) => {
 
 const downloadCustomers = async (req, res) => {
     try {
-        const { search = '', customer_type, fund_number } = req.query;
+        const { search = '', Customer_Type, fund_number } = req.query;
 
         let baseSelect = `
             SELECT c.Customer_ID, c.Name, c.Reference_Name, c.Customer_Type, 
@@ -407,9 +472,9 @@ const downloadCustomers = async (req, res) => {
             params.push({ value: `%${search}%`, type: sql.VarChar });
             paramIndex++;
         }
-        if (customer_type) {
+        if (Customer_Type) {
             whereClause += ` AND c.Customer_Type LIKE @param${paramIndex}`;
-            params.push({ value: `%${customer_type}%`, type: sql.VarChar });
+            params.push({ value: `%${Customer_Type}%`, type: sql.VarChar });
             paramIndex++;
         }
         if (fund_number) {
@@ -470,10 +535,28 @@ const uploadCustomers = async (req, res) => {
         }
 
         await transaction.commit();
-        res.json({ success: true, message: `${successCount} customers uploaded successfully.` });
+        res.json({ success: true, message: `${successCount} omers uploaded successfully.` });
     } catch (error) {
         await transaction.rollback();
         res.status(500).json({ error: 'Bulk upload failed.', details: error.message });
+    }
+};
+
+const getCustomerByCode = async (req, res) => {
+    try {
+        const { code } = req.params;
+        const result = await executeQuery(`
+            SELECT * FROM Customer_Master WHERE Customer_Code = @param0 OR Customer_ID = @param0
+        `, [{ value: code, type: sql.VarChar(50) }]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ error: 'Customer Code not found' });
+        }
+
+        res.json(result[0]);
+    } catch (error) {
+        console.error('❌ getCustomerByCode Error:', error);
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -528,7 +611,7 @@ const assignSchemes = async (req, res) => {
   
   try {
     const { id } = req.params;
-    const { schemeIds, fundNumber } = req.body; // Array of Scheme_IDs, Optional single fundNumber
+    const { schemeIds, fundNumber, sendWhatsapp } = req.body; // Array of Scheme_IDs, Optional single fundNumber, sendWhatsapp flag
 
     await transaction.begin();
     const request = new sql.Request(transaction);
@@ -553,7 +636,7 @@ const assignSchemes = async (req, res) => {
     let assignedSchemesList = [];
     if (schemeIds && schemeIds.length > 0) {
       for (const schemeId of schemeIds) {
-        const fundNum = fundNumber || generateFundNumber(); // Use provided or generate
+        const fundNum = fundNumber || await generateFundNumber(); // Use provided or generate
 
         // Insert Member
         const insertMemberReq = new sql.Request(transaction);
@@ -574,6 +657,7 @@ const assignSchemes = async (req, res) => {
             for (let i = 1; i <= scheme.Number_of_due; i++) {
                 const dueDate = new Date(scheme.Month_from);
                 dueDate.setMonth(dueDate.getMonth() + (i - 1));
+                dueDate.setDate(10); // Set due date to 10th of the month
 
                 const insertDueReq = new sql.Request(transaction);
                 await insertDueReq.input('schemeId', sql.Int, schemeId)
@@ -594,7 +678,7 @@ const assignSchemes = async (req, res) => {
     await transaction.commit();
 
     // 📱 Send WhatsApp Notification (Scheme Assigned)
-    if (customer && customer.Phone_Number && assignedSchemesList.length > 0) {
+    if (customer && customer.Phone_Number && assignedSchemesList.length > 0 && sendWhatsapp !== false) {
          // Sending one global assignment msg or per scheme? Usually one is better or just the first.
          sendWhatsappMessage(String(customer.Phone_Number), "welcomecccc", [id, "Scheme Assigned: " + assignedSchemesList.join(', ')], customer.Name)
             .catch(err => console.error("WA Send Failed (Assign Scheme):", err.message));
@@ -610,6 +694,173 @@ const assignSchemes = async (req, res) => {
   }
 };
 
+// Export Customers to CSV
+const exportCustomers = async (req, res) => {
+  try {
+    const { search = '', state, district, scheme_id } = req.query;
+    
+    let query = `
+      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Customer_Type, 
+             c.Phone_Number, c.Area, c.Pincode, c.Address1, c.Address2,
+             ISNULL(d.District_Name, 'N/A') as District_Name, 
+             ISNULL(s.State_Name, 'N/A') as State_Name
+      FROM Customer_Master c 
+      LEFT JOIN District_Master d ON c.District_ID = d.District_ID 
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramIndex = 0;
+    
+    if (search) {
+      query += ` AND (
+        c.Name LIKE @param${paramIndex} 
+        OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @param${paramIndex}
+        OR c.Customer_Code LIKE @param${paramIndex}
+        OR c.Customer_ID LIKE @param${paramIndex}
+      )`;
+      params.push({ value: `%${search}%`, type: sql.VarChar });
+      paramIndex++;
+    }
+    
+    if (state) {
+      query += ` AND c.State_ID = @param${paramIndex}`;
+      params.push({ value: state, type: sql.Int });
+      paramIndex++;
+    }
+    
+    if (district) {
+      query += ` AND c.District_ID = @param${paramIndex}`;
+      params.push({ value: district, type: sql.Int });
+      paramIndex++;
+    }
+    
+    query += ` ORDER BY c.Name`;
+    
+    const customers = await executeQuery(query, params);
+    
+    // Convert to CSV
+    const csv = convertToCsv(customers);
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
+    res.send(csv);
+  } catch (error) {
+    console.error('exportCustomers error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Bulk create Customers from Excel upload
+const bulkCreateCustomers = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    // Parse Excel file
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const data = xlsx.utils.sheet_to_json(worksheet);
+    
+    if (!data || data.length === 0) {
+      return res.status(400).json({ error: 'No data found in file' });
+    }
+    
+    const connection = await sql.connect(require('../config/database').dbConfig);
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+    
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      
+      try {
+        // Auto-generate Customer_ID if not provided
+        let customerId = row['Customer ID'] || row['Customer_ID'];
+        if (!customerId) {
+          customerId = await generateCustomerId();
+        }
+        
+        const phoneNumber = row['Phone Number'] || row['Phone_Number'];
+        const name = row['Name'] || '';
+        const customerCode = row['Customer Code'] || row['Customer_Code'] || '';
+        const referenceName = row['Reference Name'] || row['Reference_Name'] || '';
+        const customerType = row['Customer Type'] || row['Customer_Type'] || '';
+        
+        if (!phoneNumber) {
+          results.errors.push(`Row ${i + 2}: Phone Number is required`);
+          results.failed++;
+          continue;
+        }
+        
+        // Insert Customer
+        await executeQuery(`
+          INSERT INTO Customer_Master (
+            Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, 
+            Phone_Number, Phone_Number2, Address1, Address2, 
+            Area, District_ID, State_ID, Pincode
+          )
+          VALUES (
+            @param0, @param1, @param2, @param3, @param4, 
+            @param5, NULL, '', '', 
+            '', NULL, NULL, NULL
+          )
+        `, [
+          { value: customerId, type: sql.VarChar(50) },
+          { value: customerCode, type: sql.VarChar(50) },
+          { value: name, type: sql.VarChar(100) },
+          { value: referenceName, type: sql.VarChar(100) },
+          { value: customerType, type: sql.VarChar(50) },
+          { value: phoneNumber, type: sql.VarChar(20) }
+        ]);
+        
+        results.success++;
+      } catch (error) {
+        results.errors.push(`Row ${i + 2}: ${error.message}`);
+        results.failed++;
+      }
+    }
+    
+    res.json({
+      message: 'Bulk upload completed',
+      total: data.length,
+      success: results.success,
+      failed: results.failed,
+      errors: results.errors
+    });
+  } catch (error) {
+    console.error('bulkCreateCustomers error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// API endpoint to get next fund number
+const getNextFundNumber = async (req, res) => {
+  try {
+    const fundNumber = await generateFundNumber();
+    res.json({ fundNumber });
+  } catch (error) {
+    console.error('getNextFundNumber error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// API endpoint to get next Customer ID
+const getNextCustomerId = async (req, res) => {
+  try {
+    const customerId = await generateCustomerId();
+    res.json({ customerId });
+  } catch (error) {
+    console.error('getNextCustomerId error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   getAllCustomers,
   getCustomerById,
@@ -617,10 +868,12 @@ module.exports = {
   updateCustomer,
   deleteCustomer,
   checkCustomerId,
-  downloadCustomers,
-  uploadCustomers,
-  getCustomerByFundNumber,
+  assignSchemes,
   getCustomerSchemes,
-  generateFundNumber,
-  assignSchemes
+  exportCustomers,
+  bulkCreateCustomers,
+  getNextFundNumber,
+  getNextCustomerId,
+  generateCustomerId,
+  getCustomerByFundNumber,
 };

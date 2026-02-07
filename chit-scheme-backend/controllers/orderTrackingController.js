@@ -62,16 +62,19 @@ const createOrder = async (req, res) => {
     const { 
       Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
       Order_Received_Date, Payment_Received_Date, Payment_Amount,
-      Transporter_Name, Transporter_Contact, Source
+      Transporter_Name, Transporter_Contact, Source,
+      Packing_Status, Parcel_Quantity, // New fields
+      sendWhatsapp = true
     } = req.body;
 
     await executeInsertGetId(
       `INSERT INTO Order_Tracking (
         Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
         Order_Received_Date, Payment_Received_Date, Payment_Amount,
-        Transporter_Name, Transporter_Contact, Source
+        Transporter_Name, Transporter_Contact, Source,
+        Packing_Status, Parcel_Quantity
       ) VALUES (
-        @param0, @param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9
+        @param0, @param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9, @param10, @param11
       )`,
       [
         { value: Tracking_Number, type: sql.VarChar(100) },
@@ -83,13 +86,15 @@ const createOrder = async (req, res) => {
         { value: Payment_Amount ? parseFloat(Payment_Amount) : null, type: sql.Decimal(18, 2) },
         { value: Transporter_Name, type: sql.VarChar(100) },
         { value: Transporter_Contact, type: sql.VarChar(50) },
-        { value: Source, type: sql.VarChar(50) }
+        { value: Source, type: sql.VarChar(50) },
+        { value: Packing_Status || 'Pending', type: sql.VarChar(50) },
+        { value: Parcel_Quantity ? parseInt(Parcel_Quantity) : 0, type: sql.Int }
       ]
     );
 
     // 📱 Send WhatsApp Notification (Order Received)
     // We need customer phone number. If Customer_ID is present, fetch it.
-    if (Customer_ID) {
+    if (Customer_ID && sendWhatsapp !== false) {
          try {
              // Quick fetch for customer phone
              const customer = await executeQuery('SELECT Phone_Number, Name FROM Customer_Master WHERE Customer_ID = @param0', [{value: Customer_ID, type: sql.VarChar(50)}]);
@@ -115,7 +120,9 @@ const updateOrder = async (req, res) => {
     const { 
       Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
       Order_Received_Date, Payment_Received_Date, Payment_Amount,
-      Transporter_Name, Transporter_Contact, Source
+      Transporter_Name, Transporter_Contact, Source,
+      Packing_Status, Parcel_Quantity,
+      sendWhatsapp = true
     } = req.body;
 
     // Check if Transporter details are added to trigger "Order Sent"
@@ -130,7 +137,8 @@ const updateOrder = async (req, res) => {
       `UPDATE Order_Tracking SET
         Tracking_Number=@param1, Order_Number=@param2, Customer_ID=@param3, Fund_Number=@param4, 
         Order_Received_Date=@param5, Payment_Received_Date=@param6, Payment_Amount=@param7,
-        Transporter_Name=@param8, Transporter_Contact=@param9, Source=@param10
+        Transporter_Name=@param8, Transporter_Contact=@param9, Source=@param10,
+        Packing_Status=@param11, Parcel_Quantity=@param12
        WHERE Tracking_ID = @param0`,
       [
         { value: parseInt(id), type: sql.Int },
@@ -143,12 +151,14 @@ const updateOrder = async (req, res) => {
         { value: Payment_Amount ? parseFloat(Payment_Amount) : null, type: sql.Decimal(18, 2) },
         { value: Transporter_Name, type: sql.VarChar(100) },
         { value: Transporter_Contact, type: sql.VarChar(50) },
-        { value: Source, type: sql.VarChar(50) }
+        { value: Source, type: sql.VarChar(50) },
+        { value: Packing_Status || 'Pending', type: sql.VarChar(50) },
+        { value: Parcel_Quantity ? parseInt(Parcel_Quantity) : 0, type: sql.Int }
       ]
     );
 
     // 📱 Send WhatsApp Notification (Order Sent / Packaging)
-    if (isShippingUpdate && Customer_ID) {
+    if (isShippingUpdate && Customer_ID && sendWhatsapp !== false) {
          try {
              // Quick fetch for customer phone
              const customer = await executeQuery('SELECT Phone_Number, Name FROM Customer_Master WHERE Customer_ID = @param0', [{value: Customer_ID, type: sql.VarChar(50)}]);

@@ -2,9 +2,19 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const {
-  getAllCustomers, getCustomerById, createCustomer,
-  updateCustomer, deleteCustomer, checkCustomerId, downloadCustomers, uploadCustomers,
-  getCustomerSchemes, assignSchemes, getCustomerByFundNumber
+  getAllCustomers,
+  getCustomerById,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+  checkCustomerId,
+  assignSchemes,
+  getCustomerSchemes,
+  exportCustomers,
+  bulkCreateCustomers,
+  getNextFundNumber,
+  getNextCustomerId,
+  getCustomerByFundNumber,
 } = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
 const router = express.Router();
@@ -37,16 +47,25 @@ const upload = multer({
   }
 });
 
-router.post('/upload', upload.single('file'), uploadCustomers);
-router.get('/download', downloadCustomers);
+// Utility endpoints (put before /:id routes to avoid conflicts)
+router.get('/next-fund-number', getNextFundNumber);
+router.get('/next-customer-id', getNextCustomerId);
+router.get('/check-id', checkCustomerId);
+router.get('/export', exportCustomers);
+router.get('/fund/:fundNumber', getCustomerByFundNumber);
+router.post('/bulk-upload', upload.single('file'), bulkCreateCustomers);
+
+// Customer CRUD
 router.get('/', getAllCustomers);
-router.get('/fund/:fundNumber', getCustomerByFundNumber); // Specific route before generic :id
-router.get('/check/:id', checkCustomerId); // New route for checking ID
-router.get('/:id', getCustomerById);
 router.post('/', customerValidation, createCustomer);
-router.put('/:id', customerValidation, updateCustomer);
-router.delete('/:id', deleteCustomer);
-router.get('/:id/schemes', getCustomerSchemes);
-router.post('/:id/schemes', assignSchemes);
+
+// Scheme assignment - MUST be BEFORE /:id(*) routes to match first
+router.post('/:id(*)/schemes', assignSchemes);
+router.get('/:id(*)/schemes', getCustomerSchemes);
+
+// Generic customer routes with wildcard (AFTER more specific routes)
+router.get('/:id(*)', getCustomerById);
+router.put('/:id(*)', customerValidation, updateCustomer);
+router.delete('/:id(*)', deleteCustomer);
 
 module.exports = router;

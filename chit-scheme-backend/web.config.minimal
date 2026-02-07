@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <system.webServer>
+    <!-- Basic configuration without URL Rewrite and iisnode -->
+    <httpErrors errorMode="Detailed" />
+    <directoryBrowse enabled="false" />
+  </system.webServer>
+</configuration>

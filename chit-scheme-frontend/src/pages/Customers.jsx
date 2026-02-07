@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -6,23 +6,32 @@ import {
   Form,
   Modal,
   Space,
-  Tag,
   Row,
   Col,
   Select,
   message,
-  Dropdown,
-  Menu,
+  Upload,
+  Card,
+  Tag,
 } from "antd";
 import {
-  PlusOutlined,
   EditOutlined,
   DeleteOutlined,
+  PlusOutlined,
+  UploadOutlined,
+  DownloadOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
-import { customersAPI, statesAPI, districtsAPI, schemesAPI } from "../services/api"; // Assuming api service is structured this way
+import {
+  customersAPI,
+  statesAPI,
+  districtsAPI,
+  schemesAPI,
+  transportersAPI,
+} from "../services/api"; // Assuming api service is structured this way
 import Highlighter from "react-highlight-words";
-import './css/Customers.css';
+import * as XLSX from "xlsx";
+import "./css/Customers.css";
 
 const { Option } = Select;
 
@@ -31,11 +40,11 @@ const generateCustomerId = () => `CUST_${Date.now()}`;
 
 // Helper to generate Fund Number
 const generateFundNumber = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const random = Math.floor(1000 + Math.random() * 9000);
-    return `${year}_${month}_${random}`;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const random = Math.floor(1000 + Math.random() * 9000);
+  return `${year}_${month}_${random}`;
 };
 
 const Customers = () => {
@@ -46,14 +55,17 @@ const Customers = () => {
   const [form] = Form.useForm();
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [idExists, setIdExists] = useState(false);
+  const [codeExists, setCodeExists] = useState(false);
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
+  const [deliveryPoints, setDeliveryPoints] = useState([]);
   const [selectedState, setSelectedState] = useState(null);
-  const [assignSchemeModalVisible, setAssignSchemeModalVisible] = useState(false);
-  
+  const [assignSchemeModalVisible, setAssignSchemeModalVisible] =
+    useState(false);
+
   // Restored Hooks
   const [availableSchemes, setAvailableSchemes] = useState([]);
-  const [selectedSchemes, setSelectedSchemes] = useState([]);
+  const [selectedSchemes, setSelectedSchemes] = useState(null); // Changed to single value
   const [currentCustomerId, setCurrentCustomerId] = useState(null);
   const [selectedSchemeForCreate, setSelectedSchemeForCreate] = useState(null);
   // Filter States
@@ -81,10 +93,17 @@ const Customers = () => {
 
   const columns = [
     {
+      title: "Cust Code",
+      dataIndex: "Customer_Code",
+      key: "Customer_Code",
+      sorter: (a, b) =>
+        (a.Customer_Code || "").localeCompare(b.Customer_Code || ""),
+    },
+    {
       title: "Cust ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
-      sorter: (a, b) => a.Customer_ID - b.Customer_ID,
+      sorter: (a, b) => a.Customer_ID.localeCompare(b.Customer_ID),
     },
     {
       title: "Name",
@@ -105,40 +124,37 @@ const Customers = () => {
       key: "Phone_Number",
     },
     {
+      title: "Reference Name",
+      dataIndex: "Reference_Name",
+      key: "Reference_Name",
+    },
+    {
+      title: "Reference Phone",
+      dataIndex: "Reference_Phone",
+      key: "Reference_Phone",
+    },
+    {
       title: "Type",
       dataIndex: "Customer_Type",
       key: "Customer_Type",
       render: (text) => (
         <Space size="small" wrap>
-            {text ? text.split(',').map(t => <Tag key={t} color="blue">{t}</Tag>) : '-'}
-        </Space>
-      )
-    },
-    {
-      title: "Area",
-      dataIndex: "Area",
-      key: "Area",
-    },
-    {
-      title: "District",
-      dataIndex: "District_Name",
-      key: "District_Name",
-    },
-    {
-      title: "Schemes",
-      dataIndex: "Assigned_Schemes",
-      key: "Assigned_Schemes",
-      render: (text, record) => (
-        <Space size="small" wrap>
-          {text ? (
-            text.split(', ').map((scheme, index) => (
-               <Tag key={index} color="green">{scheme}</Tag>
-            ))
-          ) : (
-             <Tag color="default">{record.total_schemes || 0}</Tag>
-          )}
+          {text
+            ? text.split(",").map((t) => (
+                <Tag key={t} color="blue">
+                  {t}
+                </Tag>
+              ))
+            : "-"}
         </Space>
       ),
+    },
+    {
+      title: "Delivery Point",
+      dataIndex: "Delivery_Point",
+      key: "Delivery_Point",
+      width: 150,
+      ellipsis: true,
     },
     {
       title: "Action",
@@ -176,9 +192,9 @@ const Customers = () => {
         limit: data.pagination?.pageSize || 20,
         search: searchText,
         fund_number: fundNumberSearch,
-        ...params
+        ...params,
       };
-      
+
       const response = await customersAPI.getAll(queryParams);
       setData(response.data);
     } catch (error) {
@@ -209,18 +225,38 @@ const Customers = () => {
 
   const fetchAvailableSchemes = async () => {
     try {
-        const schemesResponse = await schemesAPI.getAll();
-        setAvailableSchemes(schemesResponse.data.schemes || schemesResponse.data || []);
+      const schemesResponse = await schemesAPI.getAll();
+      setAvailableSchemes(
+        schemesResponse.data.schemes || schemesResponse.data || [],
+      );
     } catch (error) {
-        console.error("Fetch schemes error", error);
+      console.error("Fetch schemes error", error);
     }
-  }
+  };
+
+  const fetchDeliveryPoints = async () => {
+    try {
+      const response = await transportersAPI.getAll();
+      const transporters = response.data || [];
+      // Flatten delivery points
+      const points = transporters.flatMap((t) =>
+        (t.delivery_points || []).map((dp) => ({
+          ...dp,
+          Transporter_Name: t.Transporter_Name,
+        })),
+      );
+      setDeliveryPoints(points);
+    } catch (error) {
+      console.error("Fetch delivery points error", error);
+    }
+  };
 
   useEffect(() => {
     fetchCustomers({ page: 1, limit: 20 });
     fetchStates();
     fetchDistricts();
     fetchAvailableSchemes();
+    fetchDeliveryPoints();
   }, []);
 
   const handleTableChange = (pagination) => {
@@ -234,51 +270,84 @@ const Customers = () => {
     setEditingCustomer(record);
     form.setFieldsValue({
       Customer_ID: record.Customer_ID,
+      Customer_Code: record.Customer_Code, // New Field
       Name: record.Name,
       Reference_Name: record.Reference_Name,
-      Customer_Type: record.Customer_Type ? record.Customer_Type.split(',') : [],
+      Reference_Phone: record.Reference_Phone,
+      Customer_Type: record.Customer_Type || "",
       PhoneNumber: record.Phone_Number,
       PhoneNumber2: record.Phone_Number2,
       Address1: record.Address1,
       Address2: record.Address2,
-      Area: record.Area,
+      Delivery_Point_ID: record.Delivery_Point_ID,
       State_ID: record.State_ID,
       District_ID: record.District_ID,
-      Pincode: record.Pincode
+      Pincode: record.Pincode,
     });
     setSelectedState(record.State_ID);
     setModalVisible(true);
   };
 
-  const createCustomer = async (values) => {
+  const onFinishForm = (values) => {
+    if (editingCustomer) {
+      submitCustomerData(values, false);
+    } else {
+      Modal.confirm({
+        title: "Create New Customer",
+        content: (
+          <div>
+            <p>Are you sure you want to create this customer?</p>
+            <p>Do you want to send a "Welcome" WhatsApp notification?</p>
+          </div>
+        ),
+        okText: "Yes, Create & Send WA",
+        cancelText: "No, Create Only",
+        maskClosable: false,
+        closable: false, // Force choice
+        onOk: () => submitCustomerData(values, true),
+        onCancel: () => submitCustomerData(values, false),
+      });
+    }
+  };
+
+  const submitCustomerData = async (values, sendWhatsapp) => {
     try {
-      // Join Customer Types for storage
       const payload = {
         ...values,
-        Customer_ID: editingCustomer ? editingCustomer.Customer_ID : values.Customer_ID,
-        Customer_Type: Array.isArray(values.Customer_Type) ? values.Customer_Type.join(',') : values.Customer_Type,
+        Customer_ID: editingCustomer
+          ? editingCustomer.Customer_ID
+          : values.Customer_ID,
+        Customer_Code: values.Customer_Code, // Include in payload
+        Customer_Type: values.Customer_Type || "",
         PhoneNumber2: values.PhoneNumber2 ? values.PhoneNumber2 : null,
         Reference_Name: values.Reference_Name || null,
         District_ID: values.District_ID || null,
         State_ID: values.State_ID || null,
         Pincode: values.Pincode || null,
+        sendWhatsapp: sendWhatsapp,
+        // Single scheme handling (not array)
+        Scheme_ID: values.Scheme_ID || null,
+        Fund_Number: values.Fund_Number || null,
       };
 
       if (editingCustomer) {
         await customersAPI.update(editingCustomer.Customer_ID, payload);
-          message.success("Customer updated successfully");
+        message.success("Customer updated successfully");
       } else {
         await customersAPI.create(payload);
-          message.success("Customer created successfully");
+        message.success("Customer created successfully");
       }
       setModalVisible(false);
       form.resetFields();
       setEditingCustomer(null);
-      setSelectedSchemeForCreate(null); // Reset scheme selection
+      setSelectedSchemeForCreate(null);
       fetchCustomers({ page: 1, limit: 20 });
     } catch (error) {
       console.error("Save error:", error);
-      message.error("Failed to save customer: " + (error.response?.data?.error || error.message));
+      message.error(
+        "Failed to save customer: " +
+          (error.response?.data?.error || error.message),
+      );
     }
   };
 
@@ -288,8 +357,12 @@ const Customers = () => {
     try {
       // Fetch currently assigned schemes for this customer
       const assignedResponse = await customersAPI.getSchemes(customerId);
-      // Map to just IDs for the Select component
-      setSelectedSchemes(assignedResponse.data.map(s => s.Scheme_ID));
+      // Set to single ID (first scheme) or null
+      setSelectedSchemes(
+        assignedResponse.data.length > 0
+          ? assignedResponse.data[0].Scheme_ID
+          : null,
+      );
     } catch (error) {
       console.error("Error fetching schemes:", error);
       message.error("Failed to load schemes.");
@@ -297,21 +370,64 @@ const Customers = () => {
   };
 
   const handleAssignSchemes = async () => {
-    try {
-      await customersAPI.assignSchemes(currentCustomerId, selectedSchemes);
-      message.success("Schemes assigned successfully!");
-      setAssignSchemeModalVisible(false);
-      fetchCustomers({ page: data.pagination.currentPage || 1, limit: data.pagination.pageSize || 20 });
-    } catch (error) {
-      console.error("Assign schemes error:", error);
-      message.error("Failed to assign schemes.");
-    }
+    // Check if customer already has a scheme
+    const hasExistingScheme =
+      selectedSchemes !== null && selectedSchemes !== undefined;
+
+    const performAssign = async (sendWhatsapp) => {
+      try {
+        // Convert single value to array for backend compatibility
+        const schemeIds = selectedSchemes ? [selectedSchemes] : [];
+
+        await customersAPI.assignSchemes(
+          currentCustomerId,
+          schemeIds,
+          sendWhatsapp,
+        );
+        message.success("Scheme assigned successfully!");
+        setAssignSchemeModalVisible(false);
+        fetchCustomers({
+          page: data.pagination.currentPage || 1,
+          limit: data.pagination.pageSize || 20,
+        });
+      } catch (error) {
+        console.error("Assign schemes error:", error);
+        message.error("Failed to assign scheme.");
+      }
+    };
+
+    Modal.confirm({
+      title: hasExistingScheme
+        ? "Replace Existing Scheme?"
+        : "Confirm Assignment",
+      content: (
+        <div>
+          {hasExistingScheme && (
+            <p style={{ color: "#ff4d4f", fontWeight: "bold" }}>
+              ⚠️ This will replace the customer's existing scheme!
+            </p>
+          )}
+          <p>
+            Are you sure you want to {hasExistingScheme ? "replace" : "assign"}{" "}
+            this scheme?
+          </p>
+          <p>Do you want to send a WhatsApp notification?</p>
+        </div>
+      ),
+      okText: "Yes, Assign & Send",
+      cancelText: "No, Assign Only",
+      maskClosable: false,
+      closable: false,
+      onOk: () => performAssign(true),
+      onCancel: () => performAssign(false),
+    });
   };
 
   const deleteCustomer = (id) => {
     Modal.confirm({
       title: "Are you sure you want to delete this customer?",
-      content: "Deleting this customer will also delete all their Scheme Memberships, Payments, and Auction history. This action cannot be undone.",
+      content:
+        "Deleting this customer will also delete all their Scheme Memberships, Payments, and Auction history. This action cannot be undone.",
       okText: "Yes, Delete It",
       okType: "danger",
       onOk: async () => {
@@ -327,70 +443,203 @@ const Customers = () => {
     });
   };
 
-
-
   const filteredDistricts = selectedState
-    ? districts.filter((d) => d.State_ID === selectedState)
+    ? districts
+        .filter((d) => d.State_ID === selectedState)
+        .sort((a, b) => a.District_Name.localeCompare(b.District_Name))
     : [];
+
+  const handleFileUpload = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const bstr = e.target.result;
+        const wb = XLSX.read(bstr, { type: "binary" });
+        const wsname = wb.SheetNames[0];
+        const ws = wb.Sheets[wsname];
+        const data = XLSX.utils.sheet_to_json(ws);
+
+        if (data.length === 0) {
+          message.error("Excel file is empty");
+          return;
+        }
+
+        // Process uploaded data
+        let successCount = 0;
+        let failCount = 0;
+
+        Modal.confirm({
+          title: "Confirm Bulk Upload",
+          content: `Found ${data.length} records. Proceed to upload?`,
+          onOk: async () => {
+            const hide = message.loading("Uploading records...", 0);
+            for (const row of data) {
+              // Allow mapping flexible column names if needed, but per request strict "Customer ID" and "Phone Number"?
+              // Let's check keys. user said "customer id" and "phone number" only.
+              // We'll normalize keys to be safe.
+              const record = {};
+              for (let key in row) {
+                const cleanKey = key
+                  .trim()
+                  .toLowerCase()
+                  .replace(/_/g, "")
+                  .replace(/\s/g, "");
+                if (
+                  cleanKey.includes("customerid") ||
+                  cleanKey.includes("CUSTID")
+                )
+                  record.Customer_ID = row[key];
+                if (
+                  cleanKey.includes("phonenumber") ||
+                  cleanKey.includes("phone")
+                )
+                  record.Phone_Number = row[key];
+                // Optional: Name? "in the excel i need only customer id and phone number only"
+                // If Name is mandatory in backend, we might have an issue.
+                // Backend model usually requires Name.
+                // Current Form rules: Name required.
+                // I'll assume for bulk upload we might need to dummy it or user provides it.
+                // Wait, "in the excel i need only customer id and phone number only".
+                // Use "Unknown" or Customer ID as name if missing?
+                if (cleanKey.includes("name")) record.Name = row[key];
+              }
+
+              if (!record.Customer_ID || !record.Phone_Number) {
+                // Skipping invalid row
+                console.warn("Skipping row, missing ID or Phone", row);
+                failCount++;
+                continue;
+              }
+
+              const payload = {
+                Customer_ID: String(record.Customer_ID),
+                Phone_Number: String(record.Phone_Number),
+                Name: record.Name || `Customer ${record.Customer_ID}`, // Fallback Name
+                Customer_Type: "", // Blank as requested
+                sendWhatsapp: false, // No WA for bulk likely
+              };
+
+              try {
+                await customersAPI.create(payload);
+                successCount++;
+              } catch (err) {
+                console.error("Failed to upload", payload, err);
+                failCount++;
+              }
+            }
+            hide();
+            message.success(
+              `Upload Complete. Success: ${successCount}, Failed: ${failCount}`,
+            );
+            fetchCustomers({ page: 1 });
+          },
+        });
+      } catch (error) {
+        console.error("Excel parse error", error);
+        message.error("Failed to parse Excel file");
+      }
+    };
+    reader.readAsBinaryString(file);
+    return false; // Prevent auto upload
+  };
+
+  const downloadSampleFile = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      {
+        "Customer ID": "CUST_123456",
+        "Phone Number": "9876543210",
+        Name: "Optional Name",
+      },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Customers");
+    XLSX.writeFile(wb, "customer_upload_sample.xlsx");
+  };
 
   return (
     <>
       <div className="page-header-container">
-        <Row justify="space-between" align="middle" style={{ marginBottom: 16 }}>
-             <Col>
-                 <h2 className="page-title">Customer Management ({data.pagination?.totalRecords || 0} total)</h2>
-             </Col>
-        </Row>
-        
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6} lg={6}>
-              <Input.Search
-                placeholder="Search customers"
-                allowClear
-                enterButton="Search"
-                onSearch={(value) => {
-                  setSearchText(value);
-                  fetchCustomers({ search: value });
-                }}
-                  className="search-input"
-              />
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 16 }}
+        >
+          <Col>
+            <h2 className="page-title">
+              Customer Management ({data.pagination?.totalRecords || 0} total)
+            </h2>
           </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-               <Input.Search
-                placeholder="Search Fund Number"
-                allowClear
-                enterButton="Search"
-                onSearch={(value) => {
-                  setFundNumberSearch(value);
-                  fetchCustomers({ fund_number: value, page: 1 });
-                }}
-                onChange={(e) => {
-                    if(!e.target.value) {
-                        setFundNumberSearch("");
-                        fetchCustomers({ fund_number: "", page: 1 });
-                    }
-                }}
-                className="search-input"
-              />
-          </Col>
-          <Col xs={24} sm={12} md={6} lg={5}>
-               <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                block
-                onClick={() => {
-                  setEditingCustomer(null);
-                  form.resetFields();
-                  setTimeout(() => {
-                      form.setFieldsValue({
-                          Customer_ID: generateCustomerId()
-                      });
-                  }, 100);
-                  setModalVisible(true);
-                }}
-              >
-                Add Customer
+          <Col>
+            <Space>
+              <Button icon={<DownloadOutlined />} onClick={downloadSampleFile}>
+                Sample Excel
               </Button>
+              <Upload
+                beforeUpload={handleFileUpload}
+                showUploadList={false}
+                accept=".xlsx, .xls"
+              >
+                <Button icon={<UploadOutlined />}>Upload Excel</Button>
+              </Upload>
+            </Space>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+          <Col xs={24} sm={12} md={6} lg={5}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              block
+              onClick={async () => {
+                setModalVisible(true);
+                setEditingCustomer(null);
+                form.resetFields();
+                // Auto-fetch next Customer_ID for new customer
+                try {
+                  const response = await customersAPI.getNextCustomerId();
+                  form.setFieldsValue({
+                    Customer_ID: response.data.customerId,
+                  });
+                } catch (error) {
+                  console.error("Failed to fetch next customer ID:", error);
+                  message.error("Failed to generate Customer ID");
+                }
+              }}
+            >
+              Add Customer
+            </Button>
+          </Col>
+          <Col xs={24} sm={12} md={6} lg={6}>
+            <Input.Search
+              placeholder="Search by Name, Phone, Code, ID, or Fund Number"
+              allowClear
+              enterButton="Search"
+              onSearch={(value) => {
+                setSearchText(value);
+                // Updated to search by Code as well if supported by getAll
+                fetchCustomers({ search: value });
+              }}
+              className="search-input"
+            />
+          </Col>
+          <Col xs={24} sm={12} md={6} lg={6}>
+            <Input.Search
+              placeholder="Search Fund Number"
+              allowClear
+              enterButton="Search"
+              onSearch={(value) => {
+                setFundNumberSearch(value);
+                fetchCustomers({ fund_number: value, page: 1 });
+              }}
+              onChange={(e) => {
+                if (!e.target.value) {
+                  setFundNumberSearch("");
+                  fetchCustomers({ fund_number: "", page: 1 });
+                }
+              }}
+              className="search-input"
+            />
           </Col>
         </Row>
       </div>
@@ -409,7 +658,7 @@ const Customers = () => {
           showQuickJumper: true,
         }}
         onChange={handleTableChange}
-        scroll={{ x: 1000 }} // Increased scroll width for responsive table
+        scroll={{ x: 1200 }}
       />
 
       <Modal
@@ -425,79 +674,153 @@ const Customers = () => {
         width="100%"
         style={{ top: 20, maxWidth: 800 }}
       >
-        <Form form={form} onFinish={createCustomer} layout="vertical">
+        <Form form={form} onFinish={onFinishForm} layout="vertical">
           <Row gutter={[16, 0]}>
-            <Col xs={24} md={12}>
-              {!editingCustomer && (
-                <Form.Item
-                  name="Customer_ID"
-                  label="Customer ID"
-                  rules={[
-                    { required: true, message: "Customer ID is required." },
-                    { validator: checkId },
-                  ]}
-                  validateStatus={idExists ? "error" : ""}
-                  help={idExists ? "This Customer ID already exists." : ""}
-                >
-                  <Input placeholder="Unique Customer ID" />
-                </Form.Item>
-              )}
+            {/* Customer ID (Auto-generated but visible) */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item
+                name="Customer_ID"
+                label="Customer ID"
+                rules={[
+                  { required: true, message: "Customer ID is required." },
+                  { validator: checkId },
+                ]}
+                validateStatus={idExists ? "error" : ""}
+                help={idExists ? "This Customer ID already exists." : ""}
+              >
+                <Input placeholder="Unique Customer ID" readOnly={true} />
+              </Form.Item>
+            </Col>
+
+            {/* 1. Customer Code (Manual Entry) */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item
+                name="Customer_Code"
+                label="Customer Code"
+                rules={[
+                  { required: true, message: "Customer Code is required." },
+                  // Add duplicate check logic similar to ID if needed
+                ]}
+              >
+                <Input placeholder="Enter Customer Code" />
+              </Form.Item>
+            </Col>
+
+            {/* 2. Name */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="Name" label="Name">
+                <Input placeholder="Customer's full name" />
+              </Form.Item>
+            </Col>
+
+            {/* 3. Phone Number */}
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="PhoneNumber"
-                label="Phone Number"
-                rules={[{ required: true, message: "Please enter phone number" }]}
+                label="Phone number"
+                rules={[
+                  { required: true, message: "Please enter phone number" },
+                ]}
               >
                 <Input type="number" placeholder="10 digit phone" />
               </Form.Item>
-              <Form.Item
-                name="Name"
-                label="Full Name"
-                rules={[{ required: true, message: "Please enter full name" }]}
-              >
-                <Input placeholder="Customer's full name" />
+            </Col>
+
+            {/* 4. Secondary Phone (Optional) */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="PhoneNumber2" label="Secondary Phone (Optional)">
+                <Input type="number" placeholder="10 digit phone" />
               </Form.Item>
+            </Col>
+
+            {/* 5. Customer Type */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item
+                name="Customer_Type"
+                label="Customer Type"
+                initialValue=""
+              >
+                <Select
+                  placeholder="Select type"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
+                  allowClear
+                >
+                  <Option value="New">New</Option>
+                  <Option value="Regular Customer">Regular Customer</Option>
+                  <Option value="Wholesale">Wholesale</Option>
+                  <Option value="Giftbox">Giftbox</Option>
+                  <Option value="Fund Scheme">Fund Scheme</Option>
+                  <Option value="All">All</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+
+            {/* 6. Address Line 1 */}
+            <Col xs={24} sm={12} md={8}>
               <Form.Item name="Address1" label="Address Line 1">
                 <Input placeholder="Address Line 1" />
               </Form.Item>
+            </Col>
+
+            {/* 7. Address Line 2 */}
+            <Col xs={24} sm={12} md={8}>
               <Form.Item name="Address2" label="Address Line 2">
                 <Input placeholder="Address Line 2" />
               </Form.Item>
-              <Form.Item name="Area" label="Area">
-                <Input placeholder="Customer area" />
-              </Form.Item>
             </Col>
-            <Col xs={24} md={12}>
-              <Form.Item name="Pincode" label="Pincode">
-                <Input type="number" placeholder="6 digit pincode" />
-              </Form.Item>
+
+            {/* 8. State */}
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="State_ID"
                 label="State"
-                rules={[{ required: true, message: "Please select state" }]}
+                // strict requirement removed as per plan
               >
                 <Select
                   placeholder="Select a state"
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   onChange={(value) => {
                     setSelectedState(value);
                     form.setFieldsValue({ District_ID: null });
                   }}
                   allowClear
                 >
-                  {states.map((state) => (
-                    <Option key={state.State_ID} value={state.State_ID}>
-                      {state.State_Name}
-                    </Option>
-                  ))}
+                  {states
+                    .sort((a, b) => a.State_Name.localeCompare(b.State_Name))
+                    .map((state) => (
+                      <Option key={state.State_ID} value={state.State_ID}>
+                        {state.State_Name}
+                      </Option>
+                    ))}
                 </Select>
               </Form.Item>
-              <Form.Item
-                name="District_ID"
-                label="District"
-                // District removed from mandatory
-              >
+            </Col>
+
+            {/* 9. District */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="District_ID" label="District">
                 <Select
                   placeholder="Select a district"
                   disabled={!selectedState}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    (option?.children ?? "")
+                      .toLowerCase()
+                      .includes(input.toLowerCase())
+                  }
                   allowClear
                 >
                   {filteredDistricts.map((district) => (
@@ -510,106 +833,134 @@ const Customers = () => {
                   ))}
                 </Select>
               </Form.Item>
-              <Form.Item
-                name="Customer_Type"
-                label="Customer Type"
-                rules={[{ required: true, message: "Select at least one customer type" }]}
-              >
-                <Select mode="multiple" placeholder="Select type(s)">
-                    <Option value="New">New</Option>
-                    <Option value="Regular Customer">Regular Customer</Option>
-                    <Option value="Wholesale">Wholesale</Option>
-                    <Option value="Giftbox">Giftbox</Option>
-                    <Option value="Fund Scheme">Fund Scheme</Option>
-                </Select>
+            </Col>
+
+            {/* 10. Pincode */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="Pincode" label="Pincode">
+                <Input type="number" placeholder="6 digit pincode" />
               </Form.Item>
-              <Form.Item
-                name="Reference_Name"
-                label="Reference Name"
-              >
+            </Col>
+
+            {/* Reference Fields - Ordered after address info as logically connected to contact info but less primary */}
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="Reference_Name" label="Reference Name">
                 <Input placeholder="Reference name" />
               </Form.Item>
-              <Form.Item name="PhoneNumber2" label="Secondary Phone">
-                <Input type="number" placeholder="10 digit phone (Optional)" />
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="Reference_Phone" label="Reference Phone">
+                <Input type="number" placeholder="Reference Phone Number" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12} md={8}>
+              <Form.Item name="Delivery_Point_ID" label="Delivery point">
+                <Select
+                  placeholder="Select Delivery Point"
+                  showSearch
+                  optionFilterProp="children"
+                >
+                  {deliveryPoints.map((dp) => (
+                    <Option
+                      key={dp.Delivery_Point_ID}
+                      value={dp.Delivery_Point_ID}
+                    >
+                      {dp.Place_Name} ({dp.Transporter_Name})
+                    </Option>
+                  ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>
-          
+
           {/* Scheme Assignment Section (Only for New Customers) */}
           {!editingCustomer && (
-              <>
-                <div style={{ margin: '10px 0', borderTop: '1px solid #f0f0f0', paddingTop: '10px' }}>
-                    <h4 style={{marginBottom: '10px'}}>Assign Initial Schemes (Optional)</h4>
-                </div>
-                <Form.List name="Schemes">
-                  {(fields, { add, remove }) => (
-                    <>
-                      {fields.map(({ key, name, fieldKey, ...restField }) => (
-                        <Row gutter={16} key={key} align="middle">
-                          <Col xs={24} md={11}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'schemeId']}
-                              fieldKey={[fieldKey, 'schemeId']}
-                              label="Select Scheme"
-                              rules={[{ required: true, message: 'Missing scheme' }]}
-                            >
-                              <Select placeholder="Select Scheme">
-                                {availableSchemes.map(s => (
-                                  <Option key={s.Scheme_ID} value={s.Scheme_ID}>{s.Name} (₹{s.Total_Amount})</Option>
-                                ))}
-                              </Select>
-                            </Form.Item>
-                          </Col>
-                          <Col xs={24} md={11}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, 'fundNumber']}
-                              fieldKey={[fieldKey, 'fundNumber']}
-                              label="Fund Number"
-                              initialValue={generateFundNumber()}
-                              rules={[{ required: true, message: 'Missing Fund Number' }]}
-                            >
-                              <Input placeholder="Fund Number" />
-                            </Form.Item>
-                          </Col>
-                          <Col xs={24} md={2}>
-                            <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(name)} style={{ marginTop: 30 }} />
-                          </Col>
-                        </Row>
+            <>
+              <div
+                style={{
+                  margin: "10px 0",
+                  borderTop: "1px solid #f0f0f0",
+                  paddingTop: "10px",
+                }}
+              >
+                <h4 style={{ marginBottom: "10px" }}>
+                  Assign Initial Scheme (Optional - Max 1)
+                </h4>
+              </div>
+              <Row gutter={16}>
+                <Col xs={24} sm={12} md={12}>
+                  <Form.Item name="Scheme_ID" label="Select Scheme">
+                    <Select
+                      placeholder="Select Scheme"
+                      allowClear
+                      showSearch
+                      optionFilterProp="children"
+                      onSelect={async () => {
+                        // Auto-generate fund number when scheme selected
+                        if (!form.getFieldValue("Fund_Number")) {
+                          try {
+                            const response =
+                              await customersAPI.getNextFundNumber();
+                            form.setFieldsValue({
+                              Fund_Number: response.data.fundNumber,
+                            });
+                          } catch (error) {
+                            console.error(
+                              "Failed to fetch fund number:",
+                              error,
+                            );
+                          }
+                        }
+                      }}
+                    >
+                      {availableSchemes.map((s) => (
+                        <Option key={s.Scheme_ID} value={s.Scheme_ID}>
+                          {s.Name}
+                        </Option>
                       ))}
-                      <Form.Item>
-                        <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                          Add Scheme
-                        </Button>
-                      </Form.Item>
-                    </>
-                  )}
-                </Form.List>
-              </>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col xs={24} sm={12} md={12}>
+                  <Form.Item
+                    name="Fund_Number"
+                    label="Fund Number"
+                    rules={[
+                      {
+                        required: !!form.getFieldValue("Scheme_ID"),
+                        message: "Fund Number required when scheme selected",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Auto-generated or enter custom" />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </>
           )}
-
         </Form>
       </Modal>
 
       <Modal
-        title="Assign Schemes"
+        title="Assign Scheme"
         open={assignSchemeModalVisible}
         onCancel={() => setAssignSchemeModalVisible(false)}
         onOk={handleAssignSchemes}
       >
-        <p>Select schemes to assign to this customer:</p>
+        <p>Select scheme to assign to this customer (Max 1):</p>
         <Select
-          mode="multiple"
           className="full-width"
-          placeholder="Select schemes"
+          placeholder="Select scheme"
           value={selectedSchemes}
           onChange={setSelectedSchemes}
           optionFilterProp="children"
+          showSearch
+          allowClear
         >
-          {availableSchemes.map(scheme => (
+          {availableSchemes.map((scheme) => (
             <Option key={scheme.Scheme_ID} value={scheme.Scheme_ID}>
-              {scheme.Name} (₹{scheme.Total_Amount})
+              {scheme.Name}
             </Option>
           ))}
         </Select>
