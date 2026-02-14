@@ -1,6 +1,8 @@
- 
+
 const { executeQuery, executeInsert } = require('../models/db');
 const sql = require('mssql');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
+const { sendWhatsappMessage } = require('../services/whatsappService');
 
 const getPaymentsByCustomer = async (req, res) => {
   try {
@@ -13,13 +15,11 @@ const getPaymentsByCustomer = async (req, res) => {
       ORDER BY p.Due_Month DESC
     `, [{ value: parseInt(customerId), type: sql.Int }]);
     
-    res.json(result);
+    return sendSuccess(res, 'Payments fetched successfully', result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch payments', error);
   }
 };
-
-// Removed getDuesByCustomerAndScheme as we are strictly using Fund Number now
 
 const getDuesByFundNumber = async (req, res) => {
   try {
@@ -31,15 +31,11 @@ const getDuesByFundNumber = async (req, res) => {
     `, [
       { value: fundNumber, type: sql.VarChar(50) }
     ]);
-    res.json(result);
+    return sendSuccess(res, 'Dues fetched successfully', result);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch dues', error);
   }
 };
-
-const { sendWhatsappMessage } = require('../services/whatsappService');
-
-// ... other imports ...
 
 const recordPayment = async (req, res) => {
   const connection = await sql.connect(require('../config/database').dbConfig);
@@ -47,11 +43,14 @@ const recordPayment = async (req, res) => {
 
   try {
     // Simplified: Fund Number is now mandatory as per requirement
+    console.log('[recordPayment] Request Body:', JSON.stringify(req.body, null, 2));
     const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number, sendWhatsapp } = req.body;
+    console.log('[recordPayment] Extracted Fund_Number:', Fund_Number);
+
     
     // Validate Fund_Number presence
     if (!Fund_Number) {
-         return res.status(400).json({ error: 'Fund Number is required' });
+         return sendError(res, 'Fund Number is required', null, 400);
     }
 
     // Lookup Scheme and Customer from Fund_Number to populate Payment_Master
@@ -65,7 +64,7 @@ const recordPayment = async (req, res) => {
         `);
 
     if (memberCheck.recordset.length === 0) {
-        return res.status(404).json({ error: 'Invalid Fund Number' });
+        return sendError(res, 'Invalid Fund Number', null, 404);
     }
 
     const { Customer_ID, Scheme_ID, Phone_Number, Name } = memberCheck.recordset[0];
@@ -112,11 +111,10 @@ const recordPayment = async (req, res) => {
             .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }
 
-    res.status(201).json({ message: 'Payment recorded successfully', payId: result.recordset[0].Pay_ID });
+    return sendSuccess(res, 'Payment recorded successfully', { payId: result.recordset[0].Pay_ID }, 201);
   } catch (error) {
     if (transaction.active) await transaction.rollback();
-    console.error('❌ recordPayment Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to record payment', error);
   } finally {
     // await connection.close(); // Main pool handles management usually
   }
@@ -212,7 +210,7 @@ const getAllPayments = async (req, res) => {
       executeQuery(countQuery, params)
     ]);
 
-    res.json({
+    return sendSuccess(res, 'Payments fetched successfully', {
       payments,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
@@ -222,8 +220,7 @@ const getAllPayments = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ getAllPayments Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch payments', error);
   }
 };
 
@@ -235,7 +232,7 @@ const payAllDues = async (req, res) => {
     const { fundNumber } = req.body;
     
     if (!fundNumber) {
-      return res.status(400).json({ error: 'Fund Number is required' });
+      return sendError(res, 'Fund Number is required', null, 400);
     }
 
     // Lookup Member Details
@@ -244,7 +241,7 @@ const payAllDues = async (req, res) => {
         .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
 
     if (memberCheck.recordset.length === 0) {
-        return res.status(404).json({ error: 'Invalid Fund Number' });
+        return sendError(res, 'Invalid Fund Number', null, 404);
     }
 
     const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
@@ -266,7 +263,7 @@ const payAllDues = async (req, res) => {
 
     if (pendingDues.recordset.length === 0) {
         await transaction.rollback();
-        return res.json({ success: true, message: 'No pending dues found for this Fund Number.' });
+        return sendSuccess(res, 'No pending dues found for this Fund Number');
     }
 
     let totalPaid = 0;
@@ -308,16 +305,11 @@ const payAllDues = async (req, res) => {
     }
 
     await transaction.commit();
-    res.json({ 
-        success: true, 
-        message: `Successfully paid all dues. Total Amount: ₹${totalPaid}`, 
-        transactionId 
-    });
+    return sendSuccess(res, `Successfully paid all dues. Total Amount: ₹${totalPaid}`, { transactionId });
 
   } catch (error) {
     if (transaction.active) await transaction.rollback();
-    console.error('❌ payAllDues Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to pay all dues', error);
   }
 };
 

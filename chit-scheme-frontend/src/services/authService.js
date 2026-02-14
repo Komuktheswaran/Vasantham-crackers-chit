@@ -15,12 +15,14 @@ export const login = async (username, password) => {
       password
     });
 
-    if (response.data.token) {
-      await storage.setItem(TOKEN_KEY, response.data.token);
-      await storage.setItem(USER_KEY, JSON.stringify(response.data.user));
+    const result = response.data.data || response.data;
+
+    if (result.token) {
+      await storage.setItem(TOKEN_KEY, result.token);
+      await storage.setItem(USER_KEY, JSON.stringify(result.user));
     }
 
-    return response.data;
+    return result;
   } catch (error) {
     throw error.response?.data || error;
   }

@@ -1,6 +1,7 @@
 const { executeQuery } = require('../models/db');
 const sql = require('mssql');
 const { convertToCSV, formatDateForCSV } = require('../utils/csvHelper');
+const { sendError } = require('../utils/responseHandler');
 
 /**
  * Export customers with optional filters
@@ -117,10 +118,9 @@ const exportCustomers = async (req, res) => {
     // Set headers for file download
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename=customers.csv');
-    res.send('\ufeff' + csv); // Add BOM for proper UTF-8 encoding in Excel
+    res.send('\ufeff' + csv);
   } catch (error) {
-    console.error('❌ exportCustomers Error:', error);
-    res.status(500).json({ error: error.message });
+    if (!res.headersSent) return sendError(res, 'Export customers failed', error);
   }
 };
 
@@ -131,8 +131,6 @@ const exportPayments = async (req, res) => {
   try {
     const { date_from, date_to, customer_id, scheme_id, transaction_id } = req.query;
     
-    console.log('📥 Payment Export Filters:', { date_from, date_to, customer_id, scheme_id, transaction_id });
-
     let query = `
       SELECT DISTINCT 
         pm.Pay_ID,
@@ -210,13 +208,8 @@ const exportPayments = async (req, res) => {
 
     query += ` ORDER BY pm.Amount_Received_date DESC`;
     
-    console.log('📊 Payment Export Query:', query);
-    console.log('📊 Payment Export Params:', params);
-
     const payments = await executeQuery(query, params);
     
-    console.log(`✅ Found ${payments.length} payment records`);
-
     // Format dates and handle Transaction ID logic
     const formattedPayments = payments.map(p => {
       let paymentMode = p.Payment_Mode || 'Cash'; // Default to Cash if null
@@ -265,8 +258,7 @@ const exportPayments = async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=payments.csv');
     res.send('\ufeff' + csv);
   } catch (error) {
-    console.error('❌ exportPayments Error:', error);
-    res.status(500).json({ error: error.message });
+    if (!res.headersSent) return sendError(res, 'Export payments failed', error);
   }
 };
 
@@ -337,8 +329,7 @@ const exportSchemes = async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=schemes.csv');
     res.send('\ufeff' + csv);
   } catch (error) {
-    console.error('❌ exportSchemes Error:', error);
-    res.status(500).json({ error: error.message });
+    if (!res.headersSent) return sendError(res, 'Export schemes failed', error);
   }
 };
 
@@ -434,8 +425,7 @@ const exportOrders = async (req, res) => {
     res.setHeader('Content-Disposition', 'attachment; filename=orders.csv');
     res.send('\ufeff' + csv);
   } catch (error) {
-    console.error('❌ exportOrders Error:', error);
-    res.status(500).json({ error: error.message });
+    if (!res.headersSent) return sendError(res, 'Export orders failed', error);
   }
 };
 

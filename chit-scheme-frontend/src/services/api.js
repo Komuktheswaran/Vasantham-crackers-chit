@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getToken } from './authService';
+import { message } from 'antd';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
 
@@ -24,10 +25,26 @@ api.interceptors.request.use(
   }
 );
 
+
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const { method } = response.config;
+    // Show success message for non-GET requests if a message is provided
+    if (method !== 'get' && response.data?.message) {
+      message.success(response.data.message);
+    }
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error.response?.data || error.message);
+    const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "An unexpected error occurred";
+    
+    console.error('API Error:', errorMsg, error);
+    
+    // Prevent multiple error toasts if possible, or just show it.
+    // message.error automatically handles stacking somewhat gracefully.
+    message.error(errorMsg);
+
     return Promise.reject(error);
   }
 );
@@ -51,6 +68,7 @@ export const customersAPI = {
   getNextCustomerId: () => api.get('/customers/next-customer-id'),
   getNextFundNumber: () => api.get('/customers/next-fund-number'),
   getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
+  getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
 };
 
 export const schemesAPI = {
@@ -86,8 +104,8 @@ export const dashboardAPI = {
     return api.get('/dashboard/monthly-stats', { params });
   },
   getCustomerStats: () => api.get('/dashboard/customer-stats'),
-  getCustomerDetails: (customerId) => api.get(`/dashboard/customer/${customerId}`),
-  getSchemeDetails: (schemeId) => api.get(`/dashboard/scheme/${schemeId}`),
+  getCustomerDetails: (customerId) => api.get(`/dashboard/customer/${encodeURIComponent(customerId)}`),
+  getSchemeDetails: (schemeId) => api.get(`/dashboard/scheme/${encodeURIComponent(schemeId)}`),
   getMonthDetails: (year, month) => api.get(`/dashboard/month/${year}/${month}`),
 };
 

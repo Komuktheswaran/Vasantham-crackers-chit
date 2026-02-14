@@ -1,6 +1,7 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
 const ExcelJS = require('exceljs');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 // ✅ INLINE CSV/Excel utils - NO external dependencies
 const convertToCsv = (data) => {
@@ -82,15 +83,14 @@ const getAllSchemes = async (req, res) => {
     const totalResult = await executeQuery(totalQuery);
 
     // ✅ FRONTEND EXPECTS: { schemes: [], total: 0 }
-    res.json({
+    return res.json({
       schemes,
       total: totalResult[0]?.total || 0,
       page: parseInt(page),
       limit: limit ? parseInt(limit) : schemes.length
     });
   } catch (error) {
-    console.error('❌ getAllSchemes Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch schemes', error);
   }
 };
 
@@ -103,11 +103,11 @@ const getSchemeById = async (req, res) => {
     );
     
     if (scheme.length === 0) {
-      return res.status(404).json({ error: 'Scheme not found' });
+      return sendError(res, 'Scheme not found', null, 404);
     }
     res.json(scheme[0]);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch scheme details', error);
   }
 };
 
@@ -131,13 +131,9 @@ const createScheme = async (req, res) => {
       ]
     );
     
-    res.status(201).json({ 
-      success: true, 
-      schemeId: result.Scheme_ID, 
-      message: 'Scheme created successfully' 
-    });
+    return sendSuccess(res, 'Scheme created successfully', { schemeId: result.Scheme_ID }, 201);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to create scheme', error);
   }
 };
 
@@ -164,9 +160,9 @@ const updateScheme = async (req, res) => {
       ]
     );
     
-    res.json({ success: true, message: 'Scheme updated successfully' });
+    return sendSuccess(res, 'Scheme updated successfully');
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to update scheme', error);
   }
 };
 
@@ -200,10 +196,9 @@ const deleteScheme = async (req, res) => {
       [{ value: schemeId, type: sql.Int }]
     );
     
-    res.json({ success: true, message: 'Scheme and all associated data deleted successfully' });
+    return sendSuccess(res, 'Scheme and all associated data deleted successfully');
   } catch (error) {
-    console.error('Delete scheme error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to delete scheme', error);
   }
 };
 
@@ -217,7 +212,8 @@ const downloadSchemes = async (req, res) => {
     res.attachment('schemes.csv');
     res.send(csvData);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    // res.status(500).json({ error: error.message });
+    if (!res.headersSent) return sendError(res, 'Download failed', error);
   }
 };
 
@@ -288,7 +284,7 @@ const getSchemeMembers = async (req, res) => {
       executeQuery(countQueryStr, params)
     ]);
 
-    res.json({
+    return sendSuccess(res, 'Scheme members fetched successfully', {
       members,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
@@ -299,21 +295,20 @@ const getSchemeMembers = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ getSchemeMembers Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch scheme members', error);
   }
 };
 
 const uploadSchemes = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      return sendError(res, 'No file uploaded', null, 400);
     }
 
     const schemes = await parseExcel(req.file.buffer);
     
     if (!schemes || schemes.length === 0) {
-      return res.status(400).json({ error: 'No schemes found in file' });
+      return sendError(res, 'No schemes found in file', null, 400);
     }
 
     let successCount = 0;
@@ -349,14 +344,10 @@ const uploadSchemes = async (req, res) => {
       }
     }
 
-    res.json({ 
-        success: true, 
-        message: `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount}` 
-    });
+    return sendSuccess(res, `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount}`);
 
   } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to upload schemes', error);
   }
 };
 

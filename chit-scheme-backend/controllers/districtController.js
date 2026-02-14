@@ -1,11 +1,12 @@
 const { executeQuery } = require('../models/db');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 const getAllDistricts = async (req, res) => {
   try {
     const districts = await executeQuery('SELECT * FROM District_Master');
-    res.json(districts);
+    return sendSuccess(res, 'Districts fetched successfully', districts);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch districts', error);
   }
 };
 

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Card, message, Checkbox } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
-import './css/Login.css';
+import React, { useState } from "react";
+import { Form, Input, Button, Card, message, Checkbox } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
+import { login } from "../services/authService";
+import "./css/Login.css";
 
 const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
@@ -14,15 +14,17 @@ const Login = ({ onLogin }) => {
     try {
       const data = await login(values.username, values.password);
       message.success(`Welcome back, ${data.user.name || data.user.username}!`);
-      
+
       // Call parent callback if provided
       if (onLogin) {
         onLogin(data.user);
       }
-      
-      navigate('/');
+
+      navigate("/");
     } catch (error) {
-      message.error(error.error || 'Login failed. Please check your credentials.');
+      message.error(
+        error.error || "Login failed. Please check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
@@ -31,7 +33,7 @@ const Login = ({ onLogin }) => {
   return (
     <div className="login-container">
       <div className="login-background"></div>
-      <Card className="login-card" bordered={false}>
+      <Card className="login-card" variant="borderless">
         <div className="login-header">
           <div className="company-logo">
             <div className="logo-icon">🎆</div>
@@ -50,8 +52,8 @@ const Login = ({ onLogin }) => {
           <Form.Item
             name="username"
             rules={[
-              { required: false, message: 'Please input your username!' },
-              { min: 3, message: 'Username must be at least 3 characters' }
+              { required: false, message: "Please input your username!" },
+              { min: 3, message: "Username must be at least 3 characters" },
             ]}
           >
             <Input
@@ -64,8 +66,8 @@ const Login = ({ onLogin }) => {
           <Form.Item
             name="password"
             rules={[
-              { required: true, message: 'Please input your password!' },
-              { min: 6, message: 'Password must be at least 6 characters' }
+              { required: true, message: "Please input your password!" },
+              { min: 6, message: "Password must be at least 6 characters" },
             ]}
           >
             <Input.Password
@@ -89,7 +91,7 @@ const Login = ({ onLogin }) => {
               loading={loading}
               block
             >
-              {loading ? 'Logging in...' : 'Log In'}
+              {loading ? "Logging in..." : "Log In"}
             </Button>
           </Form.Item>
         </Form>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -10,17 +10,21 @@ import {
   Popconfirm,
   Space,
   Tag,
-  Card
-} from 'antd';
+  Card,
+} from "antd";
 import {
   UserAddOutlined,
   EditOutlined,
   DeleteOutlined,
-  ReloadOutlined
-  
-} from '@ant-design/icons';
-import { getUsers, createUser, updateUser, deleteUser } from '../services/userService';
-import './css/UserManagement.css';
+  ReloadOutlined,
+} from "@ant-design/icons";
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "../services/userService";
+import "./css/UserManagement.css";
 
 const { Option } = Select;
 
@@ -38,10 +42,12 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data = await getUsers();
-      setUsers(data);
+      const response = await getUsers();
+      // Handle various response structures (wrapper vs direct array)
+      const userList = response.users || response.data || response || [];
+      setUsers(Array.isArray(userList) ? userList : []);
     } catch (error) {
-      message.error(error.error || 'Failed to fetch users');
+      message.error(error.error || "Failed to fetch users");
     } finally {
       setLoading(false);
     }
@@ -58,7 +64,7 @@ const UserManagement = () => {
     form.setFieldsValue({
       username: user.Username,
       fullName: user.Full_Name,
-      role: user.Role
+      role: user.Role,
     });
     setModalVisible(true);
   };
@@ -66,10 +72,10 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     try {
       await deleteUser(userId);
-      message.success('User deleted successfully');
+      message.success("User deleted successfully");
       fetchUsers();
     } catch (error) {
-      message.error(error.error || 'Failed to delete user');
+      message.error(error.error || "Failed to delete user");
     }
   };
 
@@ -80,84 +86,85 @@ const UserManagement = () => {
         const updateData = {
           username: values.username,
           fullName: values.fullName,
-          role: values.role
+          role: values.role,
         };
-        
+
         // Only include password if it was changed
         if (values.password) {
           updateData.password = values.password;
         }
 
         await updateUser(editingUser.User_ID, updateData);
-        message.success('User updated successfully');
+        message.success("User updated successfully");
       } else {
         // Create new user
         await createUser({
           username: values.username,
           password: values.password,
           fullName: values.fullName,
-          role: values.role
+          role: values.role,
         });
-        message.success('User created successfully');
+        message.success("User created successfully");
       }
 
       setModalVisible(false);
       form.resetFields();
       fetchUsers();
     } catch (error) {
-      const errorMsg = error.error || error.errors?.[0]?.msg || 'Operation failed';
+      const errorMsg =
+        error.error || error.errors?.[0]?.msg || "Operation failed";
       message.error(errorMsg);
     }
   };
 
   const columns = [
     {
-      title: 'User ID',
-      dataIndex: 'User_ID',
-      key: 'User_ID',
-      width: 100
+      title: "User ID",
+      dataIndex: "User_ID",
+      key: "User_ID",
+      width: 100,
     },
     {
-      title: 'Username',
-      dataIndex: 'Username',
-      key: 'Username',
+      title: "Username",
+      dataIndex: "Username",
+      key: "Username",
       width: 120,
-      sorter: (a, b) => a.Username.localeCompare(b.Username)
+      sorter: (a, b) => a.Username.localeCompare(b.Username),
     },
     {
-      title: 'Full Name',
-      dataIndex: 'Full_Name',
-      key: 'Full_Name',
+      title: "Full Name",
+      dataIndex: "Full_Name",
+      key: "Full_Name",
       width: 150,
-      render: (text) => text || '-'
+      render: (text) => text || "-",
     },
     {
-      title: 'Role',
-      dataIndex: 'Role',
-      key: 'Role',
+      title: "Role",
+      dataIndex: "Role",
+      key: "Role",
       width: 100,
       render: (role) => (
-        <Tag color={role === 'admin' ? 'red' : 'blue'}>
+        <Tag color={role === "admin" ? "red" : "blue"}>
           {role?.toUpperCase()}
         </Tag>
       ),
       filters: [
-        { text: 'Admin', value: 'admin' },
-        { text: 'User', value: 'user' }
+        { text: "Admin", value: "admin" },
+        { text: "User", value: "user" },
       ],
-      onFilter: (value, record) => record.Role === value
+      onFilter: (value, record) => record.Role === value,
     },
     {
-      title: 'Created At',
-      dataIndex: 'Created_At',
-      key: 'Created_At',
+      title: "Created At",
+      dataIndex: "Created_At",
+      key: "Created_At",
       width: 120,
-      render: (date) => date ? new Date(date).toLocaleDateString() : '-',
-      sorter: (a, b) => new Date(a.Created_At) - new Date(b.Created_At)
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+      sorter: (a, b) => new Date(a.Created_At) - new Date(b.Created_At),
     },
     {
-      title: 'Actions',
-      key: 'actions',
+      title: "Actions",
+      key: "actions",
       width: 150,
       render: (_, record) => (
         <Space size="small">
@@ -180,8 +187,8 @@ const UserManagement = () => {
             </Button>
           </Popconfirm>
         </Space>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -214,21 +221,22 @@ const UserManagement = () => {
         pagination={{
           pageSize: 10,
           showTotal: (total) => `Total ${total} users`,
-          showSizeChanger: true
+          showSizeChanger: true,
         }}
         scroll={{ x: 800 }}
       />
 
       <Modal
-        title={editingUser ? 'Edit User' : 'Create New User'}
+        title={editingUser ? "Edit User" : "Create New User"}
         open={modalVisible}
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();
         }}
         onOk={() => form.submit()}
-        okText={editingUser ? 'Update' : 'Create'}
+        okText={editingUser ? "Update" : "Create"}
         width={500}
+        forceRender
       >
         <Form
           form={form}
@@ -240,8 +248,8 @@ const UserManagement = () => {
             label="Username"
             name="username"
             rules={[
-              { required: true, message: 'Please input username!' },
-              { min: 3, max: 50, message: 'Username must be 3-50 characters' }
+              { required: true, message: "Please input username!" },
+              { min: 3, max: 50, message: "Username must be 3-50 characters" },
             ]}
           >
             <Input placeholder="Enter username" disabled={!!editingUser} />
@@ -253,11 +261,15 @@ const UserManagement = () => {
             rules={[
               {
                 required: !editingUser,
-                message: 'Please input password!'
+                message: "Please input password!",
               },
-              { min: 6, message: 'Password must be at least 6 characters' }
+              { min: 6, message: "Password must be at least 6 characters" },
             ]}
-            extra={editingUser ? 'Leave blank to keep current password' : 'Minimum 6 characters'}
+            extra={
+              editingUser
+                ? "Leave blank to keep current password"
+                : "Minimum 6 characters"
+            }
           >
             <Input.Password placeholder="Enter password" />
           </Form.Item>
@@ -266,7 +278,7 @@ const UserManagement = () => {
             label="Full Name"
             name="fullName"
             rules={[
-              { max: 100, message: 'Full name must not exceed 100 characters' }
+              { max: 100, message: "Full name must not exceed 100 characters" },
             ]}
           >
             <Input placeholder="Enter full name (optional)" />
@@ -276,7 +288,7 @@ const UserManagement = () => {
             label="Role"
             name="role"
             initialValue="user"
-            rules={[{ required: true, message: 'Please select a role!' }]}
+            rules={[{ required: true, message: "Please select a role!" }]}
           >
             <Select>
               <Option value="user">User</Option>

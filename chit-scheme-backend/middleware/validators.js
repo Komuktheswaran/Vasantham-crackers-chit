@@ -45,7 +45,7 @@ const paymentValidation = [
   body('Scheme_ID').optional().isInt(),
   body('Amount_Received').isFloat({ min: 0.01 }).withMessage('Amount must be greater than 0'),
   body('Payment_Mode').trim().notEmpty().withMessage('Payment Mode is required').isIn(['Cash', 'UPI', 'Bank Transfer', 'Cheque']).withMessage('Invalid Payment Mode'),
-  body('UPI_Phone_Number').if(body('Payment_Mode').equals('UPI')).trim().notEmpty().withMessage('Phone Number is required for UPI payments').isMobilePhone().withMessage('Invalid Phone Number'),
+  body('UPI_Phone_Number').if(body('Payment_Mode').equals('UPI')).optional({ checkFalsy: true }).trim().isMobilePhone().withMessage('Invalid Phone Number'),
   body('Transaction_ID').optional().trim().escape(),
   body('Payment_Date').optional().isISO8601().withMessage('Invalid Date format'),
   validate

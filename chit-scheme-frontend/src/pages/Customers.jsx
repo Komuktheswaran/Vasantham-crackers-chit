@@ -79,7 +79,8 @@ const Customers = () => {
     }
     try {
       const response = await customersAPI.checkId(value);
-      if (response.data.exists) {
+      const data = response.data.data || response.data;
+      if (data.exists) {
         setIdExists(true);
         return Promise.reject("This Customer ID already exists.");
       }
@@ -196,7 +197,7 @@ const Customers = () => {
       };
 
       const response = await customersAPI.getAll(queryParams);
-      setData(response.data);
+      setData(response.data.data || response.data);
     } catch (error) {
       console.error("Fetch customers error:", error);
       message.error("Failed to fetch customers");
@@ -208,7 +209,7 @@ const Customers = () => {
   const fetchStates = async () => {
     try {
       const response = await statesAPI.getAll();
-      setStates(response.data);
+      setStates(response.data.data || response.data || []);
     } catch (error) {
       console.error("Fetch states error:", error);
     }
@@ -217,7 +218,7 @@ const Customers = () => {
   const fetchDistricts = async () => {
     try {
       const response = await districtsAPI.getAll();
-      setDistricts(response.data);
+      setDistricts(response.data.data || response.data || []);
     } catch (error) {
       console.error("Fetch districts error:", error);
     }
@@ -226,8 +227,9 @@ const Customers = () => {
   const fetchAvailableSchemes = async () => {
     try {
       const schemesResponse = await schemesAPI.getAll();
+      const data = schemesResponse.data.data || schemesResponse.data || {};
       setAvailableSchemes(
-        schemesResponse.data.schemes || schemesResponse.data || [],
+        data.schemes || (Array.isArray(data) ? data : []) || [],
       );
     } catch (error) {
       console.error("Fetch schemes error", error);
@@ -237,7 +239,7 @@ const Customers = () => {
   const fetchDeliveryPoints = async () => {
     try {
       const response = await transportersAPI.getAll();
-      const transporters = response.data || [];
+      const transporters = response.data.data || response.data || [];
       // Flatten delivery points
       const points = transporters.flatMap((t) =>
         (t.delivery_points || []).map((dp) => ({
@@ -319,7 +321,7 @@ const Customers = () => {
           : values.Customer_ID,
         Customer_Code: values.Customer_Code, // Include in payload
         Customer_Type: values.Customer_Type || "",
-        PhoneNumber2: values.PhoneNumber2 ? values.PhoneNumber2 : null,
+        PhoneNumber2: values.PhoneNumber2 || null,
         Reference_Name: values.Reference_Name || null,
         District_ID: values.District_ID || null,
         State_ID: values.State_ID || null,
@@ -357,12 +359,9 @@ const Customers = () => {
     try {
       // Fetch currently assigned schemes for this customer
       const assignedResponse = await customersAPI.getSchemes(customerId);
+      const data = assignedResponse.data.data || assignedResponse.data || [];
       // Set to single ID (first scheme) or null
-      setSelectedSchemes(
-        assignedResponse.data.length > 0
-          ? assignedResponse.data[0].Scheme_ID
-          : null,
-      );
+      setSelectedSchemes(data.length > 0 ? data[0].Scheme_ID : null);
     } catch (error) {
       console.error("Error fetching schemes:", error);
       message.error("Failed to load schemes.");
@@ -420,6 +419,32 @@ const Customers = () => {
       closable: false,
       onOk: () => performAssign(true),
       onCancel: () => performAssign(false),
+    });
+  };
+
+  const handleRemoveScheme = () => {
+    if (!selectedSchemes) return;
+
+    Modal.confirm({
+      title: "Remove Assigned Scheme?",
+      content:
+        "Are you sure you want to remove this scheme from the customer? This action cannot be undone.",
+      okText: "Yes, Remove",
+      okType: "danger",
+      onOk: async () => {
+        try {
+          await customersAPI.removeScheme(currentCustomerId, selectedSchemes);
+          message.success("Scheme removed successfully");
+          setAssignSchemeModalVisible(false);
+          fetchCustomers({
+            page: data.pagination.currentPage || 1,
+            limit: data.pagination.pageSize || 20,
+          });
+        } catch (error) {
+          console.error("Remove scheme error:", error);
+          message.error("Failed to remove scheme");
+        }
+      },
     });
   };
 
@@ -598,8 +623,9 @@ const Customers = () => {
                 // Auto-fetch next Customer_ID for new customer
                 try {
                   const response = await customersAPI.getNextCustomerId();
+                  const data = response.data.data || response.data;
                   form.setFieldsValue({
-                    Customer_ID: response.data.customerId,
+                    Customer_ID: data.id || data.customerId,
                   });
                 } catch (error) {
                   console.error("Failed to fetch next customer ID:", error);
@@ -673,6 +699,7 @@ const Customers = () => {
         onOk={() => form.submit()}
         width="100%"
         style={{ top: 20, maxWidth: 800 }}
+        forceRender
       >
         <Form form={form} onFinish={onFinishForm} layout="vertical">
           <Row gutter={[16, 0]}>
@@ -902,8 +929,9 @@ const Customers = () => {
                           try {
                             const response =
                               await customersAPI.getNextFundNumber();
+                            const data = response.data.data || response.data;
                             form.setFieldsValue({
-                              Fund_Number: response.data.fundNumber,
+                              Fund_Number: data.fundNumber,
                             });
                           } catch (error) {
                             console.error(
@@ -947,6 +975,22 @@ const Customers = () => {
         open={assignSchemeModalVisible}
         onCancel={() => setAssignSchemeModalVisible(false)}
         onOk={handleAssignSchemes}
+        footer={[
+          <Button
+            key="cancel"
+            onClick={() => setAssignSchemeModalVisible(false)}
+          >
+            Cancel
+          </Button>,
+          selectedSchemes && (
+            <Button key="remove" danger onClick={handleRemoveScheme}>
+              Remove Scheme
+            </Button>
+          ),
+          <Button key="submit" type="primary" onClick={handleAssignSchemes}>
+            Assign / Update
+          </Button>,
+        ]}
       >
         <p>Select scheme to assign to this customer (Max 1):</p>
         <Select

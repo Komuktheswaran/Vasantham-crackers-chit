@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get('/monthly-stats', getMonthlyStats);
 router.get('/customer-stats', getCustomerStats);
-router.get('/customer/:customerId', getCustomerDetails);
+router.get('/customer/:customerId(*)', getCustomerDetails);
 router.get('/scheme/:schemeId', getSchemeDetails);
 router.get('/month/:year/:month', getMonthDetails);
 

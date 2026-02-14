@@ -1,5 +1,7 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
+const { sendWhatsappMessage } = require('../services/whatsappService');
 
 const getAllOrders = async (req, res) => {
   try {
@@ -39,7 +41,7 @@ const getAllOrders = async (req, res) => {
       executeQuery(countQueryStr, params)
     ]);
 
-    res.json({
+    return sendSuccess(res, 'Orders fetched successfully', {
       orders,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
@@ -48,14 +50,9 @@ const getAllOrders = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('getAllOrders error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch orders', error);
   }
 };
-
-const { sendWhatsappMessage } = require('../services/whatsappService');
-
-// ... imports ...
 
 const createOrder = async (req, res) => {
   try {
@@ -107,10 +104,9 @@ const createOrder = async (req, res) => {
          }
     }
 
-    res.status(201).json({ success: true, message: 'Order created successfully' });
+    return sendSuccess(res, 'Order created successfully', null, 201);
   } catch (error) {
-    console.error('createOrder error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to create order', error);
   }
 };
 
@@ -172,10 +168,9 @@ const updateOrder = async (req, res) => {
          }
     }
 
-    res.json({ success: true, message: 'Order updated successfully' });
+    return sendSuccess(res, 'Order updated successfully');
   } catch (error) {
-    console.error('updateOrder error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to update order', error);
   }
 };
 
@@ -186,10 +181,9 @@ const deleteOrder = async (req, res) => {
       'DELETE FROM Order_Tracking WHERE Tracking_ID = @param0',
       [{ value: parseInt(id), type: sql.Int }]
     );
-    res.json({ success: true, message: 'Order deleted successfully' });
+    return sendSuccess(res, 'Order deleted successfully');
   } catch (error) {
-    console.error('deleteOrder error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to delete order', error);
   }
 };
 

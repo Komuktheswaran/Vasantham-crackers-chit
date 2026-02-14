@@ -1,5 +1,6 @@
 const { executeQuery } = require('../models/db');
 const sql = require('mssql');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 const getMonthlyStats = async (req, res) => {
   try {
@@ -69,10 +70,9 @@ const getMonthlyStats = async (req, res) => {
       };
     });
 
-    res.json(monthlyData);
+    return sendSuccess(res, 'Monthly stats fetched successfully', monthlyData);
   } catch (error) {
-    console.error('❌ getMonthlyStats Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch monthly stats', error);
   }
 };
 
@@ -93,10 +93,9 @@ const getCustomerStats = async (req, res) => {
     `;
 
     const result = await executeQuery(query);
-    res.json(result);
+    return sendSuccess(res, 'Customer stats fetched successfully', result);
   } catch (error) {
-    console.error('❌ getCustomerStats Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch customer stats', error);
   }
 };
 
@@ -109,6 +108,10 @@ const getCustomerDetails = async (req, res) => {
       SELECT * FROM Customer_Master WHERE Customer_ID = @param0
     `;
     const customer = await executeQuery(customerQuery, [{ value: customerId, type: sql.VarChar(50) }]);
+
+    if (customer.length === 0) {
+        return sendError(res, 'Customer not found', null, 404);
+    }
 
     // Get schemes with payment status
     const schemesQuery = `
@@ -141,14 +144,13 @@ const getCustomerDetails = async (req, res) => {
     `;
     const payments = await executeQuery(paymentsQuery, [{ value: customerId, type: sql.VarChar(50) }]);
 
-    res.json({
+    return sendSuccess(res, 'Customer dashboard details fetched successfully', {
       customer: customer[0],
       schemes,
       payments
     });
   } catch (error) {
-    console.error('❌ getCustomerDetails Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch customer dashboard details', error);
   }
 };
 
@@ -161,6 +163,10 @@ const getSchemeDetails = async (req, res) => {
       SELECT * FROM Chit_Master WHERE Scheme_ID = @param0
     `;
     const scheme = await executeQuery(schemeQuery, [{ value: parseInt(schemeId), type: sql.Int }]);
+
+    if (scheme.length === 0) {
+        return sendError(res, 'Scheme not found', null, 404);
+    }
 
     // Get members with payment status
     const membersQuery = `
@@ -194,14 +200,13 @@ const getSchemeDetails = async (req, res) => {
     `;
     const monthlyCollection = await executeQuery(monthlyQuery, [{ value: parseInt(schemeId), type: sql.Int }]);
 
-    res.json({
+    return sendSuccess(res, 'Scheme dashboard details fetched successfully', {
       scheme: scheme[0],
       members,
       monthlyCollection
     });
   } catch (error) {
-    console.error('❌ getSchemeDetails Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch scheme dashboard details', error);
   }
 };
 
@@ -249,7 +254,7 @@ const getMonthDetails = async (req, res) => {
     const totalPayments = payments.reduce((sum, p) => sum + parseFloat(p.Amount_Received || 0), 0);
     const totalDues = dues.reduce((sum, d) => sum + parseFloat(d.pending_amount || 0), 0);
 
-    res.json({
+    return sendSuccess(res, 'Month details fetched successfully', {
       summary: {
         totalPayments,
         totalDues,
@@ -260,8 +265,7 @@ const getMonthDetails = async (req, res) => {
       dues
     });
   } catch (error) {
-    console.error('❌ getMonthDetails Error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch month details', error);
   }
 };
 

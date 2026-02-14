@@ -5,24 +5,14 @@ import {
   Modal,
   Form,
   Input,
-  Card,
   Space,
   message,
   Row,
   Col,
-  List,
-  Typography,
 } from "antd";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EnvironmentOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { transportersAPI } from "../services/api";
 import "./css/TransportMaster.css";
-
-const { Title, Text } = Typography;
 
 const TransportMaster = () => {
   const [transporters, setTransporters] = useState([]);
@@ -42,7 +32,7 @@ const TransportMaster = () => {
     setLoading(true);
     try {
       const response = await transportersAPI.getAll();
-      setTransporters(response.data || []);
+      setTransporters(response.data.data || response.data || []);
     } catch (error) {
       console.error("Error fetching transporters:", error);
       message.error("Failed to fetch transporters");
@@ -114,7 +104,7 @@ const TransportMaster = () => {
       // Let's rely on selectedTransporter.delivery_points update
       setSelectedTransporter((prev) => ({
         ...prev,
-        delivery_points: response.data || [],
+        delivery_points: response.data.data || response.data || [],
       }));
     } catch (error) {
       console.error("Failed to fetch DPs", error);
@@ -267,6 +257,7 @@ const TransportMaster = () => {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         onOk={() => form.submit()}
+        forceRender
       >
         <Form form={form} layout="vertical" onFinish={onFinishTransporter}>
           <Form.Item
@@ -296,6 +287,7 @@ const TransportMaster = () => {
         onCancel={() => setDpModalVisible(false)}
         footer={null}
         width={800}
+        forceRender
       >
         <div
           style={{

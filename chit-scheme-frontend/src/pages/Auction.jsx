@@ -43,7 +43,8 @@ const Auction = () => {
     try {
       // 1. Get Customer & Scheme Basic Info
       const custRes = await customersAPI.getByFundNumber(fundNumber);
-      const customers = custRes.data.customers;
+      // API returns { success: true, data: { customers: [], pagination: ... } }
+      const customers = custRes.data.data.customers;
 
       if (!customers || customers.length === 0) {
         message.error("Fund Number not found");
@@ -54,9 +55,10 @@ const Auction = () => {
 
       // 2. Get scheme details for this customer
       const schemesRes = await customersAPI.getSchemes(customer.Customer_ID);
-      const matchingScheme = schemesRes.data.find(
-        (s) => s.Fund_Number === fundNumber,
-      );
+      // API returns { success: true, data: [ ... schemes ... ] }
+      const schemes = schemesRes.data.data || [];
+
+      const matchingScheme = schemes.find((s) => s.Fund_Number === fundNumber);
 
       if (matchingScheme) {
         setCustomerData({
@@ -71,7 +73,8 @@ const Auction = () => {
 
       // 3. Get Dues Info (to calculate pending amount)
       const duesRes = await paymentsAPI.getDues(fundNumber);
-      setDuesData(duesRes.data);
+      // API returns { success: true, data: [ ... dues ... ] }
+      setDuesData(duesRes.data.data || []);
     } catch (error) {
       console.error(error);
       message.error(error.response?.data?.error || "Fund Number not found");

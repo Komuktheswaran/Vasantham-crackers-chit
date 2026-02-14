@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { executeQuery, executeInsert } = require('../models/db');
 const mssql = require('mssql');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 /**
  * Get all users (admin only)
@@ -10,9 +11,9 @@ const getAllUsers = async (req, res) => {
     const users = await executeQuery(
       'SELECT User_ID, Username, Full_Name, Role, Created_At FROM Users ORDER BY Created_At DESC'
     );
-    res.json(users);
+    return sendSuccess(res, 'Users fetched successfully', users);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch users', error);
   }
 };
 
@@ -25,12 +26,12 @@ const createUser = async (req, res) => {
 
     // Validate input
     if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+      return sendError(res, 'Username and password are required', null, 400);
     }
 
     // Validate role
     if (role && !['admin', 'user'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role. Must be "admin" or "user"' });
+      return sendError(res, 'Invalid role. Must be "admin" or "user"', null, 400);
     }
 
     // Check if username already exists
@@ -40,7 +41,7 @@ const createUser = async (req, res) => {
     );
 
     if (existingUsers.length > 0) {
-      return res.status(400).json({ error: 'Username already exists' });
+      return sendError(res, 'Username already exists', null, 400);
     }
 
     // Hash password
@@ -58,12 +59,9 @@ const createUser = async (req, res) => {
       ]
     );
 
-    res.status(201).json({
-      message: 'User created successfully'
-    });
+    return sendSuccess(res, 'User created successfully', null, 201);
   } catch (error) {
-    console.error('Create user error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to create user', error);
   }
 };
 
@@ -77,7 +75,7 @@ const updateUser = async (req, res) => {
 
     // Validate role if provided
     if (role && !['admin', 'user'].includes(role)) {
-      return res.status(400).json({ error: 'Invalid role. Must be "admin" or "user"' });
+      return sendError(res, 'Invalid role. Must be "admin" or "user"', null, 400);
     }
 
     // Check if user exists
@@ -87,7 +85,7 @@ const updateUser = async (req, res) => {
     );
 
     if (existingUsers.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return sendError(res, 'User not found', null, 404);
     }
 
     // Build dynamic update query
@@ -116,7 +114,7 @@ const updateUser = async (req, res) => {
     }
 
     if (updates.length === 0) {
-      return res.status(400).json({ error: 'No fields to update' });
+      return sendError(res, 'No fields to update', null, 400);
     }
 
     params.push({ name: 'id', value: id, type: mssql.Int });
@@ -126,9 +124,9 @@ const updateUser = async (req, res) => {
       params
     );
 
-    res.json({ message: 'User updated successfully' });
+    return sendSuccess(res, 'User updated successfully');
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to update user', error);
   }
 };
 
@@ -141,7 +139,7 @@ const deleteUser = async (req, res) => {
 
     // Prevent self-deletion
     if (req.user.id === parseInt(id)) {
-      return res.status(400).json({ error: 'Cannot delete your own account' });
+      return sendError(res, 'Cannot delete your own account', null, 400);
     }
 
     // Check if user exists
@@ -151,7 +149,7 @@ const deleteUser = async (req, res) => {
     );
 
     if (existingUsers.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return sendError(res, 'User not found', null, 404);
     }
 
     await executeQuery(
@@ -159,9 +157,9 @@ const deleteUser = async (req, res) => {
       [{ name: 'id', value: id, type: mssql.Int }]
     );
 
-    res.json({ message: 'User deleted successfully' });
+    return sendSuccess(res, 'User deleted successfully');
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to delete user', error);
   }
 };
 

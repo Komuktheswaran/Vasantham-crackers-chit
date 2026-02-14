@@ -44,8 +44,11 @@ const Payments = () => {
           has_scheme: "true",
           limit: 1000,
         });
-        setAllCustomers(response.data.customers);
-        setCustomers(response.data.customers);
+        // Access nested data object if it exists (standard backend response wrapper)
+        const resultData = response.data.data || response.data;
+        const customersList = resultData.customers || [];
+        setAllCustomers(customersList);
+        setCustomers(customersList);
       } catch (error) {
         console.error("Error loading customers:", error);
       }
@@ -84,7 +87,7 @@ const Payments = () => {
 
     try {
       const response = await customersAPI.getSchemes(customerId);
-      const schemesList = response.data;
+      const schemesList = response.data.data || response.data || [];
       setSchemes(schemesList);
 
       // Auto-select active scheme if only one exists (or select the first one)
@@ -120,7 +123,7 @@ const Payments = () => {
     setLoading(true);
     try {
       const response = await paymentsAPI.getDues(fundNumber);
-      setDues(response.data);
+      setDues(response.data.data || response.data || []);
     } catch (error) {
       console.error("Error fetching dues:", error);
       message.error("Failed to load dues.");
@@ -233,7 +236,10 @@ const Payments = () => {
       console.error("Payment error:", error);
       message.error(
         "Failed to record payment: " +
-          (error.response?.data?.error || error.message),
+          (error.response?.data?.error ||
+            (error.response?.data?.errors
+              ? error.response.data.errors.map((e) => e.msg).join(", ")
+              : error.message)),
       );
       // If partial failure, we should probably still refresh list
       fetchDues(selectedFundNumber);
@@ -335,7 +341,10 @@ const Payments = () => {
                     try {
                       const response =
                         await customersAPI.getByFundNumber(value);
-                      const customers = response.data.customers;
+                      const customers =
+                        response.data.data?.customers ||
+                        response.data.customers ||
+                        [];
 
                       if (!customers || customers.length === 0) {
                         message.error("Fund Number not found.");
@@ -354,7 +363,9 @@ const Payments = () => {
                       const schemesResponse = await customersAPI.getSchemes(
                         customer.Customer_ID,
                       );
-                      const matchingScheme = schemesResponse.data.find(
+                      const schemesList =
+                        schemesResponse.data.data || schemesResponse.data || [];
+                      const matchingScheme = schemesList.find(
                         (s) => s.Fund_Number === value,
                       );
 
@@ -383,14 +394,13 @@ const Payments = () => {
                   showSearch
                   placeholder="Search by Customer Code, ID, Name or Phone"
                   defaultActiveFirstOption={false}
-                  showArrow={true}
                   filterOption={false}
                   onSearch={handleSearch}
                   onChange={handleCustomerSelect}
                   notFoundContent={null}
                   allowClear
                 >
-                  {customers.map((d) => (
+                  {(customers || []).map((d) => (
                     <Option key={d.Customer_ID} value={d.Customer_ID}>
                       {d.Customer_Code ? `[${d.Customer_Code}] ` : ""} {d.Name}{" "}
                       ({d.Customer_ID}) - {d.Phone_Number}

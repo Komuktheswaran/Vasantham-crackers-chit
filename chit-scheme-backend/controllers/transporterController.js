@@ -1,5 +1,6 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
+const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 const getAllTransporters = async (req, res) => {
   try {
@@ -31,10 +32,9 @@ const getAllTransporters = async (req, res) => {
       transporter.delivery_points = deliveryPoints;
     }
 
-    res.json(transporters);
+    return sendSuccess(res, 'Transporters fetched successfully', transporters);
   } catch (error) {
-    console.error('getAllTransporters error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch transporters', error);
   }
 };
 
@@ -53,7 +53,7 @@ const getTransporterById = async (req, res) => {
     `, [{ value: parseInt(id), type: sql.Int }]);
 
     if (!transporter.length) {
-      return res.status(404).json({ error: 'Transporter not found' });
+      return sendError(res, 'Transporter not found', null, 404);
     }
 
     // Fetch delivery points
@@ -69,10 +69,9 @@ const getTransporterById = async (req, res) => {
 
     transporter[0].delivery_points = deliveryPoints;
 
-    res.json(transporter[0]);
+    return sendSuccess(res, 'Transporter details fetched successfully', transporter[0]);
   } catch (error) {
-    console.error('getTransporterById error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch transporter details', error);
   }
 };
 
@@ -89,14 +88,9 @@ const createTransporter = async (req, res) => {
       { value: Phone_Number, type: sql.VarChar(50) }
     ]);
 
-    res.status(201).json({ 
-      success: true, 
-      transporterId,
-      message: 'Transporter created successfully' 
-    });
+    return sendSuccess(res, 'Transporter created successfully', { transporterId }, 201);
   } catch (error) {
-    console.error('createTransporter error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to create transporter', error);
   }
 };
 
@@ -108,8 +102,8 @@ const updateTransporter = async (req, res) => {
     await executeUpdate(`
       UPDATE Transporters 
       SET Transporter_Name = @param1,
-          Contact_Person = @param2,
-          Phone_Number = @param3
+      Contact_Person = @param2,
+      Phone_Number = @param3
       WHERE Transporter_ID = @param0
     `, [
       { value: parseInt(id), type: sql.Int },
@@ -118,10 +112,9 @@ const updateTransporter = async (req, res) => {
       { value: Phone_Number, type: sql.VarChar(50) }
     ]);
 
-    res.json({ success: true, message: 'Transporter updated successfully' });
+    return sendSuccess(res, 'Transporter updated successfully');
   } catch (error) {
-    console.error('updateTransporter error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to update transporter', error);
   }
 };
 
@@ -139,10 +132,9 @@ const deleteTransporter = async (req, res) => {
       DELETE FROM Transporters WHERE Transporter_ID = @param0
     `, [{ value: parseInt(id), type: sql.Int }]);
 
-    res.json({ success: true, message: 'Transporter deleted successfully' });
+    return sendSuccess(res, 'Transporter deleted successfully');
   } catch (error) {
-    console.error('deleteTransporter error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to delete transporter', error);
   }
 };
 
@@ -162,10 +154,9 @@ const getDeliveryPoints = async (req, res) => {
       ORDER BY Place_Name
     `, [{ value: parseInt(id), type: sql.Int }]);
 
-    res.json(deliveryPoints);
+    return sendSuccess(res, 'Delivery points fetched successfully', deliveryPoints);
   } catch (error) {
-    console.error('getDeliveryPoints error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch delivery points', error);
   }
 };
 
@@ -184,14 +175,9 @@ const addDeliveryPoint = async (req, res) => {
       { value: Branch_Phone || null, type: sql.VarChar(50) }
     ]);
 
-    res.status(201).json({ 
-      success: true, 
-      deliveryPointId,
-      message: 'Delivery point added successfully' 
-    });
+    return sendSuccess(res, 'Delivery point added successfully', { deliveryPointId }, 201);
   } catch (error) {
-    console.error('addDeliveryPoint error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to add delivery point', error);
   }
 };
 
@@ -203,10 +189,9 @@ const deleteDeliveryPoint = async (req, res) => {
       DELETE FROM Delivery_Points WHERE Delivery_Point_ID = @param0
     `, [{ value: parseInt(pointId), type: sql.Int }]);
 
-    res.json({ success: true, message: 'Delivery point deleted successfully' });
+    return sendSuccess(res, 'Delivery point deleted successfully');
   } catch (error) {
-    console.error('deleteDeliveryPoint error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to delete delivery point', error);
   }
 };
 
@@ -225,10 +210,9 @@ const getAllDeliveryPoints = async (req, res) => {
       ORDER BY t.Transporter_Name, dp.Place_Name
     `);
 
-    res.json(deliveryPoints);
+    return sendSuccess(res, 'All delivery points fetched successfully', deliveryPoints);
   } catch (error) {
-    console.error('getAllDeliveryPoints error:', error);
-    res.status(500).json({ error: error.message });
+    return sendError(res, 'Failed to fetch all delivery points', error);
   }
 };
 

@@ -63,9 +63,15 @@ const Dashboard = () => {
         schemesAPI.getAll(),
       ]);
 
-      const schemesList = Array.isArray(schemesRes.data?.schemes)
-        ? schemesRes.data.schemes
-        : [];
+      const customersData = customersRes.data.data || customersRes.data || {};
+      const schemesData = schemesRes.data.data || schemesRes.data || {};
+
+      const schemesList = Array.isArray(schemesData.schemes)
+        ? schemesData.schemes
+        : Array.isArray(schemesData)
+          ? schemesData
+          : [];
+
       // Calculate total fund members from schemes
       const totalFundMembers = schemesList.reduce(
         (sum, scheme) => sum + (scheme.member_count || 0),
@@ -73,7 +79,7 @@ const Dashboard = () => {
       );
 
       setStats({
-        totalCustomers: customersRes.data.pagination?.totalRecords || 0,
+        totalCustomers: customersData.pagination?.totalRecords || 0,
         totalFundMembers: totalFundMembers,
         activeSchemes: schemesList.filter((s) => s.member_count > 0).length,
         activeSchemesList: schemesList, // Pass full list for graph
@@ -93,33 +99,40 @@ const Dashboard = () => {
 
       if (type === "fundNo") {
         const res = await customersAPI.getByFundNumber(value);
-        const customers = res.data.customers;
+        const data = res.data.data || res.data || {};
+        const customers = data.customers || (Array.isArray(data) ? data : []);
+
         if (customers && customers.length > 0) {
           const detailRes = await dashboardAPI.getCustomerDetails(
             customers[0].Customer_ID,
           );
-          customerData = detailRes.data;
+          customerData = detailRes.data.data || detailRes.data;
         }
       } else if (type === "custId") {
         // Use new API for code search
         const res = await customersAPI.getByCode(value);
-        if (res.data && res.data.Customer_ID) {
+        const data = res.data.data || res.data || {};
+
+        if (data && data.Customer_ID) {
           const detailRes = await dashboardAPI.getCustomerDetails(
-            res.data.Customer_ID,
+            data.Customer_ID,
           );
-          customerData = detailRes.data;
+          customerData = detailRes.data.data || detailRes.data;
         } else {
           message.warning("Customer Code not found");
         }
       } else if (type === "phone") {
         const res = await customersAPI.getAll({ search: value });
-        if (res.data.customers && res.data.customers.length > 0) {
+        const data = res.data.data || res.data || {};
+        const customers = data.customers || (Array.isArray(data) ? data : []);
+
+        if (customers && customers.length > 0) {
           // Ideally filter deeper if multiple match, but taking first for now
-          const cust = res.data.customers[0];
+          const cust = customers[0];
           const detailRes = await dashboardAPI.getCustomerDetails(
             cust.Customer_ID,
           );
-          customerData = detailRes.data;
+          customerData = detailRes.data.data || detailRes.data;
         } else {
           message.warning("Customer not found");
         }

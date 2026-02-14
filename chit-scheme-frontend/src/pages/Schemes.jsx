@@ -11,7 +11,6 @@ import {
   message,
   Space,
   Dropdown,
-  Menu,
   Row,
   Col,
 } from "antd";
@@ -85,16 +84,18 @@ const Schemes = () => {
     }
   };
 
-  const downloadMenu = (
-    <Menu>
-      <Menu.Item key="1" onClick={() => handleDownload(false)}>
-        Download All
-      </Menu.Item>
-      <Menu.Item key="2" onClick={() => handleDownload(true)}>
-        Download Filtered
-      </Menu.Item>
-    </Menu>
-  );
+  const downloadItems = [
+    {
+      key: "1",
+      label: "Download All",
+      onClick: () => handleDownload(false),
+    },
+    {
+      key: "2",
+      label: "Download Filtered",
+      onClick: () => handleDownload(true),
+    },
+  ];
 
   useEffect(() => {
     fetchSchemes();
@@ -292,7 +293,7 @@ const Schemes = () => {
               <Button onClick={() => setUploadModalVisible(true)}>
                 <UploadOutlined /> Upload
               </Button>
-              <Dropdown overlay={downloadMenu}>
+              <Dropdown menu={{ items: downloadItems }}>
                 <Button>
                   <DownloadOutlined /> Download
                 </Button>

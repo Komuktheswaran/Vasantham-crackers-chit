@@ -15,6 +15,8 @@ const {
   getNextFundNumber,
   getNextCustomerId,
   getCustomerByFundNumber,
+  getCustomerByCode,
+  removeScheme
 } = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
 const router = express.Router();
@@ -52,7 +54,8 @@ router.get('/next-fund-number', getNextFundNumber);
 router.get('/next-customer-id', getNextCustomerId);
 router.get('/check-id', checkCustomerId);
 router.get('/export', exportCustomers);
-router.get('/fund/:fundNumber', getCustomerByFundNumber);
+router.get('/fund/:fundNumber(*)', getCustomerByFundNumber);
+router.get('/code/:code(*)', getCustomerByCode);
 router.post('/bulk-upload', upload.single('file'), bulkCreateCustomers);
 
 // Customer CRUD
@@ -62,6 +65,7 @@ router.post('/', customerValidation, createCustomer);
 // Scheme assignment - MUST be BEFORE /:id(*) routes to match first
 router.post('/:id(*)/schemes', assignSchemes);
 router.get('/:id(*)/schemes', getCustomerSchemes);
+router.delete('/:id(*)/schemes/:schemeId', removeScheme);
 
 // Generic customer routes with wildcard (AFTER more specific routes)
 router.get('/:id(*)', getCustomerById);

@@ -47,7 +47,10 @@ const SchemeMembers = () => {
       setSchemes(schemesRes.data.schemes || []);
 
       const customersRes = await customersAPI.getAll({ limit: 1000 }); // Get initial batch for select
-      setCustomers(customersRes.data.customers || []);
+      // Backend response wrapper: { success: true, data: { customers: [], pagination: {} } }
+      // Axios wrapper: response.data
+      // So detailed data is in response.data.data
+      setCustomers(customersRes.data.data?.customers || []);
     } catch (error) {
       console.error(error);
     }
@@ -68,12 +71,18 @@ const SchemeMembers = () => {
       if (selectedCustomer) queryParams.customer_id = selectedCustomer;
 
       const response = await schemesAPI.getMembers(queryParams);
-      setData(response.data.members || []);
-      setPagination({
-        ...pagination,
-        current: response.data.pagination.currentPage,
-        total: response.data.pagination.totalRecords,
-      });
+      // API uses sendSuccess, so struct is { success: true, data: { members: [], pagination: {} } }
+      const resultData = response.data.data || {};
+
+      setData(resultData.members || []);
+
+      if (resultData.pagination) {
+        setPagination({
+          ...pagination,
+          current: resultData.pagination.currentPage,
+          total: resultData.pagination.totalRecords,
+        });
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -114,7 +123,9 @@ const SchemeMembers = () => {
   const handleCustomerSearch = async (val) => {
     if (val) {
       const res = await customersAPI.getAll({ search: val });
-      setCustomers(res.data.customers);
+      // API returns { success: true, data: { customers: [], ... } }
+      // Fix: Access res.data.data.customers
+      setCustomers(res.data.data?.customers || []);
     }
   };
 
