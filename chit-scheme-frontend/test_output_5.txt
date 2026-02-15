@@ -1,0 +1,34 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1) 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Scheme updated successfully')
+    Expected: visible
+    Error: strict mode violation: getByText('Scheme updated successfully') resolved to 2 elements:
+        1) <span>Scheme updated successfully</span> aka getByText('Scheme updated successfully', { exact: true })
+        2) <span>Scheme updated successfully!</span> aka getByText('Scheme updated successfully!')
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Scheme updated successfully')[22m
+
+
+      56 |         await page.locator('#Bonus_Amount').fill('500');
+      57 |         await page.getByRole('button', { name: 'OK' }).click();
+    > 58 |         await expect(page.getByText('Scheme updated successfully')).toBeVisible();
+         |                                                                     ^
+      59 |     });
+      60 |
+      61 |     await test.step('3. Transport Master (Create, Add Point, CRUD)', async () => {
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:58:69
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:30:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

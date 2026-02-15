@@ -80,7 +80,7 @@ Layout Styles
 }
 
 .app-sider {
-  box-shadow: 2px 0 8px 0 rgba(29,35,41,.05);
+  box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
   z-index: 10;
   background: #001529 !important;
   border-right: none;
@@ -116,12 +116,12 @@ Layout Styles
   align-items: center;
   border-radius: var(--border-radius-sm);
   transition: var(--transition-base);
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .app-logo-container:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
 
 .app-logo-text {
@@ -145,32 +145,32 @@ Layout Styles
   position: sticky;
   top: 0;
   z-index: 9;
-  box-shadow: 0 1px 4px rgba(0,21,41,0.08);
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
   height: 64px;
 }
 
 .header-left-section {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex: 1;
-    min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* Mobile Menu Trigger */
 .mobile-menu-trigger {
-    display: none;
-    font-size: 18px;
-    padding: 0 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    color: var(--text-main) !important;
+  display: none;
+  font-size: 18px;
+  padding: 0 8px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--text-main) !important;
 }
 
 /* On Desktop, we might want to hide it if we only toggle persistent sidebar, 
@@ -448,13 +448,12 @@ Utilities / Helpers
 
 [data-theme="dark"] .ant-drawer-content,
 [data-theme="dark"] .ant-drawer-header {
-   background-color: var(--bg-card);
-   color: var(--text-main);
+  background-color: var(--bg-card);
+  color: var(--text-main);
 }
 [data-theme="dark"] .ant-drawer-title {
-    color: var(--text-main);
+  color: var(--text-main);
 }
-
 
 .ant-card:hover {
   box-shadow: var(--shadow-xl);
@@ -559,4 +558,29 @@ Responsive Design Breakpoints
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
   }
+}
+
+/* ==========================================================================
+Bright Highlighting for UX
+========================================================================== */
+.bright-highlight
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: #ffd666 !important; /* Bright Yellow/Orange */
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+.bright-highlight
+  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
+  background-color: #e6f7ff !important;
+  border-left: 4px solid #1890ff;
+}
+
+/* Global Select Focus Style */
+.ant-select-focused:not(.ant-select-disabled).ant-select-single:not(
+    .ant-select-customize-input
+  )
+  .ant-select-selector {
+  border-color: #ff4d4f !important; /* Vivid Red for focus */
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
 }

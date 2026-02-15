@@ -186,6 +186,9 @@ const CustomerDownload = () => {
           >
             <Select
               allowClear
+              showSearch
+              optionFilterProp="children"
+              popupClassName="bright-highlight"
               placeholder="Select State"
               value={filters.state}
               onChange={(value) => handleFilterChange("state", value)}
@@ -200,6 +203,9 @@ const CustomerDownload = () => {
 
             <Select
               allowClear
+              showSearch
+              optionFilterProp="children"
+              popupClassName="bright-highlight"
               placeholder="Select District"
               value={filters.district}
               onChange={(value) => handleFilterChange("district", value)}
@@ -222,6 +228,9 @@ const CustomerDownload = () => {
 
             <Select
               allowClear
+              showSearch
+              optionFilterProp="children"
+              popupClassName="bright-highlight"
               placeholder="Filter by Scheme"
               value={filters.scheme_id}
               onChange={(value) => handleFilterChange("scheme_id", value)}
@@ -236,7 +245,9 @@ const CustomerDownload = () => {
 
             <Select
               placeholder="Filter by Type"
+              showSearch
               allowClear
+              popupClassName="bright-highlight"
               style={{ width: "100%" }}
               value={filters.customer_type}
               onChange={(value) => handleFilterChange("customer_type", value)}

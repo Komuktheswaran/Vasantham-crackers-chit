@@ -1,0 +1,15 @@
+﻿
+>>> Testing: Valid String Phone
+  Γ£à Success: 201
+
+>>> Testing: Number Phone
+  Γ£à Success: 201
+
+>>> Testing: Short Name
+  Γ¥î Error 400: "Bad Request"
+
+>>> Testing: Invalid Pincode (5 digits)
+  Γ¥î Error 400: "Bad Request"
+
+>>> Testing: Missing Customer_ID
+  Γ¥î Error 400: "Bad Request"

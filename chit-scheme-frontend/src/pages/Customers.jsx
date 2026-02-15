@@ -36,16 +36,7 @@ import "./css/Customers.css";
 const { Option } = Select;
 
 // Helper to generate unique ID
-const generateCustomerId = () => `CUST_${Date.now()}`;
-
-// Helper to generate Fund Number
-const generateFundNumber = () => {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const random = Math.floor(1000 + Math.random() * 9000);
-  return `${year}_${month}_${random}`;
-};
+// Helpers removed - using backend sequential IDs
 
 const Customers = () => {
   const [data, setData] = useState({ customers: [], pagination: {} });
@@ -511,7 +502,7 @@ const Customers = () => {
                   .replace(/\s/g, "");
                 if (
                   cleanKey.includes("customerid") ||
-                  cleanKey.includes("CUSTID")
+                  cleanKey.includes("custid")
                 )
                   record.Customer_ID = row[key];
                 if (
@@ -521,7 +512,6 @@ const Customers = () => {
                   record.Phone_Number = row[key];
                 // Optional: Name? "in the excel i need only customer id and phone number only"
                 // If Name is mandatory in backend, we might have an issue.
-                // Backend model usually requires Name.
                 // Current Form rules: Name required.
                 // I'll assume for bulk upload we might need to dummy it or user provides it.
                 // Wait, "in the excel i need only customer id and phone number only".
@@ -581,6 +571,37 @@ const Customers = () => {
     XLSX.writeFile(wb, "customer_upload_sample.xlsx");
   };
 
+  const openCustomerModal = async (customer = null) => {
+    setEditingCustomer(customer);
+    if (customer) {
+      form.setFieldsValue({
+        ...customer,
+        PhoneNumber: customer.Phone_Number,
+        PhoneNumber2: customer.Phone_Number2,
+        Reference_Phone: customer.Reference_Phone,
+        Delivery_Point_ID: customer.Delivery_Point_ID,
+        // Schemes: [],
+      });
+      setSelectedState(customer.State_ID);
+    } else {
+      form.resetFields();
+      setSelectedState(null);
+      try {
+        const response = await customersAPI.getNextIds();
+        if (response.data.success) {
+          form.setFieldsValue({
+            Customer_ID: response.data.data.customerId,
+            Fund_Number: response.data.data.fundNumber,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch next IDs:", err);
+        message.error("Failed to generate Customer ID and Fund Number");
+      }
+    }
+    setModalVisible(true);
+  };
+
   return (
     <>
       <div className="page-header-container">
@@ -616,22 +637,7 @@ const Customers = () => {
               type="primary"
               icon={<PlusOutlined />}
               block
-              onClick={async () => {
-                setModalVisible(true);
-                setEditingCustomer(null);
-                form.resetFields();
-                // Auto-fetch next Customer_ID for new customer
-                try {
-                  const response = await customersAPI.getNextCustomerId();
-                  const data = response.data.data || response.data;
-                  form.setFieldsValue({
-                    Customer_ID: data.id || data.customerId,
-                  });
-                } catch (error) {
-                  console.error("Failed to fetch next customer ID:", error);
-                  message.error("Failed to generate Customer ID");
-                }
-              }}
+              onClick={() => openCustomerModal()}
             >
               Add Customer
             </Button>
@@ -695,16 +701,22 @@ const Customers = () => {
           form.resetFields();
           setEditingCustomer(null);
           setSelectedSchemeForCreate(null);
+          setSelectedState(null); // Clear selected state on modal close
         }}
         onOk={() => form.submit()}
         width="100%"
-        style={{ top: 20, maxWidth: 800 }}
+        style={{ top: 20, maxWidth: 1000 }}
         forceRender
       >
-        <Form form={form} onFinish={onFinishForm} layout="vertical">
+        <Form
+          form={form}
+          onFinish={onFinishForm}
+          layout="vertical"
+          size="small"
+        >
           <Row gutter={[16, 0]}>
             {/* Customer ID (Auto-generated but visible) */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item
                 name="Customer_ID"
                 label="Customer ID"
@@ -714,19 +726,20 @@ const Customers = () => {
                 ]}
                 validateStatus={idExists ? "error" : ""}
                 help={idExists ? "This Customer ID already exists." : ""}
+                margin="dense"
               >
                 <Input placeholder="Unique Customer ID" readOnly={true} />
               </Form.Item>
             </Col>
 
             {/* 1. Customer Code (Manual Entry) */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item
                 name="Customer_Code"
                 label="Customer Code"
+                normalize={(value) => value.toUpperCase()}
                 rules={[
                   { required: true, message: "Customer Code is required." },
-                  // Add duplicate check logic similar to ID if needed
                 ]}
               >
                 <Input placeholder="Enter Customer Code" />
@@ -735,33 +748,35 @@ const Customers = () => {
 
             {/* 2. Name */}
             <Col xs={24} sm={12} md={8}>
-              <Form.Item name="Name" label="Name">
-                <Input placeholder="Customer's full name" />
+              <Form.Item
+                name="Name"
+                label="Name"
+                normalize={(value) => value.toUpperCase()}
+              >
+                <Input placeholder="Full name" />
               </Form.Item>
             </Col>
 
             {/* 3. Phone Number */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={4}>
               <Form.Item
                 name="PhoneNumber"
                 label="Phone number"
-                rules={[
-                  { required: true, message: "Please enter phone number" },
-                ]}
+                rules={[{ required: true, message: "Required" }]}
               >
-                <Input type="number" placeholder="10 digit phone" />
+                <Input type="number" placeholder="10 digit" />
               </Form.Item>
             </Col>
 
             {/* 4. Secondary Phone (Optional) */}
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item name="PhoneNumber2" label="Secondary Phone (Optional)">
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="PhoneNumber2" label="Secondary Phone">
                 <Input type="number" placeholder="10 digit phone" />
               </Form.Item>
             </Col>
 
             {/* 5. Customer Type */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item
                 name="Customer_Type"
                 label="Customer Type"
@@ -771,53 +786,42 @@ const Customers = () => {
                   placeholder="Select type"
                   showSearch
                   optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.children ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
                   allowClear
+                  popupClassName="bright-highlight"
                 >
                   <Option value="New">New</Option>
                   <Option value="Regular Customer">Regular Customer</Option>
                   <Option value="Wholesale">Wholesale</Option>
                   <Option value="Giftbox">Giftbox</Option>
                   <Option value="Fund Scheme">Fund Scheme</Option>
+                  <Option value="Guest">Guest</Option>
                   <Option value="All">All</Option>
                 </Select>
               </Form.Item>
             </Col>
 
             {/* 6. Address Line 1 */}
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item name="Address1" label="Address Line 1">
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="Address1" label="Address Line 1" margin="dense">
                 <Input placeholder="Address Line 1" />
               </Form.Item>
             </Col>
 
             {/* 7. Address Line 2 */}
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item name="Address2" label="Address Line 2">
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="Address2" label="Address Line 2" margin="dense">
                 <Input placeholder="Address Line 2" />
               </Form.Item>
             </Col>
 
             {/* 8. State */}
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item
-                name="State_ID"
-                label="State"
-                // strict requirement removed as per plan
-              >
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="State_ID" label="State">
                 <Select
                   placeholder="Select a state"
                   showSearch
                   optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.children ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
+                  popupClassName="bright-highlight"
                   onChange={(value) => {
                     setSelectedState(value);
                     form.setFieldsValue({ District_ID: null });
@@ -836,18 +840,14 @@ const Customers = () => {
             </Col>
 
             {/* 9. District */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item name="District_ID" label="District">
                 <Select
                   placeholder="Select a district"
                   disabled={!selectedState}
                   showSearch
                   optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    (option?.children ?? "")
-                      .toLowerCase()
-                      .includes(input.toLowerCase())
-                  }
+                  popupClassName="bright-highlight"
                   allowClear
                 >
                   {filteredDistricts.map((district) => (
@@ -863,30 +863,31 @@ const Customers = () => {
             </Col>
 
             {/* 10. Pincode */}
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item name="Pincode" label="Pincode">
                 <Input type="number" placeholder="6 digit pincode" />
               </Form.Item>
             </Col>
 
-            {/* Reference Fields - Ordered after address info as logically connected to contact info but less primary */}
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item name="Reference_Name" label="Reference Name">
+            {/* Reference Fields */}
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="Reference_Name" label="Ref Name">
                 <Input placeholder="Reference name" />
               </Form.Item>
             </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Form.Item name="Reference_Phone" label="Reference Phone">
-                <Input type="number" placeholder="Reference Phone Number" />
+            <Col xs={24} sm={12} md={6}>
+              <Form.Item name="Reference_Phone" label="Ref Phone">
+                <Input type="number" placeholder="Ref Phone" />
               </Form.Item>
             </Col>
 
-            <Col xs={24} sm={12} md={8}>
+            <Col xs={24} sm={12} md={6}>
               <Form.Item name="Delivery_Point_ID" label="Delivery point">
                 <Select
-                  placeholder="Select Delivery Point"
+                  placeholder="Select DP"
                   showSearch
                   optionFilterProp="children"
+                  popupClassName="bright-highlight"
                 >
                   {deliveryPoints.map((dp) => (
                     <Option
@@ -922,21 +923,20 @@ const Customers = () => {
                       placeholder="Select Scheme"
                       allowClear
                       showSearch
+                      popupClassName="scheme-dropdown"
                       optionFilterProp="children"
                       onSelect={async () => {
-                        // Auto-generate fund number when scheme selected
+                        // Auto-generate fund number if not already set
                         if (!form.getFieldValue("Fund_Number")) {
                           try {
-                            const response =
-                              await customersAPI.getNextFundNumber();
-                            const data = response.data.data || response.data;
+                            const res = await customersAPI.getNextFundNumber();
                             form.setFieldsValue({
-                              Fund_Number: data.fundNumber,
+                              Fund_Number: res.data.data.fundNumber,
                             });
-                          } catch (error) {
+                          } catch (err) {
                             console.error(
-                              "Failed to fetch fund number:",
-                              error,
+                              "Failed to fetch next fund number:",
+                              err,
                             );
                           }
                         }
@@ -998,6 +998,7 @@ const Customers = () => {
           placeholder="Select scheme"
           value={selectedSchemes}
           onChange={setSelectedSchemes}
+          popupClassName="scheme-dropdown"
           optionFilterProp="children"
           showSearch
           allowClear

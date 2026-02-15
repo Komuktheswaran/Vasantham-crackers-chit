@@ -1,0 +1,73 @@
+﻿
+Running 1 test using 1 worker
+
+  Γ£ÿ  1 [chromium] ΓÇ║ tests\app.spec.js:7:5 ΓÇ║ End-to-End Application Flow (7.9s)
+  Γ£ÿ  2 [chromium] ΓÇ║ tests\app.spec.js:7:5 ΓÇ║ End-to-End Application Flow (retry #1) (6.7s)
+
+
+  1) [chromium] ΓÇ║ tests\app.spec.js:7:5 ΓÇ║ End-to-End Application Flow ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: locator.click: Error: strict mode violation: getByRole('menuitem', { name: 'Schemes' }) resolved to 2 elements:
+        1) <li tabindex="-1" role="menuitem" class="ant-menu-item" aria-describedby=":r7:" data-menu-id="rc-menu-uuid-62529-1-/schemes">ΓÇª</li> aka getByRole('menuitem', { name: 'money-collect Schemes' })
+        2) <li tabindex="-1" role="menuitem" class="ant-menu-item" aria-describedby=":r9:" data-menu-id="rc-menu-uuid-62529-1-/scheme-members">ΓÇª</li> aka getByRole('menuitem', { name: 'usergroup-add Assigned Schemes' })
+
+    Call log:
+    [2m  - waiting for getByRole('menuitem', { name: 'Schemes' })[22m
+
+
+      38 |
+      39 |   // 4. Schemes - Create Scheme
+    > 40 |   await page.getByRole('menuitem', { name: 'Schemes' }).click();
+         |                                                         ^
+      41 |   await page.getByRole('button', { name: '+ New Scheme' }).click();
+      42 |   await page.getByRole('textbox', { name: '* Scheme Name' }).fill('samp5000');
+      43 |   await page.getByRole('spinbutton', { name: '* Amount Per Month' }).fill('500000');
+        at F:\React Dev\chit\chit-scheme-frontend\tests\app.spec.js:40:57
+
+    Error Context: test-results\app-End-to-End-Application-Flow-chromium\error-context.md
+
+    attachment #2: trace (application/zip) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\app-End-to-End-Application-Flow-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\app-End-to-End-Application-Flow-chromium\trace.zip
+
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Retry #1 ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error: locator.click: Error: strict mode violation: getByRole('menuitem', { name: 'Schemes' }) resolved to 2 elements:
+        1) <li tabindex="-1" role="menuitem" class="ant-menu-item" aria-describedby=":r7:" data-menu-id="rc-menu-uuid-26314-1-/schemes">ΓÇª</li> aka getByRole('menuitem', { name: 'money-collect Schemes' })
+        2) <li tabindex="-1" role="menuitem" class="ant-menu-item" aria-describedby=":r9:" data-menu-id="rc-menu-uuid-26314-1-/scheme-members">ΓÇª</li> aka getByRole('menuitem', { name: 'usergroup-add Assigned Schemes' })
+
+    Call log:
+    [2m  - waiting for getByRole('menuitem', { name: 'Schemes' })[22m
+
+
+      38 |
+      39 |   // 4. Schemes - Create Scheme
+    > 40 |   await page.getByRole('menuitem', { name: 'Schemes' }).click();
+         |                                                         ^
+      41 |   await page.getByRole('button', { name: '+ New Scheme' }).click();
+      42 |   await page.getByRole('textbox', { name: '* Scheme Name' }).fill('samp5000');
+      43 |   await page.getByRole('spinbutton', { name: '* Amount Per Month' }).fill('500000');
+        at F:\React Dev\chit\chit-scheme-frontend\tests\app.spec.js:40:57
+
+    attachment #1: video (video/webm) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\app-End-to-End-Application-Flow-chromium-retry1\video.webm
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+    Error Context: test-results\app-End-to-End-Application-Flow-chromium-retry1\error-context.md
+
+    attachment #3: trace (application/zip) ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+    test-results\app-End-to-End-Application-Flow-chromium-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\app-End-to-End-Application-Flow-chromium-retry1\trace.zip
+
+    ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+  1 failed
+    [chromium] ΓÇ║ tests\app.spec.js:7:5 ΓÇ║ End-to-End Application Flow ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+
+[36m  Serving HTML report at http://localhost:59186. Press Ctrl+C to quit.[39m

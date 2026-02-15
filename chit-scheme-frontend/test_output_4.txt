@@ -1,0 +1,43 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1) 
+
+    [31mTest timeout of 120000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#Total_Amount')[22m
+    [2m    - locator resolved to <input step="1" readonly value="" role="spinbutton" id="Total_Amount" autocomplete="off" aria-required="true" class="ant-input-number-input"/>[22m
+    [2m    - fill("100000")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 ├ù waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not editable[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 ├ù waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not editable[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    231 ├ù waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not editable[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      35 |         await page.getByRole('button', { name: 'New Scheme' }).click();
+      36 |         await page.locator('#Name').fill(schemeA_Name);
+    > 37 |         await page.locator('#Total_Amount').fill('100000');
+         |                                             ^
+      38 |         await page.locator('#Amount_per_month').fill('10000');
+      39 |         await page.locator('#Period').fill('10');
+      40 |         await page.locator('#Number_of_due').fill('10'); 
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:37:45
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:30:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

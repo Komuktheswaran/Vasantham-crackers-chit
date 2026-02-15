@@ -393,10 +393,11 @@ const Payments = () => {
                 <Select
                   showSearch
                   placeholder="Search by Customer Code, ID, Name or Phone"
-                  defaultActiveFirstOption={false}
+                  defaultActiveFirstOption={true}
                   filterOption={false}
                   onSearch={handleSearch}
                   onChange={handleCustomerSelect}
+                  popupClassName="bright-highlight"
                   notFoundContent={null}
                   allowClear
                 >
@@ -415,6 +416,9 @@ const Payments = () => {
                     placeholder="Select a scheme"
                     onChange={handleSchemeSelect}
                     value={selectedScheme}
+                    showSearch
+                    optionFilterProp="children"
+                    popupClassName="bright-highlight"
                   >
                     {schemes.map((s) => (
                       <Option key={s.Scheme_ID} value={s.Scheme_ID}>
@@ -454,7 +458,11 @@ const Payments = () => {
                   ]}
                   initialValue="UPI"
                 >
-                  <Select onChange={setPaymentMode}>
+                  <Select
+                    onChange={setPaymentMode}
+                    showSearch
+                    popupClassName="bright-highlight"
+                  >
                     <Option value="Cash">Cash</Option>
                     <Option value="UPI">UPI</Option>
                     <Option value="Bank Transfer">Bank Transfer</Option>
@@ -492,7 +500,11 @@ const Payments = () => {
                   label="Payment Date (dd-mm-yyyy)"
                   rules={[{ required: true }]}
                 >
-                  <DatePicker format="DD-MM-YYYY" style={{ width: "100%" }} />
+                  <DatePicker
+                    format="DD-MM-YYYY"
+                    style={{ width: "100%" }}
+                    onFocus={(e) => e.target.select()}
+                  />
                 </Form.Item>
 
                 <Button

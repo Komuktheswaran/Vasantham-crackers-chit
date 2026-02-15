@@ -37,8 +37,13 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    const errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "An unexpected error occurred";
+    let errorMsg = error.response?.data?.message || error.response?.data?.error || error.message || "An unexpected error occurred";
     
+    // Handle express-validator errors array
+    if (error.response?.data?.errors && Array.isArray(error.response.data.errors)) {
+      errorMsg = error.response.data.errors.map(e => e.msg).join(', ');
+    }
+
     console.error('API Error:', errorMsg, error);
     
     // Prevent multiple error toasts if possible, or just show it.
@@ -67,6 +72,7 @@ export const customersAPI = {
   }),
   getNextCustomerId: () => api.get('/customers/next-customer-id'),
   getNextFundNumber: () => api.get('/customers/next-fund-number'),
+  getNextIds: () => api.get('/customers/next-ids'),
   getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
   getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
 };

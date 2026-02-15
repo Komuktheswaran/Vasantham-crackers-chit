@@ -1,0 +1,33 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 1. Login 
+
+    Error: [2mexpect([22m[31mpage[39m[2m).[22mtoHaveURL[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Expected pattern: [32m/\/dashboard/[39m
+    Received string:  [31m"https://103.38.50.149:5005/"[39m
+    Timeout: 15000ms
+
+    Call log:
+    [2m  - Expect "toHaveURL" with timeout 15000ms[22m
+    [2m    4 ├ù unexpected value "https://103.38.50.149:5005/login"[22m
+    [2m    14 ├ù unexpected value "https://103.38.50.149:5005/"[22m
+
+
+      26 |
+      27 |       // FIXED: Proper URL regex
+    > 28 |       await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+         |                          ^
+      29 |       await expect(page.locator('.ant-layout-header')).toBeVisible();
+      30 |     });
+      31 |
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:28:26
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:21:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

@@ -1,0 +1,33 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 4b. Customer 1: Update Scheme (Delete A, Add B) 
+
+    [31mTest timeout of 120000ms exceeded.[39m
+
+    Error: locator.clear: Test timeout of 120000ms exceeded.
+    Call log:
+    [2m  - waiting for getByPlaceholder(/Search.../i).first()[22m
+    [2m    - locator resolved to <input type="search" value="C2_mlmfwjgpont" class="ant-input css-mncuj7" placeholder="Search by Name, Phone, Code, ID, or Fund Number"/>[22m
+    [2m    - fill("")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+    [2m  - element was detached from the DOM, retrying[22m
+
+
+      269 |
+      270 |       const searchInput = page.getByPlaceholder(/Search.../i).first();
+    > 271 |       await searchInput.clear();
+          |                         ^
+      272 |       await searchInput.fill(customer1_Code);
+      273 |       await searchInput.press('Enter');
+      274 |       await page.waitForTimeout(1000);
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:271:25
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:267:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

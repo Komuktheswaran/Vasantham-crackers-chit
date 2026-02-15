@@ -1,0 +1,34 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 3. Transport Master (Create, Add Point, CRUD) 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText('Delivery Point added')
+    Expected: visible
+    Error: strict mode violation: getByText('Delivery Point added') resolved to 2 elements:
+        1) <span>Delivery point added successfully</span> aka getByText('Delivery point added successfully')
+        2) <span>Delivery Point added</span> aka getByText('Delivery Point added', { exact: true })
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText('Delivery Point added')[22m
+
+
+      76 |         await page.locator('#Branch_Phone').fill('1234567890');
+      77 |         await page.getByRole('button', { name: 'Add Branch' }).click();
+    > 78 |         await expect(page.getByText('Delivery Point added')).toBeVisible();
+         |                                                              ^
+      79 |         
+      80 |         // Close modal
+      81 |         await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click();
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:78:62
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:61:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

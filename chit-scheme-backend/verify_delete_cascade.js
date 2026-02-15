@@ -54,10 +54,15 @@ async function testCascadeDelete() {
        
        console.log('🔄 Attempting Deletion...');
        
-       // 0. Update Test Script to include Auctions (matched controller)
-       const r0 = new sql.Request(deleteTx);
-       await r0.input('customerId', sql.VarChar(50), TEST_CUSTOMER_ID)
-                .query('DELETE FROM Auctions WHERE Customer_ID = @customerId');
+        // 0. Update Test Script to include Auctions (matched controller)
+        const r0 = new sql.Request(deleteTx);
+        await r0.input('customerId', sql.VarChar(50), TEST_CUSTOMER_ID)
+                 .query('DELETE FROM Auctions WHERE Customer_ID = @customerId');
+
+        // 0.1 Delete Order Tracking (Added to match new controller logic)
+        const rO = new sql.Request(deleteTx);
+        await rO.input('customerId', sql.VarChar(50), TEST_CUSTOMER_ID)
+                 .query('DELETE FROM Order_Tracking WHERE Customer_ID = @customerId');
 
        // 1. Delete Payments
        const r1 = new sql.Request(deleteTx);

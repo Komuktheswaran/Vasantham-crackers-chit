@@ -3,21 +3,20 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const dbConfig = {
-  
-  server: '103.38.50.73',
-  database: 'VASANTHAMDB',
-  user: 'vasantham',
-  password: 'Vasantham@Sa',
-  port: parseInt(process.env.DB_PORT) ,
+  server: "103.38.50.73",
+  database: "VASANTHAMDBLIVE",
+  user: "vasantham",
+  password: "Vasantham@Sa",
+  port: parseInt(process.env.DB_PORT),
   options: {
     encrypt: false,
     trustServerCertificate: true,
-    requestTimeout: 300000 // 5 minutes
+    requestTimeout: 300000, // 5 minutes
   },
   pool: {
     max: 1000,
     min: 0,
-    idleTimeoutMillis: 3000000
+    idleTimeoutMillis: 3000000,
   },
 };
 

@@ -7,6 +7,7 @@ import "./css/Login.css";
 
 const Login = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
@@ -43,6 +44,7 @@ const Login = ({ onLogin }) => {
         </div>
 
         <Form
+          form={form}
           name="login"
           initialValues={{ remember: true }}
           onFinish={onFinish}
@@ -60,6 +62,7 @@ const Login = ({ onLogin }) => {
               prefix={<UserOutlined className="input-icon" />}
               placeholder="Username"
               autoComplete="username"
+              onPressEnter={() => form.submit()}
             />
           </Form.Item>
 
@@ -74,6 +77,7 @@ const Login = ({ onLogin }) => {
               prefix={<LockOutlined className="input-icon" />}
               placeholder="Password"
               autoComplete="current-password"
+              onPressEnter={() => form.submit()}
             />
           </Form.Item>
 

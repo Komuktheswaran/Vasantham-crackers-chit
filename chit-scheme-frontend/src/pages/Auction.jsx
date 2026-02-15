@@ -43,33 +43,19 @@ const Auction = () => {
     try {
       // 1. Get Customer & Scheme Basic Info
       const custRes = await customersAPI.getByFundNumber(fundNumber);
-      // API returns { success: true, data: { customers: [], pagination: ... } }
-      const customers = custRes.data.data.customers;
+      const customer = custRes.data.data;
 
-      if (!customers || customers.length === 0) {
+      if (!customer) {
         message.error("Fund Number not found");
         return;
       }
 
-      const customer = customers[0];
-
-      // 2. Get scheme details for this customer
-      const schemesRes = await customersAPI.getSchemes(customer.Customer_ID);
-      // API returns { success: true, data: [ ... schemes ... ] }
-      const schemes = schemesRes.data.data || [];
-
-      const matchingScheme = schemes.find((s) => s.Fund_Number === fundNumber);
-
-      if (matchingScheme) {
-        setCustomerData({
-          ...customer,
-          Scheme_ID: matchingScheme.Scheme_ID,
-          Scheme_Name: matchingScheme.Scheme_Name,
-          Fund_Number: matchingScheme.Fund_Number,
-        });
-      } else {
-        setCustomerData(customer);
-      }
+      setCustomerData({
+        ...customer,
+        Scheme_ID: customer.Scheme_ID,
+        Scheme_Name: customer.Scheme_Name,
+        Fund_Number: customer.Fund_Number,
+      });
 
       // 3. Get Dues Info (to calculate pending amount)
       const duesRes = await paymentsAPI.getDues(fundNumber);

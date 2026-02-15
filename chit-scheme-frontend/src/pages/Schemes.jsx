@@ -457,6 +457,7 @@ const Schemes = () => {
                 <DatePicker
                   style={{ width: "100%" }}
                   format="DD-MM-YYYY"
+                  onFocus={(e) => e.target.select()}
                   onChange={(date) => {
                     const period = form.getFieldValue("Period");
                     if (period && date) {
@@ -478,7 +479,11 @@ const Schemes = () => {
                 label="End Month"
                 // Optional as requested
               >
-                <DatePicker style={{ width: "100%" }} format="DD-MM-YYYY" />
+                <DatePicker
+                  style={{ width: "100%" }}
+                  format="DD-MM-YYYY"
+                  onFocus={(e) => e.target.select()}
+                />
               </Form.Item>
             </Col>
           </Row>

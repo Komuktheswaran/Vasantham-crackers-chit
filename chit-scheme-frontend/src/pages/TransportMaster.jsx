@@ -32,7 +32,19 @@ const TransportMaster = () => {
     setLoading(true);
     try {
       const response = await transportersAPI.getAll();
-      setTransporters(response.data.data || response.data || []);
+      const data = response.data.data || response.data || [];
+      // Robust Sort: Handle string or number IDs
+      const sorted = Array.isArray(data)
+        ? data.sort((a, b) => {
+            const idA = a.Transporter_ID;
+            const idB = b.Transporter_ID;
+            if (typeof idA === "number" && typeof idB === "number") {
+              return idB - idA;
+            }
+            return String(idB).localeCompare(String(idA));
+          })
+        : [];
+      setTransporters(sorted);
     } catch (error) {
       console.error("Error fetching transporters:", error);
       message.error("Failed to fetch transporters");

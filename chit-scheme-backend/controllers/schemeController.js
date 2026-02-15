@@ -311,41 +311,60 @@ const uploadSchemes = async (req, res) => {
       return sendError(res, 'No schemes found in file', null, 400);
     }
 
-    let successCount = 0;
-    let errorCount = 0;
+     const connection = await sql.connect(require('../config/database').dbConfig);
+     const transaction = new sql.Transaction(connection);
 
-    for (const scheme of schemes) {
-      try {
-         // Basic validation
-         if (!scheme.Name || !scheme.Total_Amount) {
-             console.warn('Skipping invalid scheme row:', scheme);
-             errorCount++;
-             continue;
-         }
+    try {
+        await transaction.begin();
 
-         await executeInsertGetId(
-          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount) 
-           VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
-          [
-            { value: scheme.Name, type: sql.VarChar(100) },
-            { value: parseFloat(scheme.Total_Amount), type: sql.Decimal(15,2) },
-            { value: parseFloat(scheme.Amount_per_month), type: sql.Decimal(15,2) },
-            { value: parseInt(scheme.Period), type: sql.Int },
-            { value: parseInt(scheme.Number_of_due), type: sql.Int },
-            { value: scheme.Month_from ? new Date(scheme.Month_from) : null, type: sql.Date },
-            { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date },
-            { value: scheme.Bonus_Amount ? parseFloat(scheme.Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
-          ]
-        );
-        successCount++;
-      } catch (err) {
-          console.error('Error inserting scheme:', err);
-          errorCount++;
-      }
+        const table = new sql.Table('Chit_Master');
+        table.create = false;
+        
+        // Define columns
+        // Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount
+        table.columns.add('Name', sql.VarChar(100), { nullable: false });
+        table.columns.add('Total_Amount', sql.Decimal(15, 2), { nullable: false });
+        table.columns.add('Amount_per_month', sql.Decimal(15, 2), { nullable: false });
+        table.columns.add('Period', sql.Int, { nullable: false });
+        table.columns.add('Number_of_due', sql.Int, { nullable: false });
+        table.columns.add('Month_from', sql.Date, { nullable: true });
+        table.columns.add('Month_to', sql.Date, { nullable: true });
+        table.columns.add('Bonus_Amount', sql.Decimal(15, 2), { nullable: true });
+        
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const scheme of schemes) {
+             // Basic validation
+             if (!scheme.Name || !scheme.Total_Amount) {
+                 console.warn('Skipping invalid scheme row:', scheme);
+                 errorCount++;
+                 continue;
+             }
+             
+             table.rows.add(
+                scheme.Name,
+                parseFloat(scheme.Total_Amount),
+                parseFloat(scheme.Amount_per_month),
+                parseInt(scheme.Period),
+                parseInt(scheme.Number_of_due),
+                scheme.Month_from ? new Date(scheme.Month_from) : null,
+                scheme.Month_to ? new Date(scheme.Month_to) : null,
+                scheme.Bonus_Amount ? parseFloat(scheme.Bonus_Amount) : 0
+             );
+             successCount++;
+        }
+
+        const request = new sql.Request(transaction);
+        await request.bulk(table);
+
+        await transaction.commit();
+        return sendSuccess(res, `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount} (Validation)`);
+
+    } catch (error) {
+        if (transaction.active) await transaction.rollback();
+        return sendError(res, 'Failed to upload schemes - Bulk Insert Error', error);
     }
-
-    return sendSuccess(res, `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount}`);
-
   } catch (error) {
     return sendError(res, 'Failed to upload schemes', error);
   }

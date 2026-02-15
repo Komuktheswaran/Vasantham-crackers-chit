@@ -1,10 +1,36 @@
 /* Customers Page Styles */
 .page-container {
-    height: 100%;
+  height: 100%;
+}
+
+.scheme-dropdown
+  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: #1890ff !important;
+  color: white !important;
+}
+
+.scheme-dropdown
+  .ant-select-item-option-active:not(.ant-select-item-option-selected) {
+  background-color: #e6f7ff !important;
+}
+
+/* Optimize form for single screen */
+.ant-modal-body .ant-form-item {
+  margin-bottom: 12px !important;
+}
+
+.ant-modal-body .ant-form-item-label {
+  padding-bottom: 2px !important;
+}
+
+.ant-modal-body .ant-form-item-label > label {
+  font-size: 12px;
+  height: auto;
+  line-height: 1.2;
 }
 
 @media (max-width: 768px) {
-    .ant-table-wrapper {
-        margin-bottom: 24px;
-    }
+  .ant-table-wrapper {
+    margin-bottom: 24px;
+  }
 }

@@ -1,0 +1,132 @@
+[
+  {
+    "table": "Customer_Master",
+    "columns": [
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Phone_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Address1",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Area",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "State_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Phone_Number2",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Pincode",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Address2",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "District_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Reference_Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Type",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Code",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Reference_Phone",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Delivery_Point_ID",
+        "DATA_TYPE": "int"
+      }
+    ]
+  },
+  {
+    "table": "Order_Tracking",
+    "columns": [
+      {
+        "COLUMN_NAME": "Tracking_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Tracking_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Order_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Fund_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Order_Received_Date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Payment_Received_Date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Payment_Amount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Transporter_Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Transporter_Contact",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Source",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Created_At",
+        "DATA_TYPE": "datetime"
+      },
+      {
+        "COLUMN_NAME": "Parcel_Quantity",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Packing_Status",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Name",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  }
+]

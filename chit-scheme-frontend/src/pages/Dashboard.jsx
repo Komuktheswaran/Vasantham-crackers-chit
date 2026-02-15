@@ -5,7 +5,7 @@ import {
   Card,
   Statistic,
   Select,
-  Drawer,
+  Modal,
   Descriptions,
   Input,
   Button,
@@ -17,38 +17,19 @@ import {
 import { customersAPI, schemesAPI, dashboardAPI } from "../services/api";
 import {
   UserOutlined,
-  MoneyCollectOutlined,
   BarChartOutlined,
-  DollarOutlined,
-  SearchOutlined,
   UsergroupAddOutlined,
 } from "@ant-design/icons";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
 import dayjs from "dayjs";
 import "./css/Dashboard.css";
-
-const { Option } = Select;
 
 const Dashboard = () => {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(true);
 
-  // Search state
-  const [searchType, setSearchType] = useState("phone"); // phone, custId, fundNo
-  const [searchValue, setSearchValue] = useState("");
-
   // Detail view states
   const [detailData, setDetailData] = useState(null);
-  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
   const [detailType, setDetailType] = useState(null); // 'customer'
 
   useEffect(() => {
@@ -141,7 +122,7 @@ const Dashboard = () => {
       if (customerData) {
         setDetailData(customerData);
         setDetailType("customer");
-        setDrawerVisible(true);
+        setModalVisible(true);
       } else {
         message.warning("No details found");
       }
@@ -203,18 +184,32 @@ const Dashboard = () => {
 
     return (
       <>
-        <Descriptions title="Customer Information" column={2} bordered>
+        <Descriptions
+          title="Customer Information"
+          column={2}
+          bordered
+          size="small"
+        >
           <Descriptions.Item label="Customer ID">
             {customer.Customer_ID}
           </Descriptions.Item>
-          <Descriptions.Item label="Name">
-            {customer.First_Name} {customer.Last_Name}
-          </Descriptions.Item>
+          <Descriptions.Item label="Name">{customer.Name}</Descriptions.Item>
           <Descriptions.Item label="Phone">
             {customer.Phone_Number}
           </Descriptions.Item>
+          <Descriptions.Item label="Alt Phone">
+            {customer.Phone_Number2 || "-"}
+          </Descriptions.Item>
           <Descriptions.Item label="Address" span={2}>
-            {customer.StreetAddress1}, {customer.Area}
+            {[
+              customer.Address1,
+              customer.Address2,
+              customer.District_Name,
+              customer.State_Name,
+              customer.Pincode,
+            ]
+              .filter(Boolean)
+              .join(", ")}
           </Descriptions.Item>
         </Descriptions>
         <Card title="Schemes" className="mt-16">
@@ -313,15 +308,22 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Drawer
+      <Modal
         title="Customer Details"
-        placement="right"
-        width={window.innerWidth > 768 ? 720 : "100%"}
-        onClose={() => setDrawerVisible(false)}
-        open={drawerVisible}
+        width="100%"
+        style={{ top: 20, maxWidth: 900 }}
+        onCancel={() => setModalVisible(false)}
+        open={modalVisible}
+        footer={[
+          <Button key="close" onClick={() => setModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
       >
-        {detailType === "customer" && renderCustomerDetails()}
-      </Drawer>
+        <div style={{ maxHeight: "80vh", overflowY: "auto", padding: "10px" }}>
+          {detailType === "customer" && renderCustomerDetails()}
+        </div>
+      </Modal>
     </>
   );
 };

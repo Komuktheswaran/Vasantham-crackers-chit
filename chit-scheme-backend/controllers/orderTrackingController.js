@@ -9,7 +9,7 @@ const getAllOrders = async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let query = `
-      SELECT ot.*, c.Name as Customer_Name, c.Phone_Number
+      SELECT ot.*, c.Name as Registered_Name, c.Phone_Number as Registered_Phone
       FROM Order_Tracking ot
       LEFT JOIN Customer_Master c ON ot.Customer_ID = c.Customer_ID
       WHERE 1=1
@@ -57,26 +57,27 @@ const getAllOrders = async (req, res) => {
 const createOrder = async (req, res) => {
   try {
     const { 
-      Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
+      Tracking_Number, Order_Number, Customer_ID, Customer_Name, Fund_Number, 
       Order_Received_Date, Payment_Received_Date, Payment_Amount,
       Transporter_Name, Transporter_Contact, Source,
-      Packing_Status, Parcel_Quantity, // New fields
+      Packing_Status, Parcel_Quantity,
       sendWhatsapp = true
     } = req.body;
 
     await executeInsertGetId(
       `INSERT INTO Order_Tracking (
-        Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
+        Tracking_Number, Order_Number, Customer_ID, Customer_Name, Fund_Number, 
         Order_Received_Date, Payment_Received_Date, Payment_Amount,
         Transporter_Name, Transporter_Contact, Source,
         Packing_Status, Parcel_Quantity
       ) VALUES (
-        @param0, @param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9, @param10, @param11
+        @param0, @param1, @param2, @param3, @param4, @param5, @param6, @param7, @param8, @param9, @param10, @param11, @param12
       )`,
       [
         { value: Tracking_Number, type: sql.VarChar(100) },
         { value: Order_Number, type: sql.VarChar(100) },
-        { value: Customer_ID, type: sql.VarChar(50) },
+        { value: Customer_ID || null, type: sql.VarChar(50) },
+        { value: Customer_Name, type: sql.VarChar(255) },
         { value: Fund_Number, type: sql.VarChar(50) },
         { value: Order_Received_Date ? new Date(Order_Received_Date) : null, type: sql.Date },
         { value: Payment_Received_Date ? new Date(Payment_Received_Date) : null, type: sql.Date },
@@ -114,7 +115,7 @@ const updateOrder = async (req, res) => {
   try {
     const { id } = req.params;
     const { 
-      Tracking_Number, Order_Number, Customer_ID, Fund_Number, 
+      Tracking_Number, Order_Number, Customer_ID, Customer_Name, Fund_Number, 
       Order_Received_Date, Payment_Received_Date, Payment_Amount,
       Transporter_Name, Transporter_Contact, Source,
       Packing_Status, Parcel_Quantity,
@@ -131,16 +132,17 @@ const updateOrder = async (req, res) => {
 
     await executeUpdate(
       `UPDATE Order_Tracking SET
-        Tracking_Number=@param1, Order_Number=@param2, Customer_ID=@param3, Fund_Number=@param4, 
-        Order_Received_Date=@param5, Payment_Received_Date=@param6, Payment_Amount=@param7,
-        Transporter_Name=@param8, Transporter_Contact=@param9, Source=@param10,
-        Packing_Status=@param11, Parcel_Quantity=@param12
+        Tracking_Number=@param1, Order_Number=@param2, Customer_ID=@param3, Customer_Name=@param4, Fund_Number=@param5, 
+        Order_Received_Date=@param6, Payment_Received_Date=@param7, Payment_Amount=@param8,
+        Transporter_Name=@param9, Transporter_Contact=@param10, Source=@param11,
+        Packing_Status=@param12, Parcel_Quantity=@param13
        WHERE Tracking_ID = @param0`,
       [
         { value: parseInt(id), type: sql.Int },
         { value: Tracking_Number, type: sql.VarChar(100) },
         { value: Order_Number, type: sql.VarChar(100) },
-        { value: Customer_ID, type: sql.VarChar(50) },
+        { value: Customer_ID || null, type: sql.VarChar(50) },
+        { value: Customer_Name, type: sql.VarChar(255) },
         { value: Fund_Number, type: sql.VarChar(50) },
         { value: Order_Received_Date ? new Date(Order_Received_Date) : null, type: sql.Date },
         { value: Payment_Received_Date ? new Date(Payment_Received_Date) : null, type: sql.Date },

@@ -6,10 +6,10 @@ const path = require('path');
 const { sendWhatsappMessage } = require('../services/whatsappService');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
 
-// Helper to generate Customer ID in format: custid/2026/001
+// Helper to generate Customer ID in format: CD2026/001
 const generateCustomerId = async () => {
   const year = new Date().getFullYear();
-  const prefix = `custid/${year}/`;
+  const prefix = `CD${year}/`;
   
   // Query for latest customer ID with this year's prefix
   const result = await executeQuery(`
@@ -31,10 +31,10 @@ const generateCustomerId = async () => {
   return `${prefix}${String(nextNumber).padStart(3, '0')}`;
 };
 
-// Helper to generate Fund Number in format: fund/2026/001
+// Helper to generate Fund Number in format: F2026/001
 const generateFundNumber = async () => {
   const year = new Date().getFullYear();
-  const prefix = `fund/${year}/`;
+  const prefix = `F${year}/`;
   
   // Query for latest fund number with this year's prefix
   const result = await executeQuery(`
@@ -62,8 +62,8 @@ const getAllCustomers = async (req, res) => {
 
     // Build base query
     let baseQuery = `
-      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Customer_Type, 
-             c.Phone_Number, c.Area, c.State_ID, c.District_ID, c.Pincode,
+      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Reference_Phone, c.Delivery_Point_ID, c.Customer_Type, 
+             c.Phone_Number, c.Phone_Number2, c.Area, c.State_ID, c.District_ID, c.Pincode,
              c.Address1, c.Address2,
              ISNULL(d.District_Name, 'N/A') as District_Name, 
              ISNULL(s.State_Name, 'N/A') as State_Name
@@ -140,10 +140,26 @@ const getAllCustomers = async (req, res) => {
 
     let customersQuery = `
       ${baseQuery},
-      ISNULL((SELECT COUNT(*) FROM Scheme_Members WHERE Customer_ID = c.Customer_ID), 0) as total_schemes,
-      (SELECT STRING_AGG(cm.Name, ', ') FROM Scheme_Members sm JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID WHERE sm.Customer_ID = c.Customer_ID) as Assigned_Schemes,
-      ISNULL((SELECT COUNT(*) FROM Payment_Master WHERE Customer_ID = c.Customer_ID), 0) as total_payments
+       ISNULL(sm_counts.total_schemes, 0) as total_schemes,
+       ISNULL(sm_agg.Assigned_Schemes, '') as Assigned_Schemes,
+       ISNULL(pm_counts.total_payments, 0) as total_payments
       ${fromQuery}
+      OUTER APPLY (
+          SELECT COUNT(*) as total_schemes 
+          FROM Scheme_Members sm 
+          WHERE sm.Customer_ID = c.Customer_ID
+      ) sm_counts
+      OUTER APPLY (
+          SELECT STRING_AGG(cm.Name, ', ') as Assigned_Schemes 
+          FROM Scheme_Members sm 
+          JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
+          WHERE sm.Customer_ID = c.Customer_ID
+      ) sm_agg
+      OUTER APPLY (
+          SELECT COUNT(*) as total_payments 
+          FROM Payment_Master pm 
+          WHERE pm.Customer_ID = c.Customer_ID
+      ) pm_counts
       ${whereClause}
       ORDER BY c.Customer_ID DESC
     `;
@@ -207,7 +223,7 @@ const createCustomer = async (req, res) => {
   try {
     let {
       Customer_ID,
-      Customer_Code, // Extract new Field
+      Customer_Code,
       Name,
       Reference_Name,
       Customer_Type,
@@ -223,7 +239,9 @@ const createCustomer = async (req, res) => {
       Pincode,
       Scheme_ID,
       Fund_Number,
-      sendWhatsapp // Extract flag
+      Reference_Phone,
+      Delivery_Point_ID,
+      sendWhatsapp 
     } = req.body;
 
     // Auto-generate Customer_ID if not provided
@@ -236,21 +254,38 @@ const createCustomer = async (req, res) => {
 
     await transaction.begin();
     
-    // 1. Insert Customer
+    // 1. Insert Customer using parameterized inputs
     const insertReq = new sql.Request(transaction);
+    insertReq.input('Customer_ID', sql.VarChar(50), Customer_ID);
+    insertReq.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
+    insertReq.input('Name', sql.VarChar(255), Name);
+    insertReq.input('Reference_Name', sql.VarChar(255), Reference_Name || '');
+    insertReq.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
+    insertReq.input('Phone_Number', sql.BigInt, PhoneNumber);
+    insertReq.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
+    insertReq.input('Address1', sql.VarChar(500), finalAddress1 || '');
+    insertReq.input('Address2', sql.VarChar(500), finalAddress2 || '');
+    insertReq.input('Area', sql.VarChar(255), Area || '');
+    insertReq.input('District_ID', sql.Int, District_ID || null);
+    insertReq.input('State_ID', sql.Int, State_ID || null);
+    insertReq.input('Pincode', sql.Int, Pincode || null);
+    insertReq.input('Reference_Phone', sql.VarChar(50), Reference_Phone || '');
+    insertReq.input('Delivery_Point_ID', sql.Int, Delivery_Point_ID || null);
+
     await insertReq.query(`
       INSERT INTO Customer_Master (
         Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, 
         Phone_Number, Phone_Number2, Address1, Address2, 
-        Area, District_ID, State_ID, Pincode
+        Area, District_ID, State_ID, Pincode, Reference_Phone, Delivery_Point_ID
       )
       VALUES (
-        '${Customer_ID}', '${Customer_Code || ''}', '${Name}', '${Reference_Name || ''}', '${Customer_Type || ''}', 
-        ${PhoneNumber}, ${PhoneNumber2 || 'NULL'}, '${finalAddress1 || ''}', '${finalAddress2 || ''}', 
-        '${Area || ''}', ${District_ID || 'NULL'}, ${State_ID || 'NULL'}, ${Pincode || 'NULL'}
+        @Customer_ID, @Customer_Code, @Name, @Reference_Name, @Customer_Type, 
+        @Phone_Number, @Phone_Number2, @Address1, @Address2, 
+        @Area, @District_ID, @State_ID, @Pincode, @Reference_Phone, @Delivery_Point_ID
       )
     `);
 
+    // ... rest of the logic remains the same (already parameterized)
     // 2. Assign Schemes (Single or Multiple)
     let schemesToAssign = [];
     if (req.body.Schemes && Array.isArray(req.body.Schemes)) {
@@ -305,7 +340,6 @@ const createCustomer = async (req, res) => {
     await transaction.commit();
 
     // 📱 Send WhatsApp Notification (User Created) - Async, don't block response
-    // Template Params: ["Customer Name"]
     if (PhoneNumber && sendWhatsapp !== false) {
         sendWhatsappMessage(String(PhoneNumber), "welcomecccc", [String(Customer_ID), Name], Name)
             .catch(err => console.error("WA Send Failed (Create Customer):", err.message));
@@ -316,15 +350,16 @@ const createCustomer = async (req, res) => {
     if (transaction.active) await transaction.rollback();
     return sendError(res, 'Failed to create customer', error);
   } finally {
-    // connection cleanup handled by pool usually
+    await connection.close();
   }
 };
 
 const updateCustomer = async (req, res) => {
+  const connection = await sql.connect(require('../config/database').dbConfig);
   try {
     const { id } = req.params;
     const {
-      Customer_Code, // Update Code
+      Customer_Code,
       Name,
       Reference_Name,
       Customer_Type,
@@ -337,43 +372,47 @@ const updateCustomer = async (req, res) => {
       Area,
       District_ID,
       State_ID,
-      Pincode
+      Pincode,
+      Reference_Phone,
+      Delivery_Point_ID
     } = req.body;
 
     const finalAddress1 = Address1 || StreetAddress1;
     const finalAddress2 = Address2 || StreetAddress2;
 
-    await executeUpdate(
-      `
+    const request = new sql.Request(connection);
+    request.input('id', sql.VarChar(50), id);
+    request.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
+    request.input('Name', sql.VarChar(255), Name);
+    request.input('Reference_Name', sql.VarChar(255), Reference_Name || '');
+    request.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
+    request.input('Phone_Number', sql.BigInt, PhoneNumber);
+    request.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
+    request.input('Address1', sql.VarChar(500), finalAddress1 || '');
+    request.input('Address2', sql.VarChar(500), finalAddress2 || '');
+    request.input('Area', sql.VarChar(255), Area || '');
+    request.input('District_ID', sql.Int, District_ID || null);
+    request.input('State_ID', sql.Int, State_ID || null);
+    request.input('Pincode', sql.Int, Pincode || null);
+    request.input('Reference_Phone', sql.VarChar(50), Reference_Phone || '');
+    request.input('Delivery_Point_ID', sql.Int, Delivery_Point_ID || null);
+
+    await request.query(`
       UPDATE Customer_Master SET 
-        Customer_Code = @param12,
-        Name = @param1, Reference_Name = @param2, Customer_Type = @param3, 
-        Phone_Number = @param4, Phone_Number2 = @param5, 
-        Address1 = @param6, Address2 = @param7,
-        Area = @param8, District_ID = @param9, State_ID = @param10,
-        Pincode = @param11
-      WHERE Customer_ID = @param0
-    `,
-      [
-        { value: id, type: sql.VarChar(50) },
-        { value: Name, type: sql.VarChar },
-        { value: Reference_Name, type: sql.VarChar },
-        { value: Customer_Type, type: sql.VarChar },
-        { value: PhoneNumber, type: sql.BigInt },
-        { value: PhoneNumber2, type: sql.BigInt },
-        { value: finalAddress1, type: sql.VarChar },
-        { value: finalAddress2, type: sql.VarChar },
-        { value: Area, type: sql.VarChar },
-        { value: District_ID || null, type: sql.Int },
-        { value: State_ID || null, type: sql.Int },
-        { value: Pincode, type: sql.Int },
-        { value: Customer_Code, type: sql.VarChar }
-      ]
-    );
+        Customer_Code = @Customer_Code,
+        Name = @Name, Reference_Name = @Reference_Name, Customer_Type = @Customer_Type, 
+        Phone_Number = @Phone_Number, Phone_Number2 = @Phone_Number2, 
+        Address1 = @Address1, Address2 = @Address2,
+        Area = @Area, District_ID = @District_ID, State_ID = @State_ID,
+        Pincode = @Pincode, Reference_Phone = @Reference_Phone, Delivery_Point_ID = @Delivery_Point_ID
+      WHERE Customer_ID = @id
+    `);
 
     return sendSuccess(res, 'Customer updated successfully');
   } catch (error) {
     return sendError(res, 'Failed to update customer', error);
+  } finally {
+    await connection.close();
   }
 };
 
@@ -396,6 +435,12 @@ const deleteCustomer = async (req, res) => {
     // 1. Delete Payments
     await request.input('customerId', sql.VarChar(50), id)
                  .query('DELETE FROM Payment_Master WHERE Customer_ID = @customerId');
+
+    // 1.1 Delete Order Tracking records
+    // Added to resolve FK conflict: FK__Order_Tra__Custo__60A75C0F
+    const reqOrders = new sql.Request(transaction);
+    await reqOrders.input('customerId', sql.VarChar(50), id)
+                   .query('DELETE FROM Order_Tracking WHERE Customer_ID = @customerId');
 
     // 2. Delete Scheme Dues
     const req2 = new sql.Request(transaction);
@@ -441,8 +486,8 @@ const downloadCustomers = async (req, res) => {
         const { search = '', Customer_Type, fund_number } = req.query;
 
         let baseSelect = `
-            SELECT c.Customer_ID, c.Name, c.Reference_Name, c.Customer_Type, 
-                   c.Phone_Number, c.Address1, c.Area, c.Pincode,
+            SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Reference_Phone, c.Delivery_Point_ID, c.Customer_Type, 
+                   c.Phone_Number, c.Phone_Number2, c.Address1, c.Area, c.Pincode,
                    ISNULL(d.District_Name, 'N/A') as District_Name, 
                    ISNULL(s.State_Name, 'N/A') as State_Name
         `;
@@ -504,37 +549,113 @@ const uploadCustomers = async (req, res) => {
     let rows = [];
     if (ext === '.xlsx' || ext === '.xls') {
         // Use Excel parser utility
-        rows = parseExcel(req.file.buffer);
+        rows = await parseExcel(req.file.buffer);
     } else {
         // Assume CSV
         const csvData = req.file.buffer.toString('utf-8');
         rows = csvData.split('\n').slice(1);
     }
 
-    const transaction = new sql.Transaction();
+    const connection = await sql.connect(require('../config/database').dbConfig);
+    const transaction = new sql.Transaction(connection);
+    
     try {
         await transaction.begin();
+
+        const table = new sql.Table('Customer_Master');
+        table.create = false;
+        
+        // Define columns strictly matching DB schema
+        table.columns.add('Customer_ID', sql.VarChar(50), { nullable: false });
+        table.columns.add('Customer_Code', sql.VarChar(50), { nullable: true }); // Make sure this exists in DB
+        table.columns.add('Name', sql.VarChar(100), { nullable: true }); // Split into First/Last or receive full name? 
+        // CSV headers: Customer_ID, First_Name, Last_Name...
+        // DB columns: Name (merged), or does it have First/Last? 
+        // The previous code did: Name = `${FirstName} ${LastName}`
+        
+        table.columns.add('Reference_Name', sql.VarChar(100), { nullable: true });
+        table.columns.add('Customer_Type', sql.VarChar(50), { nullable: true });
+        table.columns.add('Phone_Number', sql.BigInt, { nullable: true });
+        table.columns.add('Phone_Number2', sql.BigInt, { nullable: true });
+        table.columns.add('Address1', sql.VarChar(sql.MAX), { nullable: true });
+        table.columns.add('Address2', sql.VarChar(sql.MAX), { nullable: true });
+        table.columns.add('Area', sql.VarChar(100), { nullable: true });
+        table.columns.add('District_ID', sql.Int, { nullable: true });
+        table.columns.add('State_ID', sql.Int, { nullable: true });
+        table.columns.add('Pincode', sql.Int, { nullable: true });
+        table.columns.add('Nationality', sql.VarChar(50), { nullable: true });
+
+
         let successCount = 0;
 
         for (const row of rows) {
             if (!row) continue;
-            // Support both CSV (comma‑separated) and Excel (array) formats
-            const values = Array.isArray(row) ? row : row.split(',');
-            const [Customer_ID, FirstName, LastName, PhoneNumber, PhoneNumber2, StreetAddress1, StreetAddress2, Area, District_ID, State_ID, Pincode, Nationality] = values;
-            const name = `${FirstName} ${LastName}`;
+            // Support both CSV (comma-separated string) and Excel (object/array) formats?
+            // csvData.split('\n') gives strings. parseExcel gives objects? 
+            // Previous code handled: values = Array.isArray(row) ? row : row.split(',');
+            // Wait, parseExcel in schemeController returns array of objects. 
+            // But here raw csv split gives strings.
+            
+            let values;
+            if (typeof row === 'string') {
+                 values = row.split(',');
+            } else if (Array.isArray(row)) {
+                 values = row;
+            } else {
+                // If Object (from optimized excel parser?), map to values
+                // For now assuming the previous logic regarding array/string holds
+                values = Object.values(row);
+            }
+            
+            if (values.length < 4) continue; // Basic skip empty rows
 
-            const request = new sql.Request(transaction);
-            await request.query(`
-                INSERT INTO Customer_Master (Customer_ID, First_Name, Last_Name, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality)
-                VALUES (${Customer_ID}, '${FirstName}', '${LastName}', ${PhoneNumber}, ${PhoneNumber2}, '${StreetAddress1}', '${StreetAddress2}', '${Area}', ${District_ID}, ${State_ID}, ${Pincode}, '${Nationality}')
-            `);
+            // CAREFULLY MAP COLUMNS based on previous INSERT:
+            // Customer_ID, First_Name, Last_Name, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
+            
+            const Customer_ID = values[0];
+            const FirstName = values[1];
+            const LastName = values[2];
+            const PhoneNumber = values[3] ? parseInt(values[3]) : null;
+            const PhoneNumber2 = values[4] ? parseInt(values[4]) : null;
+            const StreetAddress1 = values[5];
+            const StreetAddress2 = values[6];
+            const Area = values[7];
+            const District_ID = values[8] ? parseInt(values[8]) : null;
+            const State_ID = values[9] ? parseInt(values[9]) : null;
+            const Pincode = values[10] ? parseInt(values[10]) : null;
+            const Nationality = values[11];
+            
+            const Name = `${FirstName || ''} ${LastName || ''}`.trim();
+            
+            // Add Row to Table
+            // Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
+            table.rows.add(
+                Customer_ID,
+                null, // Customer_Code (not in CSV?)
+                Name,
+                null, // Reference_Name
+                null, // Customer_Type
+                PhoneNumber,
+                PhoneNumber2,
+                StreetAddress1,
+                StreetAddress2,
+                Area,
+                District_ID,
+                State_ID,
+                Pincode,
+                Nationality
+            );
+            
             successCount++;
         }
+
+        const request = new sql.Request(transaction);
+        await request.bulk(table);
 
         await transaction.commit();
         return sendSuccess(res, `${successCount} customers uploaded successfully.`);
     } catch (error) {
-        await transaction.rollback();
+        if (transaction.active) await transaction.rollback();
         return sendError(res, 'Bulk upload failed', error);
     }
 };
@@ -816,6 +937,16 @@ const getNextFundNumber = async (req, res) => {
     }
 };
 
+const getNextIds = async (req, res) => {
+  try {
+    const customerId = await generateCustomerId();
+    const fundNumber = await generateFundNumber();
+    return sendSuccess(res, 'Next IDs fetched successfully', { customerId, fundNumber });
+  } catch (error) {
+    return sendError(res, 'Failed to fetch next IDs', error);
+  }
+};
+
 module.exports = {
   getAllCustomers,
   getCustomerById,
@@ -823,16 +954,16 @@ module.exports = {
   updateCustomer,
   deleteCustomer,
   checkCustomerId,
-
-  exportCustomers: downloadCustomers,
-  bulkCreateCustomers: uploadCustomers,
+  downloadCustomers,
+  uploadCustomers,
+  exportCustomers: downloadCustomers, // Alias for routes
+  bulkCreateCustomers: uploadCustomers, // Alias for routes
   getCustomerByCode,
   getCustomerByFundNumber,
   getCustomerSchemes,
   assignSchemes,
-  generateCustomerId,
-  generateFundNumber,
+  removeScheme,
   getNextCustomerId,
   getNextFundNumber,
-  removeScheme
+  getNextIds,
 };

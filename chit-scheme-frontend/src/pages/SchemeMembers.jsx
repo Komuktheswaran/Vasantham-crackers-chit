@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import dayjs from "dayjs";
 import {
   Table,
   Card,
@@ -186,7 +187,7 @@ const SchemeMembers = () => {
       title: "Join Date",
       dataIndex: "Join_date",
       key: "Join_date",
-      render: (date) => new Date(date).toLocaleDateString(),
+      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "Status",

@@ -1,0 +1,213 @@
+<testsuites id="" name="" tests="14" failures="0" skipped="0" errors="0" time="57.37815">
+<testsuite name="chit-ultimate-performance.spec.js" timestamp="2026-02-15T16:59:45.323Z" hostname="chromium-latest" tests="14" failures="0" skipped="0" time="52.836" errors="0">
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 1. Application Loading" classname="chit-ultimate-performance.spec.js" time="1.479">
+<system-out>
+<![CDATA[
+======================================================================
+🚀 Starting CHROMIUM Realistic Performance Test
+   Time: 15/2/2026, 10:29:47 pm
+======================================================================
+
+🔄 STEP 1: Testing Application Load...
+✅ [chromium] App Loading: 1473ms
+   └─ Login form visible and ready
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 2. Login" classname="chit-ultimate-performance.spec.js" time="0.655">
+<system-out>
+<![CDATA[🔄 STEP 2: Testing Login (Realistic Interaction)...
+✅ [chromium] Login: 651ms
+   └─ Redirected to: https://103.38.50.149:5005/
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 3. Transport CRUD - Full Workflow" classname="chit-ultimate-performance.spec.js" time="3.84">
+<system-out>
+<![CDATA[🔄 STEP 3: Testing Transport Module (Full Workflow)...
+   📝 Creating transporter: test_1771174790092_514
+   ✅ Transporter created
+   📝 Adding branches...
+   ✅ Branch 1 added
+   ✅ Branch 2 added
+   ✅ Branch 1 deleted
+✅ [chromium] Transport: 3771ms
+   └─ Created: test_1771174790092_514 with 2 branches (1 deleted)
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 4. Schemes CRUD - Full Workflow" classname="chit-ultimate-performance.spec.js" time="6.092">
+<system-out>
+<![CDATA[🔄 STEP 4: Testing Schemes Module (Full Workflow)...
+   📝 Creating scheme: test_1771174793968_301
+   🔍 Verifying scheme...
+   ✅ Scheme created
+   ✏️  Updating scheme bonus...
+   ✅ Scheme updated
+✅ [chromium] Schemes: 6022ms
+   └─ Created & Updated: test_1771174793968_301
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 5. Customers CRUD - Complete Form" classname="chit-ultimate-performance.spec.js" time="11.979">
+<system-out>
+<![CDATA[🔄 STEP 5: Testing Customers Module (Complete Form)...
+   📝 Creating customer: test_1771174800073_177
+   ⏳ Waiting for confirmation dialog...
+   ✅ Customer created with WA notification
+   🔍 Verifying customer...
+   ✅ Customer found in list
+   ✏️  Updating customer district...
+   ✅ Customer updated
+✅ [chromium] Customers: 11920ms
+   └─ Created & Updated: test_1771174800073_177
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 6. Assigned Schemes Management" classname="chit-ultimate-performance.spec.js" time="7.824">
+<system-out>
+<![CDATA[🔄 STEP 6: Testing Assigned Schemes Management...
+   📝 Testing scheme removal and assignment...
+   🔍 Searching for customer test_1771174800073_177...
+   ✅ Existing scheme removed
+✅ [chromium] Assigned Schemes: 7762ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 7. Dashboard - Multiple Search Methods" classname="chit-ultimate-performance.spec.js" time="0.224">
+<system-out>
+<![CDATA[🔄 STEP 7: Testing Dashboard Search...
+   🔍 Searching by customer code: test_1771174800073_177
+✅ [chromium] Dashboard: 115ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 8. Reports - Assigned Schemes Report" classname="chit-ultimate-performance.spec.js" time="0.481">
+<system-out>
+<![CDATA[🔄 STEP 8: Testing Reports Module...
+✅ [chromium] Reports: 424ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 9. Payments - Record Multiple Payments" classname="chit-ultimate-performance.spec.js" time="0.229">
+<system-out>
+<![CDATA[🔄 STEP 9: Testing Payments Module (Multiple Payments)...
+✅ [chromium] Payments: 103ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 10. Auction - Complete Payment" classname="chit-ultimate-performance.spec.js" time="0.189">
+<system-out>
+<![CDATA[🔄 STEP 10: Testing Auction Module (Pay All)...
+✅ [chromium] Auction: 130ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 11. Downloads - Preview All Reports" classname="chit-ultimate-performance.spec.js" time="3.534">
+<system-out>
+<![CDATA[🔄 STEP 11: Testing Downloads Module (All Tabs)...
+   📑 Testing Schemes tab...
+   📑 Testing Customers tab...
+      ✓ Customers preview button available
+   📑 Testing Payments tab...
+      ✓ Payments preview button available
+   📑 Testing Order Tracking tab...
+      ✓ Order Tracking preview button available
+✅ [chromium] Downloads: 3494ms
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 12. Tracking Order - Registered &amp; Guest" classname="chit-ultimate-performance.spec.js" time="7.766">
+<system-out>
+<![CDATA[🔄 STEP 12: Testing Tracking Order Module...
+   📝 Creating order 1 (registered): test_1771174824791_384
+   ✅ Order 1 created with notification
+   📝 Creating order 2 (guest): test_1771174824791_864
+   ✅ Order 2 created with notification
+   🗑️  Deleting order 1...
+   ✅ Order 1 deleted
+✅ [chromium] Tracking Order: 7730ms
+   └─ Created: test_1771174824791_384 (deleted), test_1771174824791_864
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 13. User Management - Create, Update, Delete" classname="chit-ultimate-performance.spec.js" time="5.617">
+<system-out>
+<![CDATA[🔄 STEP 13: Testing User Management Module...
+   📂 Navigated to User Management via Sider
+   📝 Creating user: testuser_1771174833686
+   ✨ Clicked "Create User"
+   🖼️  Modal "Create New User" visible
+   👑 Selected Admin role
+   ✅ User created successfully
+   ✏️  Updating user: testuser_1771174833686
+   ✅ User updated successfully
+   ✅ User creation and update verified
+✅ [chromium] User Management: 4529ms
+
+🎉 ALL 13 STEPS COMPLETED!
+
+]]>
+</system-out>
+</testcase>
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 14. Cleanup - Delete Test Data" classname="chit-ultimate-performance.spec.js" time="2.927">
+<system-out>
+<![CDATA[🔄 STEP 14: Cleanup - Deleting Test Data...
+   🗑️  Deleting scheme: test_1771174793968_301
+   🗑️  Deleting customer: test_1771174800073_177
+   ✅ Customer deleted
+   🗑️  Deleting transporter: test_1771174790092_514
+   🗑️  Deleting guest order: test_1771174824791_864
+   🗑️  Deleting user: testuser_1771174833686
+✅ [chromium] Cleanup: 2923ms
+   └─ All test data cleaned up
+
+
+======================================================================
+   CHROMIUM - COMPLETE PERFORMANCE SUMMARY
+======================================================================
+┌─────────┬────────────┬───────────────────────┬───────┬───────────┐
+│ (index) │ browser    │ step                  │ time  │ status    │
+├─────────┼────────────┼───────────────────────┼───────┼───────────┤
+│ 0       │ [32m'chromium'[39m │ [32m'1. App Loading'[39m      │ [33m1473[39m  │ [32m'✅ PASS'[39m │
+│ 1       │ [32m'chromium'[39m │ [32m'2. Login'[39m            │ [33m651[39m   │ [32m'✅ PASS'[39m │
+│ 2       │ [32m'chromium'[39m │ [32m'3. Transport'[39m        │ [33m3771[39m  │ [32m'✅ PASS'[39m │
+│ 3       │ [32m'chromium'[39m │ [32m'4. Schemes'[39m          │ [33m6022[39m  │ [32m'✅ PASS'[39m │
+│ 4       │ [32m'chromium'[39m │ [32m'5. Customers'[39m        │ [33m11920[39m │ [32m'✅ PASS'[39m │
+│ 5       │ [32m'chromium'[39m │ [32m'6. Assigned Schemes'[39m │ [33m7762[39m  │ [32m'✅ PASS'[39m │
+│ 6       │ [32m'chromium'[39m │ [32m'7. Dashboard'[39m        │ [33m115[39m   │ [32m'✅ PASS'[39m │
+│ 7       │ [32m'chromium'[39m │ [32m'8. Reports'[39m          │ [33m424[39m   │ [32m'✅ PASS'[39m │
+│ 8       │ [32m'chromium'[39m │ [32m'9. Payments'[39m         │ [33m103[39m   │ [32m'✅ PASS'[39m │
+│ 9       │ [32m'chromium'[39m │ [32m'10. Auction'[39m         │ [33m130[39m   │ [32m'✅ PASS'[39m │
+│ 10      │ [32m'chromium'[39m │ [32m'11. Downloads'[39m       │ [33m3494[39m  │ [32m'✅ PASS'[39m │
+│ 11      │ [32m'chromium'[39m │ [32m'12. Tracking Order'[39m  │ [33m7730[39m  │ [32m'✅ PASS'[39m │
+│ 12      │ [32m'chromium'[39m │ [32m'13. User Management'[39m │ [33m4529[39m  │ [32m'✅ PASS'[39m │
+│ 13      │ [32m'chromium'[39m │ [32m'14. Cleanup'[39m         │ [33m2923[39m  │ [32m'✅ PASS'[39m │
+└─────────┴────────────┴───────────────────────┴───────┴───────────┘
+
+📊 Total Execution Time: 51047ms (51.0s
+
+✅ All 14 modules tested!
+
+⏸️  Keeping browser open for 60 seconds for review...
+   Close manually or wait for auto-close
+
+   Closing browser now...
+
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

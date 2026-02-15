@@ -1,0 +1,34 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1) 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoContainText[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator: locator('.ant-message, .ant-notification, body')
+    Expected pattern: [32m/updated|success/i[39m
+    Error: strict mode violation: locator('.ant-message, .ant-notification, body') resolved to 2 elements:
+        1) <body>ΓÇª</body> aka locator('body')
+        2) <div class="ant-message ant-message-top css-mncuj7">ΓÇª</div> aka getByText('Scheme created successfullyScheme created successfully!Scheme created')
+
+    Call log:
+    [2m  - Expect "toContainText" with timeout 5000ms[22m
+    [2m  - waiting for locator('.ant-message, .ant-notification, body')[22m
+
+
+      68 |
+      69 |       // FIXED: More flexible success message matching
+    > 70 |       await expect(page.locator('.ant-message, .ant-notification, body')).toContainText(/updated|success/i, { timeout: 5000 });
+         |                                                                           ^
+      71 |     });
+      72 |
+      73 |     await test.step('3. Transport Master (Create, Add Point, CRUD)', async () => {
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:70:75
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:33:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

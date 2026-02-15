@@ -1,0 +1,1193 @@
+{
+  "config": {
+    "configFile": "F:\\React Dev\\chit\\chit-scheme-frontend\\playwright.config.js",
+    "rootDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-latest",
+        "name": "chromium-latest",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome-stable",
+        "name": "chrome-stable",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chrome-beta",
+        "name": "chrome-beta",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "msedge-stable",
+        "name": "msedge-stable",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "firefox-stable",
+        "name": "firefox-stable",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "webkit-desktop",
+        "name": "webkit-desktop",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "iphone-14",
+        "name": "iphone-14",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "iphone-14-pro-max",
+        "name": "iphone-14-pro-max",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "iphone-se",
+        "name": "iphone-se",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ipad-pro",
+        "name": "ipad-pro",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "ipad-mini",
+        "name": "ipad-mini",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "pixel-8",
+        "name": "pixel-8",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "pixel-5",
+        "name": "pixel-5",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "galaxy-s21",
+        "name": "galaxy-s21",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "galaxy-tab-s4",
+        "name": "galaxy-tab-s4",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-1080p",
+        "name": "desktop-1080p",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-1440p",
+        "name": "desktop-1440p",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop-4k",
+        "name": "desktop-4k",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "laptop-13inch",
+        "name": "laptop-13inch",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      },
+      {
+        "outputDir": "F:/React Dev/chit/chit-scheme-frontend/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "laptop-15inch",
+        "name": "laptop-15inch",
+        "testDir": "F:/React Dev/chit/chit-scheme-frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 180000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/junit.xml"
+        }
+      ],
+      [
+        "list",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "chit-ultimate-performance.spec.js",
+      "file": "chit-ultimate-performance.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Chit Scheme - Complete Realistic Performance Testing",
+          "file": "chit-ultimate-performance.spec.js",
+          "line": 72,
+          "column": 15,
+          "specs": [
+            {
+              "title": "1. Application Loading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1479,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "\n======================================================================\n"
+                        },
+                        {
+                          "text": "🚀 Starting CHROMIUM Realistic Performance Test\n"
+                        },
+                        {
+                          "text": "   Time: 15/2/2026, 10:29:47 pm\n"
+                        },
+                        {
+                          "text": "======================================================================\n\n"
+                        },
+                        {
+                          "text": "🔄 STEP 1: Testing Application Load...\n"
+                        },
+                        {
+                          "text": "✅ [chromium] App Loading: 1473ms\n"
+                        },
+                        {
+                          "text": "   └─ Login form visible and ready\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T16:59:46.774Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-ebe9ad17bd642bb446c4",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "2. Login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 655,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 2: Testing Login (Realistic Interaction)...\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Login: 651ms\n"
+                        },
+                        {
+                          "text": "   └─ Redirected to: https://103.38.50.149:5005/\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T16:59:49.181Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-f39bf49211eae383fad8",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 154,
+              "column": 7
+            },
+            {
+              "title": "3. Transport CRUD - Full Workflow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3840,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 3: Testing Transport Module (Full Workflow)...\n"
+                        },
+                        {
+                          "text": "   📝 Creating transporter: test_1771174790092_514\n"
+                        },
+                        {
+                          "text": "   ✅ Transporter created\n"
+                        },
+                        {
+                          "text": "   📝 Adding branches...\n"
+                        },
+                        {
+                          "text": "   ✅ Branch 1 added\n"
+                        },
+                        {
+                          "text": "   ✅ Branch 2 added\n"
+                        },
+                        {
+                          "text": "   ✅ Branch 1 deleted\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Transport: 3771ms\n"
+                        },
+                        {
+                          "text": "   └─ Created: test_1771174790092_514 with 2 branches (1 deleted)\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T16:59:49.872Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-521da422212c3dcfa7a8",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 178,
+              "column": 7
+            },
+            {
+              "title": "4. Schemes CRUD - Full Workflow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6092,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 4: Testing Schemes Module (Full Workflow)...\n"
+                        },
+                        {
+                          "text": "   📝 Creating scheme: test_1771174793968_301\n"
+                        },
+                        {
+                          "text": "   🔍 Verifying scheme...\n"
+                        },
+                        {
+                          "text": "   ✅ Scheme created\n"
+                        },
+                        {
+                          "text": "   ✏️  Updating scheme bonus...\n"
+                        },
+                        {
+                          "text": "   ✅ Scheme updated\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Schemes: 6022ms\n"
+                        },
+                        {
+                          "text": "   └─ Created & Updated: test_1771174793968_301\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T16:59:53.881Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-2ee5d58519a558982539",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 235,
+              "column": 7
+            },
+            {
+              "title": "5. Customers CRUD - Complete Form",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 11979,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 5: Testing Customers Module (Complete Form)...\n"
+                        },
+                        {
+                          "text": "   📝 Creating customer: test_1771174800073_177\n"
+                        },
+                        {
+                          "text": "   ⏳ Waiting for confirmation dialog...\n"
+                        },
+                        {
+                          "text": "   ✅ Customer created with WA notification\n"
+                        },
+                        {
+                          "text": "   🔍 Verifying customer...\n"
+                        },
+                        {
+                          "text": "   ✅ Customer found in list\n"
+                        },
+                        {
+                          "text": "   ✏️  Updating customer district...\n"
+                        },
+                        {
+                          "text": "   ✅ Customer updated\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Customers: 11920ms\n"
+                        },
+                        {
+                          "text": "   └─ Created & Updated: test_1771174800073_177\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T16:59:59.999Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-4fce93e0aa8f57f7482c",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 320,
+              "column": 5
+            },
+            {
+              "title": "6. Assigned Schemes Management",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7824,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 6: Testing Assigned Schemes Management...\n"
+                        },
+                        {
+                          "text": "   📝 Testing scheme removal and assignment...\n"
+                        },
+                        {
+                          "text": "   🔍 Searching for customer test_1771174800073_177...\n"
+                        },
+                        {
+                          "text": "   ✅ Existing scheme removed\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Assigned Schemes: 7762ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:12.010Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-0b306b08ca257f64903f",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 487,
+              "column": 7
+            },
+            {
+              "title": "7. Dashboard - Multiple Search Methods",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 224,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 7: Testing Dashboard Search...\n"
+                        },
+                        {
+                          "text": "   🔍 Searching by customer code: test_1771174800073_177\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Dashboard: 115ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:19.858Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-e1032ba23cdc45829526",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 590,
+              "column": 7
+            },
+            {
+              "title": "8. Reports - Assigned Schemes Report",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 481,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 8: Testing Reports Module...\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Reports: 424ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:20.114Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-fab936c1598922708930",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 635,
+              "column": 7
+            },
+            {
+              "title": "9. Payments - Record Multiple Payments",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 229,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 9: Testing Payments Module (Multiple Payments)...\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Payments: 103ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:20.660Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-9ab73c26bb8c047f54f6",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 663,
+              "column": 7
+            },
+            {
+              "title": "10. Auction - Complete Payment",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 189,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 10: Testing Auction Module (Pay All)...\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Auction: 130ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:20.937Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-b6ee0d651e4505820c4e",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 721,
+              "column": 7
+            },
+            {
+              "title": "11. Downloads - Preview All Reports",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3534,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 11: Testing Downloads Module (All Tabs)...\n"
+                        },
+                        {
+                          "text": "   📑 Testing Schemes tab...\n"
+                        },
+                        {
+                          "text": "   📑 Testing Customers tab...\n"
+                        },
+                        {
+                          "text": "      ✓ Customers preview button available\n"
+                        },
+                        {
+                          "text": "   📑 Testing Payments tab...\n"
+                        },
+                        {
+                          "text": "      ✓ Payments preview button available\n"
+                        },
+                        {
+                          "text": "   📑 Testing Order Tracking tab...\n"
+                        },
+                        {
+                          "text": "      ✓ Order Tracking preview button available\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Downloads: 3494ms\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:21.192Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-a33a2a58378948003129",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 765,
+              "column": 7
+            },
+            {
+              "title": "12. Tracking Order - Registered & Guest",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7766,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 12: Testing Tracking Order Module...\n"
+                        },
+                        {
+                          "text": "   📝 Creating order 1 (registered): test_1771174824791_384\n"
+                        },
+                        {
+                          "text": "   ✅ Order 1 created with notification\n"
+                        },
+                        {
+                          "text": "   📝 Creating order 2 (guest): test_1771174824791_864\n"
+                        },
+                        {
+                          "text": "   ✅ Order 2 created with notification\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting order 1...\n"
+                        },
+                        {
+                          "text": "   ✅ Order 1 deleted\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Tracking Order: 7730ms\n"
+                        },
+                        {
+                          "text": "   └─ Created: test_1771174824791_384 (deleted), test_1771174824791_864\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:24.747Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-854ab286a58db8a0bcc7",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 801,
+              "column": 7
+            },
+            {
+              "title": "13. User Management - Create, Update, Delete",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5617,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 13: Testing User Management Module...\n"
+                        },
+                        {
+                          "text": "   📂 Navigated to User Management via Sider\n"
+                        },
+                        {
+                          "text": "   📝 Creating user: testuser_1771174833686\n"
+                        },
+                        {
+                          "text": "   ✨ Clicked \"Create User\"\n"
+                        },
+                        {
+                          "text": "   🖼️  Modal \"Create New User\" visible\n"
+                        },
+                        {
+                          "text": "   👑 Selected Admin role\n"
+                        },
+                        {
+                          "text": "   ✅ User created successfully\n"
+                        },
+                        {
+                          "text": "   ✏️  Updating user: testuser_1771174833686\n"
+                        },
+                        {
+                          "text": "   ✅ User updated successfully\n"
+                        },
+                        {
+                          "text": "   ✅ User creation and update verified\n"
+                        },
+                        {
+                          "text": "✅ [chromium] User Management: 4529ms\n\n"
+                        },
+                        {
+                          "text": "🎉 ALL 13 STEPS COMPLETED!\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:32.536Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-4ba70d4d161488d4819c",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 910,
+              "column": 7
+            },
+            {
+              "title": "14. Cleanup - Delete Test Data",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-latest",
+                  "projectName": "chromium-latest",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2927,
+                      "errors": [],
+                      "stdout": [
+                        {
+                          "text": "🔄 STEP 14: Cleanup - Deleting Test Data...\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting scheme: test_1771174793968_301\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting customer: test_1771174800073_177\n"
+                        },
+                        {
+                          "text": "   ✅ Customer deleted\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting transporter: test_1771174790092_514\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting guest order: test_1771174824791_864\n"
+                        },
+                        {
+                          "text": "   🗑️  Deleting user: testuser_1771174833686\n"
+                        },
+                        {
+                          "text": "✅ [chromium] Cleanup: 2923ms\n"
+                        },
+                        {
+                          "text": "   └─ All test data cleaned up\n\n"
+                        },
+                        {
+                          "text": "\n======================================================================\n"
+                        },
+                        {
+                          "text": "   CHROMIUM - COMPLETE PERFORMANCE SUMMARY\n"
+                        },
+                        {
+                          "text": "======================================================================\n"
+                        },
+                        {
+                          "text": "┌─────────┬────────────┬───────────────────────┬───────┬───────────┐\n│ (index) │ browser    │ step                  │ time  │ status    │\n├─────────┼────────────┼───────────────────────┼───────┼───────────┤\n│ 0       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'1. App Loading'\u001b[39m      │ \u001b[33m1473\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 1       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'2. Login'\u001b[39m            │ \u001b[33m651\u001b[39m   │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 2       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'3. Transport'\u001b[39m        │ \u001b[33m3771\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 3       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'4. Schemes'\u001b[39m          │ \u001b[33m6022\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 4       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'5. Customers'\u001b[39m        │ \u001b[33m11920\u001b[39m │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 5       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'6. Assigned Schemes'\u001b[39m │ \u001b[33m7762\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 6       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'7. Dashboard'\u001b[39m        │ \u001b[33m115\u001b[39m   │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 7       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'8. Reports'\u001b[39m          │ \u001b[33m424\u001b[39m   │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 8       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'9. Payments'\u001b[39m         │ \u001b[33m103\u001b[39m   │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 9       │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'10. Auction'\u001b[39m         │ \u001b[33m130\u001b[39m   │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 10      │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'11. Downloads'\u001b[39m       │ \u001b[33m3494\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 11      │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'12. Tracking Order'\u001b[39m  │ \u001b[33m7730\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 12      │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'13. User Management'\u001b[39m │ \u001b[33m4529\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n│ 13      │ \u001b[32m'chromium'\u001b[39m │ \u001b[32m'14. Cleanup'\u001b[39m         │ \u001b[33m2923\u001b[39m  │ \u001b[32m'✅ PASS'\u001b[39m │\n└─────────┴────────────┴───────────────────────┴───────┴───────────┘\n"
+                        },
+                        {
+                          "text": "\n📊 Total Execution Time: 51047ms (51.0s\n"
+                        },
+                        {
+                          "text": "\n✅ All 14 modules tested!\n"
+                        },
+                        {
+                          "text": "\n⏸️  Keeping browser open for 60 seconds for review...\n"
+                        },
+                        {
+                          "text": "   Close manually or wait for auto-close\n\n"
+                        },
+                        {
+                          "text": "   Closing browser now...\n\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-02-15T17:00:38.224Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0ee2a3fcb93ebfed31a5-097c0f4192c6b47de199",
+              "file": "chit-ultimate-performance.spec.js",
+              "line": 997,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-02-15T16:59:45.271Z",
+    "duration": 57378.15,
+    "expected": 14,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

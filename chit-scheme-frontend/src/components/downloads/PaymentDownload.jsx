@@ -194,6 +194,7 @@ const PaymentDownload = () => {
               onChange={handleDateRangeChange}
               placeholder={["Start Date", "End Date"]}
               format="DD-MM-YYYY"
+              onFocus={(e) => e.target.select()}
               value={
                 filters.date_from && filters.date_to
                   ? [dayjs(filters.date_from), dayjs(filters.date_to)]
@@ -204,13 +205,12 @@ const PaymentDownload = () => {
             <Select
               allowClear
               showSearch
+              popupClassName="bright-highlight"
+              optionFilterProp="children"
               placeholder="Select Customer"
               value={filters.customer_id}
               onChange={(value) => handleFilterChange("customer_id", value)}
               style={{ width: "100%" }}
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
             >
               {customers.map((c) => (
                 <Option key={c.Customer_ID} value={c.Customer_ID}>
@@ -221,6 +221,9 @@ const PaymentDownload = () => {
 
             <Select
               allowClear
+              showSearch
+              optionFilterProp="children"
+              popupClassName="bright-highlight"
               placeholder="Select Scheme"
               value={filters.scheme_id}
               onChange={(value) => handleFilterChange("scheme_id", value)}

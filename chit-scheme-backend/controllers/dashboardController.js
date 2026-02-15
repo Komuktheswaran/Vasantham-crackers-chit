@@ -105,7 +105,11 @@ const getCustomerDetails = async (req, res) => {
 
     // Get customer info
     const customerQuery = `
-      SELECT * FROM Customer_Master WHERE Customer_ID = @param0
+      SELECT c.*, s.State_Name, d.District_Name 
+      FROM Customer_Master c
+      LEFT JOIN State_Master s ON c.State_ID = s.State_ID
+      LEFT JOIN District_Master d ON c.District_ID = d.District_ID
+      WHERE c.Customer_ID = @param0
     `;
     const customer = await executeQuery(customerQuery, [{ value: customerId, type: sql.VarChar(50) }]);
 

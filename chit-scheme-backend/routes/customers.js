@@ -14,6 +14,7 @@ const {
   bulkCreateCustomers,
   getNextFundNumber,
   getNextCustomerId,
+  getNextIds,
   getCustomerByFundNumber,
   getCustomerByCode,
   removeScheme
@@ -52,6 +53,7 @@ const upload = multer({
 // Utility endpoints (put before /:id routes to avoid conflicts)
 router.get('/next-fund-number', getNextFundNumber);
 router.get('/next-customer-id', getNextCustomerId);
+router.get('/next-ids', getNextIds);
 router.get('/check-id', checkCustomerId);
 router.get('/export', exportCustomers);
 router.get('/fund/:fundNumber(*)', getCustomerByFundNumber);

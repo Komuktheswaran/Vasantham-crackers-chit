@@ -1,0 +1,343 @@
+[
+  {
+    "table": "Customer_Master",
+    "columns": [
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Phone_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Address1",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Area",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "State_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Phone_Number2",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Pincode",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Address2",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "District_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Reference_Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Type",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Code",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Reference_Phone",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Delivery_Point_ID",
+        "DATA_TYPE": "int"
+      }
+    ]
+  },
+  {
+    "table": "Order_Tracking",
+    "columns": [
+      {
+        "COLUMN_NAME": "Tracking_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Tracking_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Order_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Fund_Number",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Order_Received_Date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Payment_Received_Date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Payment_Amount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Transporter_Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Transporter_Contact",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Source",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Created_At",
+        "DATA_TYPE": "datetime"
+      },
+      {
+        "COLUMN_NAME": "Parcel_Quantity",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Packing_Status",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Customer_Name",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  },
+  {
+    "table": "Scheme_Due",
+    "columns": [
+      {
+        "COLUMN_NAME": "Scheme_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Due_number",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Due_date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Due_amount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Recd_amount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "amt_received_date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Fund_Number",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  },
+  {
+    "table": "Chit_Master",
+    "columns": [
+      {
+        "COLUMN_NAME": "Scheme_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Total_Amount",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Amount_per_month",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Period",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Number_of_due",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Month_from",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Month_to",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Bonus_Percentage",
+        "DATA_TYPE": "decimal"
+      },
+      {
+        "COLUMN_NAME": "Bonus_Amount",
+        "DATA_TYPE": "decimal"
+      }
+    ]
+  },
+  {
+    "table": "Scheme_Members",
+    "columns": [
+      {
+        "COLUMN_NAME": "Membership_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Scheme_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Customer_ID",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Join_date",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Status",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Created_at",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Updated_at",
+        "DATA_TYPE": "date"
+      },
+      {
+        "COLUMN_NAME": "Fund_Number",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  },
+  {
+    "table": "District_Master",
+    "columns": [
+      {
+        "COLUMN_NAME": "District_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "District_Name",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "State_ID",
+        "DATA_TYPE": "int"
+      }
+    ]
+  },
+  {
+    "table": "State_Master",
+    "columns": [
+      {
+        "COLUMN_NAME": "State_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "State_Name",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  },
+  {
+    "table": "Transporters",
+    "columns": [
+      {
+        "COLUMN_NAME": "Transporter_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Transporter_Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "COLUMN_NAME": "Contact_Person",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "COLUMN_NAME": "Phone_Number",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "COLUMN_NAME": "Created_At",
+        "DATA_TYPE": "datetime"
+      },
+      {
+        "COLUMN_NAME": "Updated_At",
+        "DATA_TYPE": "datetime"
+      }
+    ]
+  },
+  {
+    "table": "Delivery_Points",
+    "columns": [
+      {
+        "COLUMN_NAME": "Delivery_Point_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Transporter_ID",
+        "DATA_TYPE": "int"
+      },
+      {
+        "COLUMN_NAME": "Place_Name",
+        "DATA_TYPE": "nvarchar"
+      },
+      {
+        "COLUMN_NAME": "Created_At",
+        "DATA_TYPE": "datetime"
+      },
+      {
+        "COLUMN_NAME": "Updated_At",
+        "DATA_TYPE": "datetime"
+      },
+      {
+        "COLUMN_NAME": "Branch_Address",
+        "DATA_TYPE": "varchar"
+      },
+      {
+        "COLUMN_NAME": "Branch_Phone",
+        "DATA_TYPE": "varchar"
+      }
+    ]
+  }
+]

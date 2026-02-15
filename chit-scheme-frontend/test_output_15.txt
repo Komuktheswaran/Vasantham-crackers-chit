@@ -1,0 +1,76 @@
+﻿
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow ΓÇ║ 3. Transport Master (Create, Add Point, CRUD) 
+
+    [31mTest timeout of 120000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('tr').filter({ hasText: 'Transporter_mlmf5qy172p' }).locator('.anticon-edit').first()[22m
+    [2m    - locator resolved to <span role="img" aria-label="edit" class="anticon anticon-edit">ΓÇª</span>[22m
+    [2m  - attempting click action[22m
+    [2m    2 ├ù waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - <div class="ant-modal-content">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 ├ù waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not stable[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    3 ├ù waiting for element to be visible, enabled and stable[22m
+    [2m      - element is visible, enabled and stable[22m
+    [2m      - scrolling into view if needed[22m
+    [2m      - done scrolling[22m
+    [2m      - <div tabindex="-1" class="ant-modal-wrap">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 500ms[22m
+    [2m    53 ├ù waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - <div class="ant-modal-content">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+    [2m       - waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - <div class="ant-modal-content">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+    [2m       - waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - <div class="ant-modal-content">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+    [2m       - waiting for element to be visible, enabled and stable[22m
+    [2m       - element is visible, enabled and stable[22m
+    [2m       - scrolling into view if needed[22m
+    [2m       - done scrolling[22m
+    [2m       - <div tabindex="-1" class="ant-modal-wrap">ΓÇª</div> from <div>ΓÇª</div> subtree intercepts pointer events[22m
+    [2m     - retrying click action[22m
+    [2m       - waiting 500ms[22m
+
+
+      105 |
+      106 |       // CRUD on Transporter (Update)
+    > 107 |       await page.locator('tr', { hasText: transporterName }).locator('.anticon-edit').first().click();
+          |                                                                                               ^
+      108 |       await page.locator('#Contact_Person').fill('Test Manager');
+      109 |       await page.getByRole('button', { name: 'OK' }).click();
+      110 |       await expect(page.locator('body')).toContainText(/updated|success/i, { timeout: 5000 });
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:107:95
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:74:5
+
+    Error Context: test-results\comprehensive_workflow-Vas-7d0b9-mprehensive-End-to-End-Flow-chromium\error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:8:3 ΓÇ║ Vasantham App Workflow ΓÇ║ Comprehensive End-to-End Flow 

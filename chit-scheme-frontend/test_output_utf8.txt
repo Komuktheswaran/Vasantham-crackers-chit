@@ -1,0 +1,37 @@
+﻿
+Running 11 tests using 1 worker
+
+[1A[2K[1/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:30:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 1. Login
+[1A[2K[2/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:39:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1)
+[1A[2K  1) [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:39:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1) 
+
+    [31mTest timeout of 120000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 120000ms exceeded.
+    Call log:
+    [2m  - waiting for getByRole('link', { name: 'Schemes' })[22m
+
+
+      38 |
+      39 |   test('2. Scheme Management (Create 2, CRUD on 1)', async ({ page }) => {
+    > 40 |     await page.getByRole('link', { name: 'Schemes' }).click();
+         |                                                       ^
+      41 |
+      42 |     // Create Scheme A
+      43 |     await page.getByRole('button', { name: 'New Scheme' }).click();
+        at F:\React Dev\chit\chit-scheme-frontend\tests\comprehensive_workflow.spec.js:40:55
+
+
+[1A[2K[3/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:73:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 3. Transport Master (Create, Add Point, CRUD)
+[1A[2K[4/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:103:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 4. Customer Creation & Scheme Assignment
+[1A[2K[5/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:153:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 4b. Customer 1: Update Scheme (Delete A, Add B)
+[1A[2K[6/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:200:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 5. Customer CRUD (Update Customer 1)
+[1A[2K[7/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:211:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 6. Verify Assigned Schemes
+[1A[2K[8/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:236:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 7 & 8. Payment Page Search & Pay Dues
+[1A[2K[9/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:278:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 9. Auction Page
+[1A[2K[10/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:295:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 10. Order Tracking CRUD
+[1A[2K[11/11] [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:331:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 11. Downloads Page Check
+[1A[2K  1 failed
+    [chromium] ΓÇ║ tests\comprehensive_workflow.spec.js:39:3 ΓÇ║ Comprehensive Workflow Test ΓÇ║ 2. Scheme Management (Create 2, CRUD on 1) 
+  9 did not run
+  1 passed (2.1m)
