@@ -282,11 +282,7 @@ const TransportMaster = () => {
           <Form.Item name="Contact_Person" label="Contact Person">
             <Input placeholder="Enter contact person name" />
           </Form.Item>
-          <Form.Item
-            name="Phone_Number"
-            label="Phone Number"
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="Phone_Number" label="Phone Number">
             <Input placeholder="Enter phone" />
           </Form.Item>
         </Form>

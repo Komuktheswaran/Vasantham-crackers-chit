@@ -58,11 +58,11 @@ const generateFundNumber = async () => {
 
 const getAllCustomers = async (req, res) => {
   try {
-    const { page = 1, limit, search = '', state, district, area, scheme_id } = req.query;
+    const { page = 1, limit, search = '', state, district, area, scheme_id, customer_type, Customer_Type, fund_number } = req.query;
 
     // Build base query
     let baseQuery = `
-      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Reference_Phone, c.Delivery_Point_ID, c.Customer_Type, 
+      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Code, c.Delivery_Point_ID, c.Customer_Type, 
              c.Phone_Number, c.Phone_Number2, c.Area, c.State_ID, c.District_ID, c.Pincode,
              c.Address1, c.Address2,
              ISNULL(d.District_Name, 'N/A') as District_Name, 
@@ -75,7 +75,7 @@ const getAllCustomers = async (req, res) => {
       LEFT JOIN State_Master s ON c.State_ID = s.State_ID
     `;
     
-    if (scheme_id || req.query.fund_number) {
+    if (scheme_id || fund_number) {
       fromQuery += ` INNER JOIN Scheme_Members sm ON c.Customer_ID = sm.Customer_ID`;
     }
 
@@ -121,16 +121,17 @@ const getAllCustomers = async (req, res) => {
       params.push({ value: parseInt(scheme_id), type: sql.Int });
       paramIndex++;
     }
-    if (req.query.fund_number) {
+    if (fund_number) {
       whereClause += ` AND sm.Fund_Number LIKE @param${paramIndex}`;
-      params.push({ value: `%${req.query.fund_number}%`, type: sql.VarChar });
+      params.push({ value: `%${fund_number}%`, type: sql.VarChar });
       paramIndex++;
     }
-    if (req.query.Customer_Type) {
+    const cType = Customer_Type || customer_type;
+    if (cType) {
         // Handle filter for multiple types if sent as array, or single partial match
         // Assuming simple string match for now as stored in CSV
         whereClause += ` AND c.Customer_Type LIKE @param${paramIndex}`;
-        params.push({ value: `%${req.query.Customer_Type}%`, type: sql.VarChar });
+        params.push({ value: `%${cType}%`, type: sql.VarChar });
         paramIndex++;
     }
 
@@ -225,7 +226,7 @@ const createCustomer = async (req, res) => {
       Customer_ID,
       Customer_Code,
       Name,
-      Reference_Name,
+      Reference_Code,
       Customer_Type,
       PhoneNumber,
       PhoneNumber2,
@@ -239,7 +240,6 @@ const createCustomer = async (req, res) => {
       Pincode,
       Scheme_ID,
       Fund_Number,
-      Reference_Phone,
       Delivery_Point_ID,
       sendWhatsapp 
     } = req.body;
@@ -259,7 +259,7 @@ const createCustomer = async (req, res) => {
     insertReq.input('Customer_ID', sql.VarChar(50), Customer_ID);
     insertReq.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
     insertReq.input('Name', sql.VarChar(255), Name);
-    insertReq.input('Reference_Name', sql.VarChar(255), Reference_Name || '');
+    insertReq.input('Reference_Code', sql.VarChar(100), Reference_Code || '');
     insertReq.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
     insertReq.input('Phone_Number', sql.BigInt, PhoneNumber);
     insertReq.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
@@ -269,19 +269,18 @@ const createCustomer = async (req, res) => {
     insertReq.input('District_ID', sql.Int, District_ID || null);
     insertReq.input('State_ID', sql.Int, State_ID || null);
     insertReq.input('Pincode', sql.Int, Pincode || null);
-    insertReq.input('Reference_Phone', sql.VarChar(50), Reference_Phone || '');
     insertReq.input('Delivery_Point_ID', sql.Int, Delivery_Point_ID || null);
 
     await insertReq.query(`
       INSERT INTO Customer_Master (
-        Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, 
+        Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type, 
         Phone_Number, Phone_Number2, Address1, Address2, 
-        Area, District_ID, State_ID, Pincode, Reference_Phone, Delivery_Point_ID
+        Area, District_ID, State_ID, Pincode, Delivery_Point_ID
       )
       VALUES (
-        @Customer_ID, @Customer_Code, @Name, @Reference_Name, @Customer_Type, 
+        @Customer_ID, @Customer_Code, @Name, @Reference_Code, @Customer_Type, 
         @Phone_Number, @Phone_Number2, @Address1, @Address2, 
-        @Area, @District_ID, @State_ID, @Pincode, @Reference_Phone, @Delivery_Point_ID
+        @Area, @District_ID, @State_ID, @Pincode,  @Delivery_Point_ID
       )
     `);
 
@@ -361,7 +360,7 @@ const updateCustomer = async (req, res) => {
     const {
       Customer_Code,
       Name,
-      Reference_Name,
+      Reference_Code,
       Customer_Type,
       PhoneNumber,
       PhoneNumber2,
@@ -373,7 +372,6 @@ const updateCustomer = async (req, res) => {
       District_ID,
       State_ID,
       Pincode,
-      Reference_Phone,
       Delivery_Point_ID
     } = req.body;
 
@@ -384,7 +382,7 @@ const updateCustomer = async (req, res) => {
     request.input('id', sql.VarChar(50), id);
     request.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
     request.input('Name', sql.VarChar(255), Name);
-    request.input('Reference_Name', sql.VarChar(255), Reference_Name || '');
+    request.input('Reference_Code', sql.VarChar(100), Reference_Code || '');
     request.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
     request.input('Phone_Number', sql.BigInt, PhoneNumber);
     request.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
@@ -394,17 +392,16 @@ const updateCustomer = async (req, res) => {
     request.input('District_ID', sql.Int, District_ID || null);
     request.input('State_ID', sql.Int, State_ID || null);
     request.input('Pincode', sql.Int, Pincode || null);
-    request.input('Reference_Phone', sql.VarChar(50), Reference_Phone || '');
     request.input('Delivery_Point_ID', sql.Int, Delivery_Point_ID || null);
 
     await request.query(`
       UPDATE Customer_Master SET 
         Customer_Code = @Customer_Code,
-        Name = @Name, Reference_Name = @Reference_Name, Customer_Type = @Customer_Type, 
+        Name = @Name, Reference_Code = @Reference_Code, Customer_Type = @Customer_Type, 
         Phone_Number = @Phone_Number, Phone_Number2 = @Phone_Number2, 
         Address1 = @Address1, Address2 = @Address2,
         Area = @Area, District_ID = @District_ID, State_ID = @State_ID,
-        Pincode = @Pincode, Reference_Phone = @Reference_Phone, Delivery_Point_ID = @Delivery_Point_ID
+        Pincode = @Pincode, Delivery_Point_ID = @Delivery_Point_ID
       WHERE Customer_ID = @id
     `);
 
@@ -483,10 +480,11 @@ const checkCustomerId = async (req, res) => {
 
 const downloadCustomers = async (req, res) => {
     try {
-        const { search = '', Customer_Type, fund_number } = req.query;
+        const { search = '', fund_number } = req.query;
+        const Customer_Type = req.query.Customer_Type || req.query.customer_type;
 
         let baseSelect = `
-            SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Name, c.Reference_Phone, c.Delivery_Point_ID, c.Customer_Type, 
+            SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Code, c.Delivery_Point_ID, c.Customer_Type, 
                    c.Phone_Number, c.Phone_Number2, c.Address1, c.Area, c.Pincode,
                    ISNULL(d.District_Name, 'N/A') as District_Name, 
                    ISNULL(s.State_Name, 'N/A') as State_Name
@@ -573,7 +571,6 @@ const uploadCustomers = async (req, res) => {
         // DB columns: Name (merged), or does it have First/Last? 
         // The previous code did: Name = `${FirstName} ${LastName}`
         
-        table.columns.add('Reference_Name', sql.VarChar(100), { nullable: true });
         table.columns.add('Customer_Type', sql.VarChar(50), { nullable: true });
         table.columns.add('Phone_Number', sql.BigInt, { nullable: true });
         table.columns.add('Phone_Number2', sql.BigInt, { nullable: true });
@@ -628,12 +625,12 @@ const uploadCustomers = async (req, res) => {
             const Name = `${FirstName || ''} ${LastName || ''}`.trim();
             
             // Add Row to Table
-            // Customer_ID, Customer_Code, Name, Reference_Name, Customer_Type, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
+            // Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
             table.rows.add(
                 Customer_ID,
                 null, // Customer_Code (not in CSV?)
                 Name,
-                null, // Reference_Name
+                null, // Reference_Code
                 null, // Customer_Type
                 PhoneNumber,
                 PhoneNumber2,

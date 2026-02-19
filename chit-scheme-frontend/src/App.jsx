@@ -186,34 +186,49 @@ const App = () => {
   return (
     <Layout className="app-main-layout">
       {authenticated && (
-        <Sider
-          collapsible
-          collapsed={collapsed}
-          onCollapse={setCollapsed}
-          className="app-sider"
-          breakpoint="lg"
-          collapsedWidth="0"
-          onBreakpoint={(broken) => {
-            setCollapsed(broken);
-          }}
-          width={220}
-          trigger={null}
-        >
-          <div className="app-logo-container">
-            {collapsed ? (
-              <span className="app-logo-text">VCW</span>
-            ) : (
-              <span className="app-logo-text">VCW Chit</span>
-            )}
-          </div>
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            items={menuItems}
-            onClick={({ key }) => navigate(key)}
-          />
-        </Sider>
+        <>
+          {/* Mobile overlay to close sidebar */}
+          {!collapsed && (
+            <div
+              className="sidebar-overlay"
+              onClick={() => setCollapsed(true)}
+            />
+          )}
+          <Sider
+            collapsible
+            collapsed={collapsed}
+            onCollapse={setCollapsed}
+            className="app-sider"
+            breakpoint="lg"
+            collapsedWidth="0"
+            onBreakpoint={(broken) => {
+              setCollapsed(broken);
+            }}
+            width={220}
+            trigger={null}
+          >
+            <div className="app-logo-container">
+              {collapsed ? (
+                <span className="app-logo-text">VCW</span>
+              ) : (
+                <span className="app-logo-text">VCW Chit</span>
+              )}
+            </div>
+            <Menu
+              theme="dark"
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              items={menuItems}
+              onClick={({ key }) => {
+                navigate(key);
+                // Auto-close sidebar on mobile
+                if (window.innerWidth <= 768) {
+                  setCollapsed(true);
+                }
+              }}
+            />
+          </Sider>
+        </>
       )}
       <Layout className="app-content-layout">
         {authenticated && (

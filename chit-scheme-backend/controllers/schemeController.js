@@ -67,7 +67,7 @@ const getAllSchemes = async (req, res) => {
     query += `
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
                cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Amount
-      ORDER BY cm.Scheme_ID DESC 
+      ORDER BY cm.Amount_per_month ASC 
     `;
 
     // Only add pagination if limit is provided
@@ -277,8 +277,10 @@ const getSchemeMembers = async (req, res) => {
                            JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
                            WHERE ` + query.split('WHERE')[1]; // Reuse WHERE clause
 
-    query += ` ORDER BY sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+   
+    query += ` ORDER BY sm.Fund_Number, sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
 
+    
     const [members, totalResult] = await Promise.all([
       executeQuery(query, params),
       executeQuery(countQueryStr, params)

@@ -85,7 +85,7 @@ const createTransporter = async (req, res) => {
     `, [
       { value: Transporter_Name, type: sql.VarChar(100) },
       { value: Contact_Person || null, type: sql.VarChar(100) },
-      { value: Phone_Number, type: sql.VarChar(50) }
+      { value: Phone_Number || null, type: sql.VarChar(50) }
     ]);
 
     return sendSuccess(res, 'Transporter created successfully', { transporterId }, 201);

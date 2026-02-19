@@ -67,7 +67,8 @@ const Payments = () => {
       (c) =>
         c.Customer_ID?.toLowerCase().includes(value.toLowerCase()) ||
         c.Customer_Code?.toLowerCase().includes(value.toLowerCase()) ||
-        c.Name?.toLowerCase().includes(value.toLowerCase()),
+        c.Name?.toLowerCase().includes(value.toLowerCase()) ||
+        c.Phone_Number?.toString().includes(value),
     );
     setCustomers(filtered);
   };
@@ -409,6 +410,38 @@ const Payments = () => {
                   ))}
                 </Select>
               </Form.Item>
+
+              {selectedCustomer &&
+                (() => {
+                  const cust = allCustomers.find(
+                    (c) => c.Customer_ID === selectedCustomer,
+                  );
+                  return cust ? (
+                    <div
+                      style={{
+                        marginBottom: 16,
+                        padding: "10px 14px",
+                        background: "#f6ffed",
+                        border: "1px solid #b7eb8f",
+                        borderRadius: 6,
+                      }}
+                    >
+                      <Row gutter={8}>
+                        <Col span={24}>
+                          <Text strong>Name:</Text> <Text>{cust.Name}</Text>
+                        </Col>
+                        <Col span={12}>
+                          <Text strong>Code:</Text>{" "}
+                          <Text>{cust.Customer_Code || "-"}</Text>
+                        </Col>
+                        <Col span={12}>
+                          <Text strong>ID:</Text>{" "}
+                          <Text>{cust.Customer_ID}</Text>
+                        </Col>
+                      </Row>
+                    </div>
+                  ) : null;
+                })()}
 
               {selectedCustomer && (
                 <Form.Item label="Select Scheme">

@@ -116,14 +116,10 @@ const Customers = () => {
       key: "Phone_Number",
     },
     {
-      title: "Reference Name",
-      dataIndex: "Reference_Name",
-      key: "Reference_Name",
-    },
-    {
-      title: "Reference Phone",
-      dataIndex: "Reference_Phone",
-      key: "Reference_Phone",
+      title: "Ref Code",
+      dataIndex: "Reference_Code",
+      key: "Reference_Code",
+      render: (text) => text || "-",
     },
     {
       title: "Type",
@@ -142,11 +138,12 @@ const Customers = () => {
       ),
     },
     {
-      title: "Delivery Point",
-      dataIndex: "Delivery_Point",
-      key: "Delivery_Point",
-      width: 150,
+      title: "Address",
+      dataIndex: "Address1",
+      key: "Address1",
+      width: 200,
       ellipsis: true,
+      render: (text) => text || "-",
     },
     {
       title: "Action",
@@ -263,16 +260,14 @@ const Customers = () => {
     setEditingCustomer(record);
     form.setFieldsValue({
       Customer_ID: record.Customer_ID,
-      Customer_Code: record.Customer_Code, // New Field
+      Customer_Code: record.Customer_Code,
       Name: record.Name,
-      Reference_Name: record.Reference_Name,
-      Reference_Phone: record.Reference_Phone,
+      Reference_Code: record.Reference_Code,
       Customer_Type: record.Customer_Type || "",
       PhoneNumber: record.Phone_Number,
       PhoneNumber2: record.Phone_Number2,
       Address1: record.Address1,
       Address2: record.Address2,
-      Delivery_Point_ID: record.Delivery_Point_ID,
       State_ID: record.State_ID,
       District_ID: record.District_ID,
       Pincode: record.Pincode,
@@ -310,15 +305,14 @@ const Customers = () => {
         Customer_ID: editingCustomer
           ? editingCustomer.Customer_ID
           : values.Customer_ID,
-        Customer_Code: values.Customer_Code, // Include in payload
+        Customer_Code: values.Customer_Code,
         Customer_Type: values.Customer_Type || "",
         PhoneNumber2: values.PhoneNumber2 || null,
-        Reference_Name: values.Reference_Name || null,
+        Reference_Code: values.Reference_Code || null,
         District_ID: values.District_ID || null,
         State_ID: values.State_ID || null,
         Pincode: values.Pincode || null,
         sendWhatsapp: sendWhatsapp,
-        // Single scheme handling (not array)
         Scheme_ID: values.Scheme_ID || null,
         Fund_Number: values.Fund_Number || null,
       };
@@ -578,9 +572,7 @@ const Customers = () => {
         ...customer,
         PhoneNumber: customer.Phone_Number,
         PhoneNumber2: customer.Phone_Number2,
-        Reference_Phone: customer.Reference_Phone,
-        Delivery_Point_ID: customer.Delivery_Point_ID,
-        // Schemes: [],
+        Reference_Code: customer.Reference_Code,
       });
       setSelectedState(customer.State_ID);
     } else {
@@ -704,19 +696,20 @@ const Customers = () => {
           setSelectedState(null); // Clear selected state on modal close
         }}
         onOk={() => form.submit()}
-        width="100%"
-        style={{ top: 20, maxWidth: 1000 }}
+        width="90%"
+        style={{ top: 30 }}
+        styles={{ body: { minHeight: 500 } }}
         forceRender
       >
         <Form
           form={form}
           onFinish={onFinishForm}
           layout="vertical"
-          size="small"
+          size="middle"
         >
-          <Row gutter={[16, 0]}>
+          <Row gutter={[24, 8]}>
             {/* Customer ID (Auto-generated but visible) */}
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="Customer_ID"
                 label="Customer ID"
@@ -733,7 +726,7 @@ const Customers = () => {
             </Col>
 
             {/* 1. Customer Code (Manual Entry) */}
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="Customer_Code"
                 label="Customer Code"
@@ -758,7 +751,7 @@ const Customers = () => {
             </Col>
 
             {/* 3. Phone Number */}
-            <Col xs={24} sm={12} md={4}>
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="PhoneNumber"
                 label="Phone number"
@@ -769,14 +762,14 @@ const Customers = () => {
             </Col>
 
             {/* 4. Secondary Phone (Optional) */}
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Form.Item name="PhoneNumber2" label="Secondary Phone">
                 <Input type="number" placeholder="10 digit phone" />
               </Form.Item>
             </Col>
 
             {/* 5. Customer Type */}
-            <Col xs={24} sm={12} md={6}>
+            <Col xs={24} sm={12} md={8}>
               <Form.Item
                 name="Customer_Type"
                 label="Customer Type"
@@ -801,15 +794,15 @@ const Customers = () => {
             </Col>
 
             {/* 6. Address Line 1 */}
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Address1" label="Address Line 1" margin="dense">
+            <Col xs={24} sm={12} md={12}>
+              <Form.Item name="Address1" label="Address Line 1">
                 <Input placeholder="Address Line 1" />
               </Form.Item>
             </Col>
 
             {/* 7. Address Line 2 */}
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Address2" label="Address Line 2" margin="dense">
+            <Col xs={24} sm={12} md={12}>
+              <Form.Item name="Address2" label="Address Line 2">
                 <Input placeholder="Address Line 2" />
               </Form.Item>
             </Col>
@@ -869,35 +862,10 @@ const Customers = () => {
               </Form.Item>
             </Col>
 
-            {/* Reference Fields */}
+            {/* Reference Code */}
             <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Reference_Name" label="Ref Name">
-                <Input placeholder="Reference name" />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Reference_Phone" label="Ref Phone">
-                <Input type="number" placeholder="Ref Phone" />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Delivery_Point_ID" label="Delivery point">
-                <Select
-                  placeholder="Select DP"
-                  showSearch
-                  optionFilterProp="children"
-                  popupClassName="bright-highlight"
-                >
-                  {deliveryPoints.map((dp) => (
-                    <Option
-                      key={dp.Delivery_Point_ID}
-                      value={dp.Delivery_Point_ID}
-                    >
-                      {dp.Place_Name} ({dp.Transporter_Name})
-                    </Option>
-                  ))}
-                </Select>
+              <Form.Item name="Reference_Code" label="Reference Code">
+                <Input placeholder="Reference Code" />
               </Form.Item>
             </Col>
           </Row>
@@ -923,7 +891,7 @@ const Customers = () => {
                       placeholder="Select Scheme"
                       allowClear
                       showSearch
-                      popupClassName="scheme-dropdown"
+                      popupClassName="bright-highlight"
                       optionFilterProp="children"
                       onSelect={async () => {
                         // Auto-generate fund number if not already set

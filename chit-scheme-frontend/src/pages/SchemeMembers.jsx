@@ -162,32 +162,15 @@ const SchemeMembers = () => {
     },
     {
       title: "Bonus",
+      dataIndex: "Bonus_Amount",
       key: "Bonus_Amount",
-      render: (_, record) => {
-        const bonus = record.Bonus_Percentage
-          ? (record.Total_Amount * record.Bonus_Percentage) / 100
-          : 0;
-        return (
-          <div>
-            <div>₹{bonus.toFixed(2)}</div>
-            {record.Bonus_Percentage && (
-              <small className="text-muted">({record.Bonus_Percentage}%)</small>
-            )}
-          </div>
-        );
-      },
+      render: (amt) => (amt ? `₹${parseFloat(amt).toFixed(2)}` : "₹0.00"),
     },
     {
       title: "Total Amount",
       dataIndex: "Total_Amount",
       key: "Total_Amount",
       render: (amt) => `₹${amt}`,
-    },
-    {
-      title: "Join Date",
-      dataIndex: "Join_date",
-      key: "Join_date",
-      render: (date) => (date ? dayjs(date).format("DD-MM-YYYY") : "-"),
     },
     {
       title: "Status",
@@ -204,7 +187,7 @@ const SchemeMembers = () => {
   return (
     <div className="page-container scheme-members-container">
       <div className="page-header-row">
-        <h2 className="page-title">Assigned Customer or Fund Scheme Report</h2>
+        <h2 className="page-title">Fund Scheme Report</h2>
       </div>
 
       <div className="filter-section">

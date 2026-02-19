@@ -12,7 +12,7 @@ const validate = (req, res, next) => {
 const customerValidation = [
   body('Customer_ID').trim().notEmpty().withMessage('Customer ID is required'),
   body('Name').optional({ checkFalsy: true }).trim().isLength({ min: 3 }).withMessage('Name must be at least 3 characters').escape(),
-  body('Reference_Name').optional({ checkFalsy: true }).trim().escape(),
+  body('Reference_Code').optional({ checkFalsy: true }).trim().escape(),
   body('Customer_Type').optional({ checkFalsy: true }).trim(),
   body('PhoneNumber').trim().notEmpty().withMessage('Phone number is required').isMobilePhone().withMessage('Invalid phone number'),
   body('Address1').optional({ checkFalsy: true }).trim().escape(),

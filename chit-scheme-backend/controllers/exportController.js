@@ -24,7 +24,7 @@ const exportCustomers = async (req, res) => {
         s.State_Name as State,
         c.Pincode,
         c.Customer_Type,
-        c.Reference_Name,
+        c.Reference_Code,
         (SELECT STRING_AGG(cm.Name, ', ') 
          FROM Scheme_Members sm 
          JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
@@ -108,7 +108,7 @@ const exportCustomers = async (req, res) => {
       { key: 'Pincode', header: 'Pincode' },
       { key: 'State', header: 'State' },
       { key: 'Customer_Type', header: 'Customer Type' },
-      { key: 'Reference_Name', header: 'Reference Name' },
+      { key: 'Reference_Code', header: 'Reference Code' },
       { key: 'Assigned_Schemes', header: 'Schemes Assigned' },
       { key: 'Assigned_Fund_Numbers', header: 'Fund Number' }
     ];
@@ -152,7 +152,7 @@ const exportPayments = async (req, res) => {
         c.Pincode,
         s.State_Name as State,
         c.Customer_Type,
-        c.Reference_Name,
+        c.Reference_Code,
         (SELECT STRING_AGG(cm2.Name, ', ') 
          FROM Scheme_Members sm 
          JOIN Chit_Master cm2 ON sm.Scheme_ID = cm2.Scheme_ID 
@@ -249,7 +249,7 @@ const exportPayments = async (req, res) => {
       { key: 'Pincode', header: 'Pincode' },
       { key: 'State', header: 'State' },
       { key: 'Customer_Type', header: 'Customer Type' },
-      { key: 'Reference_Name', header: 'Reference Name' }
+      { key: 'Reference_Code', header: 'Reference Code' }
     ];
 
     const csv = convertToCSV(formattedPayments, columns);

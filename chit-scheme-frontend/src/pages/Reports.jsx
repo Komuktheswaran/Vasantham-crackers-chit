@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Select, Spin, Typography } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Select,
+  Spin,
+  Typography,
+  Modal,
+  Table,
+  Button,
+  message,
+} from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 import {
   PieChart,
   Pie,
@@ -15,15 +27,38 @@ import {
 } from "recharts";
 import { schemesAPI, dashboardAPI } from "../services/api";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 
 const { Option } = Select;
 const { Title } = Typography;
+
+const MONTH_MAP = {
+  Jan: 1,
+  Feb: 2,
+  Mar: 3,
+  Apr: 4,
+  May: 5,
+  Jun: 6,
+  Jul: 7,
+  Aug: 8,
+  Sep: 9,
+  Oct: 10,
+  Nov: 11,
+  Dec: 12,
+};
 
 const Reports = () => {
   const [stats, setStats] = useState({});
   const [monthlyData, setMonthlyData] = useState([]);
   const [selectedYear, setSelectedYear] = useState(dayjs().year());
   const [loading, setLoading] = useState(true);
+
+  // Bar click modal state
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalData, setModalData] = useState([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalType, setModalType] = useState(""); // "paid" or "unpaid"
 
   useEffect(() => {
     fetchData();
@@ -62,6 +97,185 @@ const Reports = () => {
       setLoading(false);
     }
   };
+
+  // Handle bar click — fetch paid or unpaid customer details
+  const handleBarClick = async (barData, barType) => {
+    if (!barData || !barData.payload) return;
+
+    const monthName = barData.payload.month;
+    const monthNum = MONTH_MAP[monthName];
+    if (!monthNum) return;
+
+    const isPaid = barType === "paid";
+    setModalType(isPaid ? "paid" : "unpaid");
+    setModalTitle(
+      isPaid
+        ? `Paid Customers — ${monthName} ${selectedYear}`
+        : `Unpaid Customers — ${monthName} ${selectedYear}`,
+    );
+    setModalVisible(true);
+    setModalLoading(true);
+
+    try {
+      const res = await dashboardAPI.getMonthDetails(selectedYear, monthNum);
+      const result = res.data.data || res.data || {};
+
+      if (isPaid) {
+        setModalData(result.payments || []);
+      } else {
+        setModalData(result.dues || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch month details:", error);
+      message.error("Failed to fetch customer details for this month");
+      setModalData([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // Download modal data as Excel
+  const downloadExcel = () => {
+    if (modalData.length === 0) {
+      message.warning("No data to download");
+      return;
+    }
+
+    let exportData;
+    if (modalType === "paid") {
+      exportData = modalData.map((row) => ({
+        "Customer ID": row.Customer_ID,
+        "Customer Name": row.customer_name,
+        "Scheme Name": row.scheme_name,
+        "Fund Number": row.Fund_Number,
+        "Due Number": row.Due_number,
+        "Amount Received": row.Amount_Received,
+        "Payment Mode": row.Payment_Mode || "Cash",
+        "Payment Date": row.Amount_Received_date
+          ? dayjs(row.Amount_Received_date).format("DD-MM-YYYY")
+          : "-",
+      }));
+    } else {
+      exportData = modalData.map((row) => ({
+        "Customer ID": row.Customer_ID,
+        "Customer Name": row.customer_name,
+        "Scheme Name": row.scheme_name,
+        "Fund Number": row.Fund_Number,
+        "Due Number": row.Due_number,
+        "Due Amount": row.Due_amount,
+        "Pending Amount": row.pending_amount,
+        "Due Date": row.Due_date
+          ? dayjs(row.Due_date).format("DD-MM-YYYY")
+          : "-",
+      }));
+    }
+
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(
+      wb,
+      ws,
+      modalType === "paid" ? "Paid" : "Unpaid",
+    );
+    XLSX.writeFile(
+      wb,
+      `${modalType === "paid" ? "Paid" : "Unpaid"}_Customers_${modalTitle.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`,
+    );
+  };
+
+  // Table columns for paid customers
+  const paidColumns = [
+    {
+      title: "Customer ID",
+      dataIndex: "Customer_ID",
+      key: "Customer_ID",
+      width: 120,
+    },
+    {
+      title: "Customer Name",
+      dataIndex: "customer_name",
+      key: "customer_name",
+    },
+    { title: "Scheme", dataIndex: "scheme_name", key: "scheme_name" },
+    {
+      title: "Fund No.",
+      dataIndex: "Fund_Number",
+      key: "Fund_Number",
+      width: 100,
+    },
+    { title: "Due No.", dataIndex: "Due_number", key: "Due_number", width: 80 },
+    {
+      title: "Amount",
+      dataIndex: "Amount_Received",
+      key: "Amount_Received",
+      width: 100,
+      render: (val) => `₹${parseFloat(val || 0).toLocaleString()}`,
+    },
+    {
+      title: "Mode",
+      dataIndex: "Payment_Mode",
+      key: "Payment_Mode",
+      width: 90,
+      render: (val) => val || "Cash",
+    },
+    {
+      title: "Date",
+      dataIndex: "Amount_Received_date",
+      key: "Amount_Received_date",
+      width: 110,
+      render: (val) => (val ? dayjs(val).format("DD-MM-YYYY") : "-"),
+    },
+  ];
+
+  // Table columns for unpaid customers
+  const unpaidColumns = [
+    {
+      title: "Customer ID",
+      dataIndex: "Customer_ID",
+      key: "Customer_ID",
+      width: 120,
+    },
+    {
+      title: "Customer Name",
+      dataIndex: "customer_name",
+      key: "customer_name",
+    },
+    { title: "Scheme", dataIndex: "scheme_name", key: "scheme_name" },
+    {
+      title: "Fund No.",
+      dataIndex: "Fund_Number",
+      key: "Fund_Number",
+      width: 100,
+    },
+    { title: "Due No.", dataIndex: "Due_number", key: "Due_number", width: 80 },
+    {
+      title: "Due Amount",
+      dataIndex: "Due_amount",
+      key: "Due_amount",
+      width: 110,
+      render: (val) => `₹${parseFloat(val || 0).toLocaleString()}`,
+    },
+    {
+      title: "Pending",
+      dataIndex: "pending_amount",
+      key: "pending_amount",
+      width: 110,
+      render: (val) => (
+        <span
+          style={{ color: "var(--danger-color, #ff4d4f)", fontWeight: 600 }}
+        >
+          ₹{parseFloat(val || 0).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      title: "Due Date",
+      dataIndex: "Due_date",
+      key: "Due_date",
+      width: 110,
+      render: (val) => (val ? dayjs(val).format("DD-MM-YYYY") : "-"),
+    },
+  ];
 
   const pieData = [
     { name: "Active Schemes", value: stats.activeSchemes || 0 },
@@ -111,6 +325,15 @@ const Reports = () => {
               </Select>
             }
           >
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: 13,
+                marginBottom: 12,
+              }}
+            >
+              💡 Click on any bar to view customer details
+            </p>
             <ResponsiveContainer width="100%" height={400}>
               <BarChart
                 data={monthlyData}
@@ -136,12 +359,16 @@ const Reports = () => {
                   fill="var(--secondary-color)"
                   name="Payments Received"
                   radius={[4, 4, 0, 0]}
+                  onClick={(data) => handleBarClick(data, "paid")}
+                  style={{ cursor: "pointer" }}
                 />
                 <Bar
                   dataKey="due"
                   fill="var(--warning-color)"
                   name="Pending Dues"
                   radius={[4, 4, 0, 0]}
+                  onClick={(data) => handleBarClick(data, "unpaid")}
+                  style={{ cursor: "pointer" }}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -194,7 +421,6 @@ const Reports = () => {
         </Col>
 
         <Col xs={24} md={12} lg={14}>
-          {/* Placeholder for future specific scheme performance or other stats */}
           <Card title="Summary Statistics" style={{ height: "100%" }}>
             <Row gutter={[16, 24]}>
               <Col span={12}>
@@ -238,6 +464,111 @@ const Reports = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Bar Click Detail Modal */}
+      <Modal
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              paddingRight: 24,
+            }}
+          >
+            <span>{modalTitle}</span>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={downloadExcel}
+              disabled={modalData.length === 0}
+              size="small"
+            >
+              Download Excel
+            </Button>
+          </div>
+        }
+        open={modalVisible}
+        onCancel={() => {
+          setModalVisible(false);
+          setModalData([]);
+        }}
+        footer={null}
+        width="90%"
+        style={{ top: 40 }}
+        styles={{ body: { maxHeight: "70vh", overflow: "auto" } }}
+      >
+        <Table
+          columns={modalType === "paid" ? paidColumns : unpaidColumns}
+          dataSource={modalData}
+          loading={modalLoading}
+          rowKey={(record, index) =>
+            `${record.Customer_ID}_${record.Scheme_ID || record.scheme_name}_${record.Due_number || index}`
+          }
+          pagination={{
+            pageSize: 50,
+            showSizeChanger: true,
+            showTotal: (total) => `Total: ${total} records`,
+          }}
+          scroll={{ x: 900 }}
+          size="small"
+          summary={() =>
+            modalData.length > 0 ? (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell
+                    index={0}
+                    colSpan={modalType === "paid" ? 5 : 5}
+                  >
+                    <strong>Total ({modalData.length} records)</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={1}>
+                    <strong
+                      style={{
+                        color:
+                          modalType === "paid"
+                            ? "var(--secondary-color, #52c41a)"
+                            : "var(--danger-color, #ff4d4f)",
+                      }}
+                    >
+                      ₹
+                      {modalData
+                        .reduce(
+                          (sum, r) =>
+                            sum +
+                            parseFloat(
+                              modalType === "paid"
+                                ? r.Amount_Received || 0
+                                : r.Due_amount || 0,
+                            ),
+                          0,
+                        )
+                        .toLocaleString()}
+                    </strong>
+                  </Table.Summary.Cell>
+                  {modalType === "unpaid" && (
+                    <Table.Summary.Cell index={2}>
+                      <strong style={{ color: "var(--danger-color, #ff4d4f)" }}>
+                        ₹
+                        {modalData
+                          .reduce(
+                            (sum, r) => sum + parseFloat(r.pending_amount || 0),
+                            0,
+                          )
+                          .toLocaleString()}
+                      </strong>
+                    </Table.Summary.Cell>
+                  )}
+                  <Table.Summary.Cell
+                    index={modalType === "paid" ? 2 : 3}
+                    colSpan={2}
+                  />
+                </Table.Summary.Row>
+              </Table.Summary>
+            ) : null
+          }
+        />
+      </Modal>
     </div>
   );
 };

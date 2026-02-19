@@ -510,6 +510,7 @@ const OrderForm = ({
                   filterOption={false}
                   onSearch={handleCustomerSearch}
                   allowClear
+                  popupClassName="bright-highlight"
                 >
                   {customers.map((c) => (
                     <Option key={c.Customer_ID} value={c.Customer_ID}>
