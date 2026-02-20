@@ -1,0 +1,13 @@
+[dotenv@17.2.3] injecting env (13) from .env -- tip: ⚙️  override existing env vars with { override: true }
+[dotenv@17.2.3] injecting env (0) from .env -- tip: 🛠️  run anywhere with `dotenvx run -- yourcommand`
+
+🚀 Server: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1
+✅ Health: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/health
+🔐 Login: POST http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/auth/login
+👤 Users: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/users
+👥 Customers: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/customers
+📋 Schemes: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/schemes
+💰 Payments: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/payments
+🌍 States: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/states
+🏘️ Districts: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/districts
+📥 Exports: http://localhost:\\.\pipe\0346060d-4e8a-4ab0-8a03-a5e1520debe1/api/exports

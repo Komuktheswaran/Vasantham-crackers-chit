@@ -130,7 +130,7 @@ const SchemeMembers = () => {
     }
   };
 
-  // Requested Order: Fund No, Customer Name, Phone, Scheme, Monthly Amt, Bonus, Total, Join Status, Status
+  // Requested Order: Fund No, Customer Code, Customer Name, Phone, Scheme, Monthly Amt, Bonus, Total, Status
   // Removed: Maturity Amount
   const columns = [
     {
@@ -138,6 +138,12 @@ const SchemeMembers = () => {
       dataIndex: "Fund_Number",
       key: "Fund_Number",
       render: (text) => <Tag color="blue">{text}</Tag>,
+    },
+    {
+      title: "Customer Code",
+      dataIndex: "Customer_Code",
+      key: "Customer_Code",
+      render: (text) => text || "-",
     },
     {
       title: "Customer Name",
@@ -201,6 +207,25 @@ const SchemeMembers = () => {
             />
           </Col>
           <Col xs={24} sm={6}>
+            {/* Scheme filter */}
+            <Select
+              showSearch
+              optionFilterProp="children"
+              placeholder="Filter by Scheme"
+              style={{ width: "100%" }}
+              allowClear
+              value={selectedScheme}
+              onChange={setSelectedScheme}
+              popupClassName="bright-highlight"
+            >
+              {schemes.map((s) => (
+                <Option key={s.Scheme_ID} value={s.Scheme_ID}>
+                  {s.Name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+          <Col xs={24} sm={6}>
             {/* Modified Search to include Code, ID, Name only */}
             <Select
               showSearch
@@ -212,6 +237,7 @@ const SchemeMembers = () => {
               onSearch={handleCustomerSearch}
               filterOption={false}
               notFoundContent={null}
+              popupClassName="bright-highlight"
             >
               {customers.map((c) => (
                 <Option key={c.Customer_ID} value={c.Customer_ID}>

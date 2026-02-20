@@ -316,6 +316,9 @@ const Reports = () => {
                 value={selectedYear}
                 onChange={setSelectedYear}
                 style={{ width: 100 }}
+                showSearch
+                optionFilterProp="children"
+                popupClassName="bright-highlight"
               >
                 {years.map((y) => (
                   <Option key={y} value={y}>

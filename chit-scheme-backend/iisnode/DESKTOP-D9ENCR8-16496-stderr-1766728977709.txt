@@ -1,0 +1,13 @@
+(node:16496) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Error: Not allowed by CORS
+    at origin (D:\Developer\React Dev\chit\chit-scheme-backend\server.js:35:16)
+    at D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\cors\lib\index.js:219:13
+    at optionsCallback (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\cors\lib\index.js:199:9)
+    at corsMiddleware (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\cors\lib\index.js:204:7)
+    at Layer.handleRequest (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\lib\layer.js:152:17)
+    at trimPrefix (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\index.js:342:13)
+    at D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\index.js:297:9
+    at processParams (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\index.js:582:12)
+    at next (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\index.js:291:5)
+    at Function.handle (D:\Developer\React Dev\chit\chit-scheme-backend\node_modules\router\index.js:186:3)

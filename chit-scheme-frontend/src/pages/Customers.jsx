@@ -713,6 +713,7 @@ const Customers = () => {
               <Form.Item
                 name="Customer_ID"
                 label="Customer ID"
+                normalize={(value) => (value ? value.toUpperCase() : value)}
                 rules={[
                   { required: true, message: "Customer ID is required." },
                   { validator: checkId },
@@ -721,7 +722,11 @@ const Customers = () => {
                 help={idExists ? "This Customer ID already exists." : ""}
                 margin="dense"
               >
-                <Input placeholder="Unique Customer ID" readOnly={true} />
+                <Input
+                  placeholder="Unique Customer ID"
+                  readOnly={true}
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
 
@@ -730,12 +735,15 @@ const Customers = () => {
               <Form.Item
                 name="Customer_Code"
                 label="Customer Code"
-                normalize={(value) => value.toUpperCase()}
+                normalize={(value) => (value ? value.toUpperCase() : value)}
                 rules={[
                   { required: true, message: "Customer Code is required." },
                 ]}
               >
-                <Input placeholder="Enter Customer Code" />
+                <Input
+                  placeholder="Enter Customer Code"
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
 
@@ -744,9 +752,12 @@ const Customers = () => {
               <Form.Item
                 name="Name"
                 label="Name"
-                normalize={(value) => value.toUpperCase()}
+                normalize={(value) => (value ? value.toUpperCase() : value)}
               >
-                <Input placeholder="Full name" />
+                <Input
+                  placeholder="Full name"
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
 
@@ -795,15 +806,29 @@ const Customers = () => {
 
             {/* 6. Address Line 1 */}
             <Col xs={24} sm={12} md={12}>
-              <Form.Item name="Address1" label="Address Line 1">
-                <Input placeholder="Address Line 1" />
+              <Form.Item
+                name="Address1"
+                label="Address Line 1"
+                normalize={(value) => (value ? value.toUpperCase() : value)}
+              >
+                <Input
+                  placeholder="Address Line 1"
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
 
             {/* 7. Address Line 2 */}
             <Col xs={24} sm={12} md={12}>
-              <Form.Item name="Address2" label="Address Line 2">
-                <Input placeholder="Address Line 2" />
+              <Form.Item
+                name="Address2"
+                label="Address Line 2"
+                normalize={(value) => (value ? value.toUpperCase() : value)}
+              >
+                <Input
+                  placeholder="Address Line 2"
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
 
@@ -864,8 +889,15 @@ const Customers = () => {
 
             {/* Reference Code */}
             <Col xs={24} sm={12} md={6}>
-              <Form.Item name="Reference_Code" label="Reference Code">
-                <Input placeholder="Reference Code" />
+              <Form.Item
+                name="Reference_Code"
+                label="Reference Code"
+                normalize={(value) => (value ? value.toUpperCase() : value)}
+              >
+                <Input
+                  placeholder="Reference Code"
+                  style={{ textTransform: "uppercase" }}
+                />
               </Form.Item>
             </Col>
           </Row>
@@ -966,7 +998,7 @@ const Customers = () => {
           placeholder="Select scheme"
           value={selectedSchemes}
           onChange={setSelectedSchemes}
-          popupClassName="scheme-dropdown"
+          popupClassName="bright-highlight"
           optionFilterProp="children"
           showSearch
           allowClear

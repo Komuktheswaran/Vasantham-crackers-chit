@@ -1,11 +1,10 @@
 const { executeQuery, executeInsertGetId, executeUpdate } = require('../models/db');
 const sql = require('mssql');
 const ExcelJS = require('exceljs');
-const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 // ✅ INLINE CSV/Excel utils - NO external dependencies
 const convertToCsv = (data) => {
-  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to,Bonus_Amount\n';
+  if (!data.length) return 'Scheme_ID,Name,Total_Amount,Amount_per_month,Period,Number_of_due,Month_from,Month_to,Bonus_Percentage\n';
   const headers = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
     Object.values(row).map(val => 
@@ -39,7 +38,7 @@ const parseExcel = async (buffer) => {
         Number_of_due: rowVal[5],
         Month_from: rowVal[6],
         Month_to: rowVal[7],
-        Bonus_Amount: rowVal[8]
+        Bonus_Percentage: rowVal[8]
     };
     jsonData.push(rowData);
   });
@@ -51,8 +50,7 @@ const getAllSchemes = async (req, res) => {
     const { page = 1, limit, search = '' } = req.query;
 
     let query = `
-      SELECT cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
-             cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Amount,
+      SELECT cm.*, 
              ISNULL(COUNT(sm.Customer_ID), 0) as member_count
       FROM Chit_Master cm
       LEFT JOIN Scheme_Members sm ON cm.Scheme_ID = sm.Scheme_ID
@@ -66,8 +64,8 @@ const getAllSchemes = async (req, res) => {
 
     query += `
       GROUP BY cm.Scheme_ID, cm.Name, cm.Total_Amount, cm.Amount_per_month, 
-               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Amount
-      ORDER BY cm.Amount_per_month ASC 
+               cm.Period, cm.Number_of_due, cm.Month_from, cm.Month_to, cm.Bonus_Percentage
+      ORDER BY cm.Scheme_ID DESC 
     `;
 
     // Only add pagination if limit is provided
@@ -83,14 +81,15 @@ const getAllSchemes = async (req, res) => {
     const totalResult = await executeQuery(totalQuery);
 
     // ✅ FRONTEND EXPECTS: { schemes: [], total: 0 }
-    return res.json({
+    res.json({
       schemes,
       total: totalResult[0]?.total || 0,
       page: parseInt(page),
       limit: limit ? parseInt(limit) : schemes.length
     });
   } catch (error) {
-    return sendError(res, 'Failed to fetch schemes', error);
+    console.error('❌ getAllSchemes Error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -103,20 +102,20 @@ const getSchemeById = async (req, res) => {
     );
     
     if (scheme.length === 0) {
-      return sendError(res, 'Scheme not found', null, 404);
+      return res.status(404).json({ error: 'Scheme not found' });
     }
     res.json(scheme[0]);
   } catch (error) {
-    return sendError(res, 'Failed to fetch scheme details', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 const createScheme = async (req, res) => {
   try {
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
     
     const result = await executeInsertGetId(
-      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount) 
+      `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
        OUTPUT INSERTED.Scheme_ID
        VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
       [
@@ -127,25 +126,29 @@ const createScheme = async (req, res) => {
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
         { value: Month_to, type: sql.Date },
-        { value: Bonus_Amount ? parseFloat(Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
+        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
       ]
     );
     
-    return sendSuccess(res, 'Scheme created successfully', { schemeId: result.Scheme_ID }, 201);
+    res.status(201).json({ 
+      success: true, 
+      schemeId: result.Scheme_ID, 
+      message: 'Scheme created successfully' 
+    });
   } catch (error) {
-    return sendError(res, 'Failed to create scheme', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 const updateScheme = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount } = req.body;
+    const { Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage } = req.body;
     
     await executeUpdate(
       `UPDATE Chit_Master SET 
        Name=@param1, Total_Amount=@param2, Amount_per_month=@param3, 
-       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7, Bonus_Amount=@param8
+       Period=@param4, Number_of_due=@param5, Month_from=@param6, Month_to=@param7, Bonus_Percentage=@param8
        WHERE Scheme_ID = @param0`,
       [
         { value: parseInt(id), type: sql.Int },
@@ -156,13 +159,13 @@ const updateScheme = async (req, res) => {
         { value: parseInt(Number_of_due), type: sql.Int },
         { value: Month_from, type: sql.Date },
         { value: Month_to, type: sql.Date },
-        { value: Bonus_Amount ? parseFloat(Bonus_Amount) : 0, type: sql.Decimal(15, 2) }
+        { value: Bonus_Percentage ? parseFloat(Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
       ]
     );
     
-    return sendSuccess(res, 'Scheme updated successfully');
+    res.json({ success: true, message: 'Scheme updated successfully' });
   } catch (error) {
-    return sendError(res, 'Failed to update scheme', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -196,9 +199,10 @@ const deleteScheme = async (req, res) => {
       [{ value: schemeId, type: sql.Int }]
     );
     
-    return sendSuccess(res, 'Scheme and all associated data deleted successfully');
+    res.json({ success: true, message: 'Scheme and all associated data deleted successfully' });
   } catch (error) {
-    return sendError(res, 'Failed to delete scheme', error);
+    console.error('Delete scheme error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -212,8 +216,7 @@ const downloadSchemes = async (req, res) => {
     res.attachment('schemes.csv');
     res.send(csvData);
   } catch (error) {
-    // res.status(500).json({ error: error.message });
-    if (!res.headersSent) return sendError(res, 'Download failed', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -228,7 +231,6 @@ const getSchemeMembers = async (req, res) => {
         sm.Status, 
         sm.Join_date, 
         c.Customer_ID,
-        c.Customer_Code,
         c.Name as Customer_Name, 
         c.Phone_Number, 
         cm.Scheme_ID,
@@ -237,7 +239,7 @@ const getSchemeMembers = async (req, res) => {
         cm.Month_from,
         cm.Month_to,
         cm.Total_Amount,
-        cm.Bonus_Amount
+        cm.Bonus_Percentage
       FROM Scheme_Members sm
       JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
@@ -277,16 +279,14 @@ const getSchemeMembers = async (req, res) => {
                            JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
                            WHERE ` + query.split('WHERE')[1]; // Reuse WHERE clause
 
-   
-    query += ` ORDER BY sm.Fund_Number, sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+    query += ` ORDER BY sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
 
-    
     const [members, totalResult] = await Promise.all([
       executeQuery(query, params),
       executeQuery(countQueryStr, params)
     ]);
 
-    return sendSuccess(res, 'Scheme members fetched successfully', {
+    res.json({
       members,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
@@ -297,78 +297,64 @@ const getSchemeMembers = async (req, res) => {
     });
 
   } catch (error) {
-    return sendError(res, 'Failed to fetch scheme members', error);
+    console.error('❌ getSchemeMembers Error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 const uploadSchemes = async (req, res) => {
   try {
     if (!req.file) {
-      return sendError(res, 'No file uploaded', null, 400);
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     const schemes = await parseExcel(req.file.buffer);
     
     if (!schemes || schemes.length === 0) {
-      return sendError(res, 'No schemes found in file', null, 400);
+      return res.status(400).json({ error: 'No schemes found in file' });
     }
 
-     const connection = await sql.connect(require('../config/database').dbConfig);
-     const transaction = new sql.Transaction(connection);
+    let successCount = 0;
+    let errorCount = 0;
 
-    try {
-        await transaction.begin();
+    for (const scheme of schemes) {
+      try {
+         // Basic validation
+         if (!scheme.Name || !scheme.Total_Amount) {
+             console.warn('Skipping invalid scheme row:', scheme);
+             errorCount++;
+             continue;
+         }
 
-        const table = new sql.Table('Chit_Master');
-        table.create = false;
-        
-        // Define columns
-        // Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Amount
-        table.columns.add('Name', sql.VarChar(100), { nullable: false });
-        table.columns.add('Total_Amount', sql.Decimal(15, 2), { nullable: false });
-        table.columns.add('Amount_per_month', sql.Decimal(15, 2), { nullable: false });
-        table.columns.add('Period', sql.Int, { nullable: false });
-        table.columns.add('Number_of_due', sql.Int, { nullable: false });
-        table.columns.add('Month_from', sql.Date, { nullable: true });
-        table.columns.add('Month_to', sql.Date, { nullable: true });
-        table.columns.add('Bonus_Amount', sql.Decimal(15, 2), { nullable: true });
-        
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const scheme of schemes) {
-             // Basic validation
-             if (!scheme.Name || !scheme.Total_Amount) {
-                 console.warn('Skipping invalid scheme row:', scheme);
-                 errorCount++;
-                 continue;
-             }
-             
-             table.rows.add(
-                scheme.Name,
-                parseFloat(scheme.Total_Amount),
-                parseFloat(scheme.Amount_per_month),
-                parseInt(scheme.Period),
-                parseInt(scheme.Number_of_due),
-                scheme.Month_from ? new Date(scheme.Month_from) : null,
-                scheme.Month_to ? new Date(scheme.Month_to) : null,
-                scheme.Bonus_Amount ? parseFloat(scheme.Bonus_Amount) : 0
-             );
-             successCount++;
-        }
-
-        const request = new sql.Request(transaction);
-        await request.bulk(table);
-
-        await transaction.commit();
-        return sendSuccess(res, `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount} (Validation)`);
-
-    } catch (error) {
-        if (transaction.active) await transaction.rollback();
-        return sendError(res, 'Failed to upload schemes - Bulk Insert Error', error);
+         await executeInsertGetId(
+          `INSERT INTO Chit_Master (Name, Total_Amount, Amount_per_month, Period, Number_of_due, Month_from, Month_to, Bonus_Percentage) 
+           VALUES (@param0,@param1,@param2,@param3,@param4,@param5,@param6,@param7)`,
+          [
+            { value: scheme.Name, type: sql.VarChar(100) },
+            { value: parseFloat(scheme.Total_Amount), type: sql.Decimal(15,2) },
+            { value: parseFloat(scheme.Amount_per_month), type: sql.Decimal(15,2) },
+            { value: parseInt(scheme.Period), type: sql.Int },
+            { value: parseInt(scheme.Number_of_due), type: sql.Int },
+            { value: scheme.Month_from ? new Date(scheme.Month_from) : null, type: sql.Date },
+            { value: scheme.Month_to ? new Date(scheme.Month_to) : null, type: sql.Date },
+            { value: scheme.Bonus_Percentage ? parseFloat(scheme.Bonus_Percentage) : null, type: sql.Decimal(5, 2) }
+          ]
+        );
+        successCount++;
+      } catch (err) {
+          console.error('Error inserting scheme:', err);
+          errorCount++;
+      }
     }
+
+    res.json({ 
+        success: true, 
+        message: `Processed ${schemes.length} rows. Success: ${successCount}, Errors: ${errorCount}` 
+    });
+
   } catch (error) {
-    return sendError(res, 'Failed to upload schemes', error);
+    console.error('Upload error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
