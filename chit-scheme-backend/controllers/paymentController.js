@@ -313,4 +313,80 @@ const payAllDues = async (req, res) => {
   }
 };
 
-module.exports = { getPaymentsByCustomer, recordPayment, getDuesByFundNumber, getAllPayments, payAllDues };
+const updatePayment = async (req, res) => {
+  const connection = await sql.connect(require('../config/database').dbConfig);
+  const transaction = new sql.Transaction(connection);
+
+  try {
+    const { payId } = req.params;
+    const { Amount_Received, Payment_Date, Payment_Mode, Transaction_ID, UPI_Phone_Number } = req.body;
+
+    if (!payId) {
+      return sendError(res, 'Payment ID is required', null, 400);
+    }
+
+    // 1. Get old payment details to calculate difference
+    const lookupReq = new sql.Request(connection);
+    const oldPayment = await lookupReq.input('payId', sql.Int, payId)
+      .query('SELECT * FROM Payment_Master WHERE Pay_ID = @payId');
+
+    if (oldPayment.recordset.length === 0) {
+      return sendError(res, 'Payment record not found', null, 404);
+    }
+
+    const oldRecord = oldPayment.recordset[0];
+    const amountDiff = parseFloat(Amount_Received) - parseFloat(oldRecord.Amount_Received);
+
+    await transaction.begin();
+
+    // 2. Update Payment_Master
+    const updatePayReq = new sql.Request(transaction);
+    await updatePayReq
+      .input('payId', sql.Int, payId)
+      .input('amount', sql.Decimal(15, 2), Amount_Received)
+      .input('date', sql.Date, Payment_Date || new Date())
+      .input('paymentMode', sql.VarChar(50), Payment_Mode)
+      .input('transactionId', sql.VarChar(50), Transaction_ID || null)
+      .input('upiPhone', sql.VarChar(20), UPI_Phone_Number || null)
+      .query(`
+        UPDATE Payment_Master 
+        SET Amount_Received = @amount,
+            Amount_Received_date = @date,
+            Payment_Mode = @paymentMode,
+            Transaction_ID = @transactionId,
+            UPI_Phone_Number = @upiPhone
+        WHERE Pay_ID = @payId
+      `);
+
+    // 3. Update Scheme_Due (Adjust Recd_amount by difference)
+    if (amountDiff !== 0) {
+      const updateDueReq = new sql.Request(transaction);
+      await updateDueReq
+        .input('fundNum', sql.VarChar(50), oldRecord.Fund_Number)
+        .input('dueNumber', sql.Int, oldRecord.Due_number)
+        .input('diff', sql.Decimal(15, 2), amountDiff)
+        .input('date', sql.Date, Payment_Date || new Date())
+        .query(`
+          UPDATE Scheme_Due 
+          SET Recd_amount = ISNULL(Recd_amount, 0) + @diff,
+              amt_received_date = @date
+          WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
+        `);
+    }
+
+    await transaction.commit();
+    return sendSuccess(res, 'Payment updated successfully');
+  } catch (error) {
+    if (transaction.active) await transaction.rollback();
+    return sendError(res, 'Failed to update payment', error);
+  }
+};
+
+module.exports = { 
+  getPaymentsByCustomer, 
+  recordPayment, 
+  getDuesByFundNumber, 
+  getAllPayments, 
+  payAllDues, 
+  updatePayment 
+};

@@ -223,12 +223,13 @@ const getMonthDetails = async (req, res) => {
       SELECT 
         pm.*,
         c.Name as customer_name,
+        c.Customer_Code,
         cm.Name as scheme_name
       FROM Payment_Master pm
       JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
       JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
       WHERE YEAR(pm.Amount_Received_date) = @param0 AND MONTH(pm.Amount_Received_date) = @param1
-      ORDER BY pm.Amount_Received_date DESC
+      ORDER BY c.Customer_ID, pm.Amount_Received_date DESC
     `;
     const payments = await executeQuery(paymentsQuery, [
       { value: parseInt(year), type: sql.Int },
@@ -240,6 +241,7 @@ const getMonthDetails = async (req, res) => {
       SELECT 
         sd.*,
         c.Name as customer_name,
+        c.Customer_Code,
         cm.Name as scheme_name,
         (sd.Due_amount - ISNULL(sd.Recd_amount, 0)) as pending_amount
       FROM Scheme_Due sd
@@ -247,7 +249,7 @@ const getMonthDetails = async (req, res) => {
       JOIN Chit_Master cm ON sd.Scheme_ID = cm.Scheme_ID
       WHERE YEAR(sd.Due_date) = @param0 AND MONTH(sd.Due_date) = @param1
       AND (sd.Recd_amount < sd.Due_amount OR sd.Recd_amount IS NULL)
-      ORDER BY sd.Due_date
+      ORDER BY c.Customer_ID, sd.Due_date
     `;
     const dues = await executeQuery(duesQuery, [
       { value: parseInt(year), type: sql.Int },
@@ -273,4 +275,49 @@ const getMonthDetails = async (req, res) => {
   }
 };
 
-module.exports = { getMonthlyStats, getCustomerStats, getCustomerDetails, getSchemeDetails, getMonthDetails };
+const getSchemeDistributionDetails = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        cm.Scheme_ID,
+        cm.Name as scheme_name,
+        ISNULL(member_stats.total_members, 0) as total_members,
+        ISNULL(payment_stats.paid_members, 0) as paid_members,
+        (ISNULL(member_stats.total_members, 0) - ISNULL(payment_stats.paid_members, 0)) as unpaid_members,
+        CASE WHEN ISNULL(member_stats.total_members, 0) > 0 THEN 'Active' ELSE 'Inactive' END as status
+      FROM Chit_Master cm
+      LEFT JOIN (
+        SELECT Scheme_ID, COUNT(DISTINCT Customer_ID) as total_members
+        FROM Scheme_Members
+        GROUP BY Scheme_ID
+      ) member_stats ON cm.Scheme_ID = member_stats.Scheme_ID
+      LEFT JOIN (
+        -- Count members who have NO pending dues in this scheme
+        SELECT sm.Scheme_ID, COUNT(DISTINCT sm.Customer_ID) as paid_members
+        FROM Scheme_Members sm
+        WHERE NOT EXISTS (
+          SELECT 1 FROM Scheme_Due sd 
+          WHERE sd.Scheme_ID = sm.Scheme_ID 
+          AND sd.Customer_ID = sm.Customer_ID 
+          AND (sd.Due_amount - ISNULL(sd.Recd_amount, 0)) > 0
+        )
+        GROUP BY sm.Scheme_ID
+      ) payment_stats ON cm.Scheme_ID = payment_stats.Scheme_ID
+      ORDER BY cm.Scheme_ID
+    `;
+
+    const result = await executeQuery(query);
+    return sendSuccess(res, 'Scheme distribution details fetched successfully', result);
+  } catch (error) {
+    return sendError(res, 'Failed to fetch scheme distribution details', error);
+  }
+};
+
+module.exports = { 
+  getMonthlyStats, 
+  getCustomerStats, 
+  getCustomerDetails, 
+  getSchemeDetails, 
+  getMonthDetails,
+  getSchemeDistributionDetails 
+};

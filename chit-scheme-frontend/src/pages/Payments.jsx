@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Card,
   Typography,
@@ -14,7 +14,7 @@ import {
   Tag,
   Modal,
 } from "antd";
-import { customersAPI, paymentsAPI, schemesAPI } from "../services/api";
+import { customersAPI, paymentsAPI } from "../services/api";
 import dayjs from "dayjs";
 import "./css/Payments.css";
 
@@ -35,6 +35,26 @@ const Payments = () => {
   const [paymentMode, setPaymentMode] = useState("UPI");
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingPaymentValues, setPendingPaymentValues] = useState(null);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [paymentHistory, setPaymentHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [payModalVisible, setPayModalVisible] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null);
+  const [editForm] = Form.useForm();
+
+  const firstUnpaidDueNumber = useMemo(() => {
+    if (!dues || dues.length === 0) return null;
+    const sorted = [...dues].sort(
+      (a, b) => parseInt(a.Due_number) - parseInt(b.Due_number),
+    );
+    const firstUnpaid = sorted.find((d) => {
+      const due = parseFloat(d.Due_amount || 0);
+      const recd = parseFloat(d.Recd_amount || 0);
+      return recd < due;
+    });
+    return firstUnpaid ? firstUnpaid.Due_number : null;
+  }, [dues]);
 
   // Load all customers on mount
   useEffect(() => {
@@ -130,6 +150,51 @@ const Payments = () => {
       message.error("Failed to load dues.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPaymentHistory = async () => {
+    if (!selectedFundNumber) return;
+    setHistoryLoading(true);
+    try {
+      const res = await paymentsAPI.getAll({ fund_number: selectedFundNumber });
+      const result = res.data.data || res.data || {};
+      setPaymentHistory(result.payments || []);
+    } catch (error) {
+      console.error("Failed to fetch payment history:", error);
+      message.error("Failed to fetch payment history");
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleEditPayment = (record) => {
+    setEditingPayment(record);
+    editForm.setFieldsValue({
+      Amount_Received: record.Amount_Received,
+      Payment_Date: dayjs(record.Amount_Received_date),
+      Payment_Mode: record.Payment_Mode,
+      Transaction_ID: record.Transaction_ID,
+      UPI_Phone_Number: record.UPI_Phone_Number,
+    });
+    setEditModalVisible(true);
+  };
+
+  const handleUpdatePayment = async (values) => {
+    setPaymentLoading(true);
+    try {
+      await paymentsAPI.update(editingPayment.Pay_ID, {
+        ...values,
+        Payment_Date: values.Payment_Date.format("YYYY-MM-DD"),
+      });
+      message.success("Payment updated successfully");
+      setEditModalVisible(false);
+      fetchPaymentHistory();
+      fetchDues(selectedFundNumber);
+    } catch (error) {
+      console.error("Update failed:", error);
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -232,6 +297,7 @@ const Payments = () => {
       setPaymentMode("UPI"); // Reset to default UPI
       fetchDues(selectedFundNumber); // Refresh dues
       setConfirmModalVisible(false);
+      setPayModalVisible(false);
       setPendingPaymentValues(null);
     } catch (error) {
       console.error("Payment error:", error);
@@ -302,25 +368,89 @@ const Payments = () => {
       render: (_, record) => {
         const due = parseFloat(record.Due_amount || 0);
         const recd = parseFloat(record.Recd_amount || 0);
-        if (recd >= due) return null;
 
         return (
-          <Button
-            type="link"
-            onClick={() => {
-              form.setFieldsValue({
-                dueNumber: record.Due_number,
-                amount: due - recd,
-                date: dayjs(),
-                paymentMode: "UPI", // Default UPI
-              });
-              setPaymentMode("UPI");
-            }}
-          >
-            Pay
-          </Button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            {recd < due && record.Due_number === firstUnpaidDueNumber && (
+              <Button
+                type="link"
+                style={{ padding: 0 }}
+                onClick={() => {
+                  form.setFieldsValue({
+                    dueNumber: record.Due_number,
+                    amount: due - recd,
+                    date: dayjs(),
+                    paymentMode: "UPI",
+                  });
+                  setPaymentMode("UPI");
+                  setPayModalVisible(true); // Open modal on Pay
+                }}
+              >
+                Pay
+              </Button>
+            )}
+            {recd > 0 && (
+              <Button
+                type="link"
+                style={{ padding: 0, color: "var(--primary-color)" }}
+                loading={loading}
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    const res = await paymentsAPI.getAll({
+                      fund_number: selectedFundNumber,
+                    });
+                    const result = res.data.data || res.data || {};
+                    const history = result.payments || [];
+
+                    // Find the most recent payment for this specific due number
+                    const paymentToEdit = history.find(
+                      (p) =>
+                        parseInt(p.Due_number) === parseInt(record.Due_number),
+                    );
+
+                    if (paymentToEdit) {
+                      handleEditPayment(paymentToEdit);
+                    } else {
+                      message.warning(
+                        "No editable payment found for this due.",
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Error fetching payment to edit:", error);
+                    message.error("Failed to fetch payment details.");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+              >
+                Edit
+              </Button>
+            )}
+          </div>
         );
       },
+    },
+  ];
+
+  const historyColumns = [
+    {
+      title: "Date",
+      dataIndex: "Amount_Received_date",
+      render: (d) => dayjs(d).format("DD-MM-YYYY"),
+    },
+    { title: "Due #", dataIndex: "Due_number", width: 80 },
+    { title: "Amount", dataIndex: "Amount_Received", render: (v) => `₹${v}` },
+    { title: "Mode", dataIndex: "Payment_Mode" },
+    { title: "Ref No", dataIndex: "Transaction_ID" },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Button type="link" onClick={() => handleEditPayment(record)}>
+          Edit
+        </Button>
+      ),
     },
   ];
 
@@ -463,98 +593,33 @@ const Payments = () => {
               )}
             </Form>
           </Card>
-
-          {selectedScheme && (
-            <Card title="Record Payment" style={{ marginTop: 16 }}>
-              <Form form={form} layout="vertical" onFinish={onFinish}>
-                <Form.Item
-                  name="dueNumber"
-                  label="Due Number"
-                  rules={[{ required: true }]}
-                >
-                  <Input readOnly />
-                </Form.Item>
-
-                <Form.Item
-                  name="amount"
-                  label="Amount Received"
-                  rules={[{ required: true }]}
-                >
-                  <Input type="number" prefix="₹" />
-                </Form.Item>
-
-                <Form.Item
-                  name="paymentMode"
-                  label="Payment Mode"
-                  rules={[
-                    { required: true, message: "Please select payment mode" },
-                  ]}
-                  initialValue="UPI"
-                >
-                  <Select
-                    onChange={setPaymentMode}
-                    showSearch
-                    popupClassName="bright-highlight"
-                  >
-                    <Option value="Cash">Cash</Option>
-                    <Option value="UPI">UPI</Option>
-                    <Option value="Bank Transfer">Bank Transfer</Option>
-                    <Option value="Cheque">Cheque</Option>
-                  </Select>
-                </Form.Item>
-
-                {paymentMode !== "Cash" && (
-                  <>
-                    <Form.Item
-                      name="transactionId"
-                      label="Transaction / Reference No"
-                      // rules removed as per request
-                    >
-                      <Input placeholder="Enter Ref No / Cheque No" />
-                    </Form.Item>
-
-                    {paymentMode === "UPI" && (
-                      <Form.Item
-                        name="upiPhone"
-                        label="Phone Number"
-                        // rules removed as per request
-                      >
-                        <Input
-                          placeholder="Enter UPI Phone Number"
-                          maxLength={10}
-                        />
-                      </Form.Item>
-                    )}
-                  </>
-                )}
-
-                <Form.Item
-                  name="date"
-                  label="Payment Date (dd-mm-yyyy)"
-                  rules={[{ required: true }]}
-                >
-                  <DatePicker
-                    format="DD-MM-YYYY"
-                    style={{ width: "100%" }}
-                    onFocus={(e) => e.target.select()}
-                  />
-                </Form.Item>
-
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  block
-                  loading={paymentLoading}
-                >
-                  Record Payment
-                </Button>
-              </Form>
-            </Card>
-          )}
         </Col>
 
         <Col xs={24} md={16}>
-          <Card title="Scheme Dues">
+          <Card
+            title={
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span>Scheme Dues</span>
+                {selectedFundNumber && (
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setHistoryModalVisible(true);
+                      fetchPaymentHistory();
+                    }}
+                  >
+                    View Payment History
+                  </Button>
+                )}
+              </div>
+            }
+          >
             <Table
               columns={columns}
               dataSource={dues}
@@ -610,6 +675,157 @@ const Payments = () => {
             )
           </p>
         )}
+      </Modal>
+
+      {/* Payment History Modal */}
+      <Modal
+        title={`Payment History - ${selectedFundNumber}`}
+        open={historyModalVisible}
+        onCancel={() => setHistoryModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <Table
+          columns={historyColumns}
+          dataSource={paymentHistory}
+          rowKey="Pay_ID"
+          loading={historyLoading}
+          pagination={{ pageSize: 10 }}
+        />
+      </Modal>
+
+      {/* Edit Payment Modal */}
+      <Modal
+        title="Edit Payment Details"
+        open={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        footer={null}
+      >
+        <Form form={editForm} layout="vertical" onFinish={handleUpdatePayment}>
+          <Form.Item
+            name="Amount_Received"
+            label="Amount Received"
+            rules={[{ required: true }]}
+          >
+            <Input type="number" prefix="₹" />
+          </Form.Item>
+          <Form.Item
+            name="Payment_Date"
+            label="Payment Date"
+            rules={[{ required: true }]}
+          >
+            <DatePicker format="DD-MM-YYYY" style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item
+            name="Payment_Mode"
+            label="Payment Mode"
+            rules={[{ required: true }]}
+          >
+            <Select>
+              <Option value="Cash">Cash</Option>
+              <Option value="UPI">UPI</Option>
+              <Option value="Bank Transfer">Bank Transfer</Option>
+              <Option value="Cheque">Cheque</Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="Transaction_ID" label="Reference No">
+            <Input />
+          </Form.Item>
+          <Form.Item name="UPI_Phone_Number" label="UPI Phone Number">
+            <Input maxLength={10} />
+          </Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={paymentLoading}
+          >
+            Update Payment
+          </Button>
+        </Form>
+      </Modal>
+
+      {/* NEW: Record Payment Modal */}
+      <Modal
+        title="Record Payment"
+        open={payModalVisible}
+        onCancel={() => setPayModalVisible(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Form.Item
+            name="dueNumber"
+            label="Due Number"
+            rules={[{ required: true }]}
+          >
+            <Input readOnly />
+          </Form.Item>
+
+          <Form.Item
+            name="amount"
+            label="Amount Received"
+            rules={[{ required: true }]}
+          >
+            <Input type="number" prefix="₹" />
+          </Form.Item>
+
+          <Form.Item
+            name="paymentMode"
+            label="Payment Mode"
+            rules={[{ required: true, message: "Please select payment mode" }]}
+            initialValue="UPI"
+          >
+            <Select
+              onChange={setPaymentMode}
+              showSearch
+              popupClassName="bright-highlight"
+            >
+              <Option value="Cash">Cash</Option>
+              <Option value="UPI">UPI</Option>
+              <Option value="Bank Transfer">Bank Transfer</Option>
+              <Option value="Cheque">Cheque</Option>
+            </Select>
+          </Form.Item>
+
+          {paymentMode !== "Cash" && (
+            <>
+              <Form.Item
+                name="transactionId"
+                label="Transaction / Reference No"
+              >
+                <Input placeholder="Enter Ref No / Cheque No" />
+              </Form.Item>
+
+              {paymentMode === "UPI" && (
+                <Form.Item name="upiPhone" label="Phone Number">
+                  <Input placeholder="Enter UPI Phone Number" maxLength={10} />
+                </Form.Item>
+              )}
+            </>
+          )}
+
+          <Form.Item
+            name="date"
+            label="Payment Date (dd-mm-yyyy)"
+            rules={[{ required: true }]}
+          >
+            <DatePicker
+              format="DD-MM-YYYY"
+              style={{ width: "100%" }}
+              onFocus={(e) => e.target.select()}
+            />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={paymentLoading}
+          >
+            Record Payment
+          </Button>
+        </Form>
       </Modal>
     </div>
   );

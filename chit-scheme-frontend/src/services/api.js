@@ -92,6 +92,7 @@ export const paymentsAPI = {
   getDues: (fundNumber) => api.get(`/payments/dues/${fundNumber}`),
   create: (data) => api.post('/payments', data),
   payAll: (data) => api.post('/payments/pay-all', data),
+  update: (id, data) => api.put(`/payments/${id}`, data),
 };
 
 export const statesAPI = {
@@ -113,6 +114,7 @@ export const dashboardAPI = {
   getCustomerDetails: (customerId) => api.get(`/dashboard/customer/${encodeURIComponent(customerId)}`),
   getSchemeDetails: (schemeId) => api.get(`/dashboard/scheme/${encodeURIComponent(schemeId)}`),
   getMonthDetails: (year, month) => api.get(`/dashboard/month/${year}/${month}`),
+  getSchemeDistributionDetails: () => api.get('/dashboard/scheme-distribution'),
 };
 
 export const exportsAPI = {

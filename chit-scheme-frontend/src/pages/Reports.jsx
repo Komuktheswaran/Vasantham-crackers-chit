@@ -10,6 +10,7 @@ import {
   Table,
   Button,
   message,
+  Tag,
 } from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import {
@@ -58,7 +59,7 @@ const Reports = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState([]);
   const [modalLoading, setModalLoading] = useState(false);
-  const [modalType, setModalType] = useState(""); // "paid" or "unpaid"
+  const [modalType, setModalType] = useState(""); // "paid", "unpaid", "active-schemes", "inactive-schemes"
 
   useEffect(() => {
     fetchData();
@@ -134,6 +135,30 @@ const Reports = () => {
     }
   };
 
+  const handlePieClick = async (pieSlice) => {
+    const sliceName = pieSlice.name;
+    const isActive = sliceName === "Active Schemes";
+    setModalType(isActive ? "active-schemes" : "inactive-schemes");
+    setModalTitle(isActive ? "Active Schemes" : "Inactive Schemes");
+    setModalVisible(true);
+    setModalLoading(true);
+
+    try {
+      const res = await dashboardAPI.getSchemeDistributionDetails();
+      const allSchemes = res.data.data || res.data || [];
+      const filtered = allSchemes.filter(
+        (s) => s.status === (isActive ? "Active" : "Inactive"),
+      );
+      setModalData(filtered);
+    } catch (error) {
+      console.error("Failed to fetch distribution details:", error);
+      message.error("Failed to fetch scheme distribution details");
+      setModalData([]);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   // Download modal data as Excel
   const downloadExcel = () => {
     if (modalData.length === 0) {
@@ -145,6 +170,7 @@ const Reports = () => {
     if (modalType === "paid") {
       exportData = modalData.map((row) => ({
         "Customer ID": row.Customer_ID,
+        "Customer Code": row.Customer_Code || "-",
         "Customer Name": row.customer_name,
         "Scheme Name": row.scheme_name,
         "Fund Number": row.Fund_Number,
@@ -155,9 +181,10 @@ const Reports = () => {
           ? dayjs(row.Amount_Received_date).format("DD-MM-YYYY")
           : "-",
       }));
-    } else {
+    } else if (modalType === "unpaid") {
       exportData = modalData.map((row) => ({
         "Customer ID": row.Customer_ID,
+        "Customer Code": row.Customer_Code || "-",
         "Customer Name": row.customer_name,
         "Scheme Name": row.scheme_name,
         "Fund Number": row.Fund_Number,
@@ -168,18 +195,29 @@ const Reports = () => {
           ? dayjs(row.Due_date).format("DD-MM-YYYY")
           : "-",
       }));
+    } else {
+      // Scheme distribution export
+      exportData = modalData.map((row) => ({
+        "Scheme ID": row.Scheme_ID,
+        "Scheme Name": row.scheme_name,
+        "Total Members": row.total_members,
+        "Paid Members": row.paid_members,
+        "Unpaid Members": row.unpaid_members,
+        Status: row.status,
+      }));
     }
 
     const ws = XLSX.utils.json_to_sheet(exportData);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(
-      wb,
-      ws,
-      modalType === "paid" ? "Paid" : "Unpaid",
-    );
+    let sheetName = "Data";
+    if (modalType === "paid") sheetName = "Paid";
+    else if (modalType === "unpaid") sheetName = "Unpaid";
+    else sheetName = "Schemes";
+
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
     XLSX.writeFile(
       wb,
-      `${modalType === "paid" ? "Paid" : "Unpaid"}_Customers_${modalTitle.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`,
+      `${modalType}_${modalTitle.replace(/[^a-zA-Z0-9]/g, "_")}.xlsx`,
     );
   };
 
@@ -189,7 +227,14 @@ const Reports = () => {
       title: "Customer ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
+      width: 100,
+    },
+    {
+      title: "Customer Code",
+      dataIndex: "Customer_Code",
+      key: "Customer_Code",
       width: 120,
+      render: (text) => text || "-",
     },
     {
       title: "Customer Name",
@@ -233,7 +278,14 @@ const Reports = () => {
       title: "Customer ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
+      width: 100,
+    },
+    {
+      title: "Customer Code",
+      dataIndex: "Customer_Code",
+      key: "Customer_Code",
       width: 120,
+      render: (text) => text || "-",
     },
     {
       title: "Customer Name",
@@ -274,6 +326,44 @@ const Reports = () => {
       key: "Due_date",
       width: 110,
       render: (val) => (val ? dayjs(val).format("DD-MM-YYYY") : "-"),
+    },
+  ];
+
+  // Table columns for scheme distribution details
+  const distributionColumns = [
+    {
+      title: "Scheme ID",
+      dataIndex: "Scheme_ID",
+      key: "Scheme_ID",
+      width: 100,
+    },
+    { title: "Scheme Name", dataIndex: "scheme_name", key: "scheme_name" },
+    {
+      title: "Total Members",
+      dataIndex: "total_members",
+      key: "total_members",
+      width: 130,
+    },
+    {
+      title: "Paid Members",
+      dataIndex: "paid_members",
+      key: "paid_members",
+      width: 130,
+    },
+    {
+      title: "Unpaid Members",
+      dataIndex: "unpaid_members",
+      key: "unpaid_members",
+      width: 130,
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: 100,
+      render: (val) => (
+        <Tag color={val === "Active" ? "green" : "red"}>{val}</Tag>
+      ),
     },
   ];
 
@@ -401,6 +491,8 @@ const Reports = () => {
                     paddingAngle={5}
                     dataKey="value"
                     stroke="none"
+                    onClick={handlePieClick}
+                    style={{ cursor: "pointer" }}
                   >
                     <Cell key="active" fill="var(--secondary-color)" />
                     <Cell key="inactive" fill="var(--danger-color)" />
@@ -502,11 +594,17 @@ const Reports = () => {
         styles={{ body: { maxHeight: "70vh", overflow: "auto" } }}
       >
         <Table
-          columns={modalType === "paid" ? paidColumns : unpaidColumns}
+          columns={
+            modalType === "paid"
+              ? paidColumns
+              : modalType === "unpaid"
+                ? unpaidColumns
+                : distributionColumns
+          }
           dataSource={modalData}
           loading={modalLoading}
           rowKey={(record, index) =>
-            `${record.Customer_ID}_${record.Scheme_ID || record.scheme_name}_${record.Due_number || index}`
+            `${record.Customer_ID || record.Scheme_ID}_${record.Scheme_ID || record.scheme_name}_${record.Due_number || index}`
           }
           pagination={{
             pageSize: 50,
@@ -515,13 +613,15 @@ const Reports = () => {
           }}
           scroll={{ x: 900 }}
           size="small"
-          summary={() =>
-            modalData.length > 0 ? (
+          summary={() => {
+            if (modalData.length === 0 || modalType.includes("schemes"))
+              return null;
+            return (
               <Table.Summary fixed>
                 <Table.Summary.Row>
                   <Table.Summary.Cell
                     index={0}
-                    colSpan={modalType === "paid" ? 5 : 5}
+                    colSpan={modalType === "paid" ? 6 : 6}
                   >
                     <strong>Total ({modalData.length} records)</strong>
                   </Table.Summary.Cell>
@@ -568,8 +668,8 @@ const Reports = () => {
                   />
                 </Table.Summary.Row>
               </Table.Summary>
-            ) : null
-          }
+            );
+          }}
         />
       </Modal>
     </div>
