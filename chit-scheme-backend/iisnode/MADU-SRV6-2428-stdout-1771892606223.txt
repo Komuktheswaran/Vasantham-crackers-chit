@@ -1,0 +1,16 @@
+
+🚀 Server: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d
+✅ Health: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/health
+🔐 Login: POST http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/auth/login
+👤 Users: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/users
+👥 Customers: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/customers
+📋 Schemes: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/schemes
+💰 Payments: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/payments
+🌍 States: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/states
+🏘️ Districts: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/transporters
+📥 Exports: http://localhost:\\.\pipe\49a3994d-0fde-4c97-ae51-c0b766f8b04d/api/exports
+[2026-02-24T00:23:42.049Z] GET /
+- - - [24/Feb/2026:00:23:42 +0000] "GET / HTTP/1.1" 404 38 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 11) AppleWebKit/538.41 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"
+[2026-02-24T00:23:42.115Z] GET /
+- - - [24/Feb/2026:00:23:42 +0000] "GET / HTTP/1.1" 404 38 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 11) AppleWebKit/538.41 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36"

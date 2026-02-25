@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const dbConfig = {
-  server: "103.38.50.247",
+  server: "103.38.50.73",
   database: "VASANTHAMDBLIVE",
   user: "vasantham",
   password: "Vasantham@Sa",

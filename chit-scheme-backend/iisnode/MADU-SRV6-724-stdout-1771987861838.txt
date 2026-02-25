@@ -1,0 +1,14 @@
+
+🚀 Server: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8
+✅ Health: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/health
+🔐 Login: POST http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/auth/login
+👤 Users: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/users
+👥 Customers: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/customers
+📋 Schemes: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/schemes
+💰 Payments: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/payments
+🌍 States: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/states
+🏘️ Districts: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/transporters
+📥 Exports: http://localhost:\\.\pipe\fad0394e-a56c-4b1e-8342-1fbcc851c9b8/api/exports
+[2026-02-25T02:52:09.228Z] GET /
+- - - [25/Feb/2026:02:52:09 +0000] "GET / HTTP/1.0" 404 38 "-" "-"

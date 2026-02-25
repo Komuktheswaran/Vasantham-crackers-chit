@@ -1,0 +1,126 @@
+
+🚀 Server: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb
+✅ Health: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/health
+🔐 Login: POST http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/auth/login
+👤 Users: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/users
+👥 Customers: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/customers
+📋 Schemes: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/schemes
+💰 Payments: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/payments
+🌍 States: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/states
+🏘️ Districts: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/transporters
+📥 Exports: http://localhost:\\.\pipe\d3a17367-89a4-48af-9644-a412d86825bb/api/exports
+[2026-02-24T05:36:03.820Z] OPTIONS /api/auth/login
+[2026-02-24T05:36:04.188Z] GET /favicon.ico
+[2026-02-24T05:36:04.275Z] OPTIONS /api/auth/login
+- - - [24/Feb/2026:05:36:04 +0000] "GET /favicon.ico HTTP/1.1" 404 49 "https://103.38.50.149:5006/api/auth/login" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:36:04.496Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admin123' }
+- - - [24/Feb/2026:05:36:05 +0000] "POST /api/auth/login HTTP/1.1" 200 328 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:36:07.007Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:36:07.010Z] OPTIONS /api/schemes
+[2026-02-24T05:36:07.013Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:36:07.015Z] OPTIONS /api/schemes
+[2026-02-24T05:36:07.280Z] GET /api/customers?limit=1
+[2026-02-24T05:36:07.326Z] GET /api/schemes
+- - - [24/Feb/2026:05:36:07 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:36:07 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:36:07.482Z] GET /api/customers?limit=1
+[2026-02-24T05:36:07.485Z] GET /api/schemes
+- - - [24/Feb/2026:05:36:07 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:36:07 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:29.260Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:38:29.265Z] OPTIONS /api/schemes
+[2026-02-24T05:38:29.268Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:38:29.271Z] OPTIONS /api/schemes
+[2026-02-24T05:38:29.302Z] GET /api/customers?limit=1
+[2026-02-24T05:38:29.371Z] GET /api/schemes
+- - - [24/Feb/2026:05:38:29 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:38:29 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:29.463Z] GET /api/customers?limit=1
+[2026-02-24T05:38:29.466Z] GET /api/schemes
+- - - [24/Feb/2026:05:38:29 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:38:29 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:32.053Z] OPTIONS /api/customers?has_scheme=true&limit=1000
+[2026-02-24T05:38:32.056Z] OPTIONS /api/customers?has_scheme=true&limit=1000
+[2026-02-24T05:38:32.091Z] GET /api/customers?has_scheme=true&limit=1000
+- - - [24/Feb/2026:05:38:32 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 10649 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:32.406Z] GET /api/customers?has_scheme=true&limit=1000
+- - - [24/Feb/2026:05:38:32 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 10649 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:35.564Z] OPTIONS /api/customers?fund_number=001&limit=1
+[2026-02-24T05:38:35.603Z] GET /api/customers?fund_number=001&limit=1
+- - - [24/Feb/2026:05:38:35 +0000] "GET /api/customers?fund_number=001&limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:36.263Z] OPTIONS /api/customers/CD2026/001/schemes
+[2026-02-24T05:38:36.300Z] GET /api/customers/CD2026/001/schemes
+- - - [24/Feb/2026:05:38:36 +0000] "GET /api/customers/CD2026/001/schemes HTTP/1.1" 200 140 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:36.458Z] OPTIONS /api/payments/dues/F2026/001
+[2026-02-24T05:38:36.460Z] GET /api/customers/CD2026/001/schemes
+- - - [24/Feb/2026:05:38:36 +0000] "GET /api/customers/CD2026/001/schemes HTTP/1.1" 200 140 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:38:36.722Z] GET /api/payments/dues/F2026/001
+- - - [24/Feb/2026:05:38:36 +0000] "GET /api/payments/dues/F2026/001 HTTP/1.1" 200 1956 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:40:30.659Z] GET /api/auth/login
+- - - [24/Feb/2026:05:40:30 +0000] "GET /api/auth/login HTTP/1.1" 404 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:40:32.594Z] GET /api/auth/login
+- - - [24/Feb/2026:05:40:32 +0000] "GET /api/auth/login HTTP/1.1" 404 52 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:03.835Z] OPTIONS /api/auth/login
+[2026-02-24T05:54:03.873Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admin123' }
+- - - [24/Feb/2026:05:54:03 +0000] "POST /api/auth/login HTTP/1.1" 200 328 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:04.478Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:54:04.481Z] OPTIONS /api/schemes
+[2026-02-24T05:54:04.483Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:54:04.488Z] OPTIONS /api/schemes
+[2026-02-24T05:54:04.514Z] GET /api/customers?limit=1
+[2026-02-24T05:54:04.521Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:04 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:04 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:04.595Z] GET /api/customers?limit=1
+[2026-02-24T05:54:04.770Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:04 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:05 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:08.229Z] OPTIONS /api/states
+[2026-02-24T05:54:08.238Z] OPTIONS /api/districts
+[2026-02-24T05:54:08.242Z] OPTIONS /api/states
+[2026-02-24T05:54:08.244Z] GET /api/schemes
+[2026-02-24T05:54:08.248Z] OPTIONS /api/districts
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:08.276Z] GET /api/states
+[2026-02-24T05:54:08.279Z] GET /api/districts
+[2026-02-24T05:54:08.309Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/states HTTP/1.1" 200 1588 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/districts HTTP/1.1" 200 47420 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:08.564Z] GET /api/states
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/states HTTP/1.1" 200 1588 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:08.612Z] GET /api/districts
+- - - [24/Feb/2026:05:54:08 +0000] "GET /api/districts HTTP/1.1" 200 47420 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:10.502Z] OPTIONS /api/customers
+[2026-02-24T05:54:10.506Z] OPTIONS /api/schemes
+[2026-02-24T05:54:10.507Z] OPTIONS /api/customers
+[2026-02-24T05:54:10.509Z] OPTIONS /api/schemes
+[2026-02-24T05:54:10.537Z] GET /api/customers
+[2026-02-24T05:54:10.544Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:10 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:10.599Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:10 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:10 +0000] "GET /api/customers HTTP/1.1" 200 10647 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:11.061Z] GET /api/customers
+- - - [24/Feb/2026:05:54:11 +0000] "GET /api/customers HTTP/1.1" 200 10647 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:18.038Z] OPTIONS /api/customers?scheme_id=157&limit=10
+[2026-02-24T05:54:18.073Z] GET /api/customers?scheme_id=157&limit=10
+- - - [24/Feb/2026:05:54:18 +0000] "GET /api/customers?scheme_id=157&limit=10 HTTP/1.1" 200 160 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:26.884Z] OPTIONS /api/customers?state=Tamil+Nadu&limit=10
+[2026-02-24T05:54:26.924Z] GET /api/customers?state=Tamil+Nadu&limit=10
+- - - [24/Feb/2026:05:54:27 +0000] "GET /api/customers?state=Tamil+Nadu&limit=10 HTTP/1.1" 200 4257 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:32.236Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:54:32.240Z] OPTIONS /api/schemes
+[2026-02-24T05:54:32.241Z] OPTIONS /api/customers?limit=1
+[2026-02-24T05:54:32.243Z] OPTIONS /api/schemes
+[2026-02-24T05:54:32.517Z] GET /api/customers?limit=1
+[2026-02-24T05:54:32.522Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:32 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:32 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-24T05:54:32.587Z] GET /api/customers?limit=1
+[2026-02-24T05:54:32.589Z] GET /api/schemes
+- - - [24/Feb/2026:05:54:32 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [24/Feb/2026:05:54:32 +0000] "GET /api/schemes HTTP/1.1" 200 3602 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"

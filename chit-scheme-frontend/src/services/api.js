@@ -73,7 +73,7 @@ export const customersAPI = {
   getNextCustomerId: () => api.get('/customers/next-customer-id'),
   getNextFundNumber: () => api.get('/customers/next-fund-number'),
   getNextIds: () => api.get('/customers/next-ids'),
-  getByFundNumber: (fundNumber) => api.get(`/customers/fund/${encodeURIComponent(fundNumber)}`),
+  getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
   getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
 };
 

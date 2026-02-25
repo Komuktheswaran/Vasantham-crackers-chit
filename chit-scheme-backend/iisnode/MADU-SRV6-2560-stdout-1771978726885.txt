@@ -1,0 +1,14 @@
+
+🚀 Server: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672
+✅ Health: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/health
+🔐 Login: POST http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/auth/login
+👤 Users: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/users
+👥 Customers: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/customers
+📋 Schemes: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/schemes
+💰 Payments: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/payments
+🌍 States: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/states
+🏘️ Districts: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/transporters
+📥 Exports: http://localhost:\\.\pipe\c4855ffc-e922-44e8-8ad3-688fde292672/api/exports
+[2026-02-25T00:19:08.195Z] GET /Telerik.Web.UI.DialogHandler.aspx
+- - - [25/Feb/2026:00:19:08 +0000] "GET /Telerik.Web.UI.DialogHandler.aspx HTTP/1.1" 404 71 "-" "Hello from Palo Alto Networks, find out more about our scans in https://docs-cortex.paloaltonetworks.com/r/1/Cortex-Xpanse/Scanning-activity"

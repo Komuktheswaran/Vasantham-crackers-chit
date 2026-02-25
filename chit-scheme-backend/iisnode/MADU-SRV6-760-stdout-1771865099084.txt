@@ -1,0 +1,14 @@
+
+🚀 Server: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71
+✅ Health: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/health
+🔐 Login: POST http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/auth/login
+👤 Users: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/users
+👥 Customers: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/customers
+📋 Schemes: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/schemes
+💰 Payments: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/payments
+🌍 States: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/states
+🏘️ Districts: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/transporters
+📥 Exports: http://localhost:\\.\pipe\9aa4930d-2b80-4e13-91d2-1f2eefae2e71/api/exports
+[2026-02-23T16:45:15.775Z] GET /
+- - - [23/Feb/2026:16:45:16 +0000] "GET / HTTP/1.1" 404 38 "-" "Hello from Palo Alto Networks, find out more about our scans in https://docs-cortex.paloaltonetworks.com/r/1/Cortex-Xpanse/Scanning-activity"

@@ -1,8 +1,6 @@
-
+ 
 const { executeQuery, executeInsert } = require('../models/db');
 const sql = require('mssql');
-const { sendSuccess, sendError } = require('../utils/responseHandler');
-const { sendWhatsappMessage } = require('../services/whatsappService');
 
 const getPaymentsByCustomer = async (req, res) => {
   try {
@@ -15,11 +13,13 @@ const getPaymentsByCustomer = async (req, res) => {
       ORDER BY p.Due_Month DESC
     `, [{ value: parseInt(customerId), type: sql.Int }]);
     
-    return sendSuccess(res, 'Payments fetched successfully', result);
+    res.json(result);
   } catch (error) {
-    return sendError(res, 'Failed to fetch payments', error);
+    res.status(500).json({ error: error.message });
   }
 };
+
+// Removed getDuesByCustomerAndScheme as we are strictly using Fund Number now
 
 const getDuesByFundNumber = async (req, res) => {
   try {
@@ -31,11 +31,15 @@ const getDuesByFundNumber = async (req, res) => {
     `, [
       { value: fundNumber, type: sql.VarChar(50) }
     ]);
-    return sendSuccess(res, 'Dues fetched successfully', result);
+    res.json(result);
   } catch (error) {
-    return sendError(res, 'Failed to fetch dues', error);
+    res.status(500).json({ error: error.message });
   }
 };
+
+const { sendWhatsappMessage } = require('../services/whatsappService');
+
+// ... other imports ...
 
 const recordPayment = async (req, res) => {
   const connection = await sql.connect(require('../config/database').dbConfig);
@@ -43,14 +47,11 @@ const recordPayment = async (req, res) => {
 
   try {
     // Simplified: Fund Number is now mandatory as per requirement
-    console.log('[recordPayment] Request Body:', JSON.stringify(req.body, null, 2));
     const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number, sendWhatsapp } = req.body;
-    console.log('[recordPayment] Extracted Fund_Number:', Fund_Number);
-
     
     // Validate Fund_Number presence
     if (!Fund_Number) {
-         return sendError(res, 'Fund Number is required', null, 400);
+         return res.status(400).json({ error: 'Fund Number is required' });
     }
 
     // Lookup Scheme and Customer from Fund_Number to populate Payment_Master
@@ -64,7 +65,7 @@ const recordPayment = async (req, res) => {
         `);
 
     if (memberCheck.recordset.length === 0) {
-        return sendError(res, 'Invalid Fund Number', null, 404);
+        return res.status(404).json({ error: 'Invalid Fund Number' });
     }
 
     const { Customer_ID, Scheme_ID, Phone_Number, Name } = memberCheck.recordset[0];
@@ -81,8 +82,8 @@ const recordPayment = async (req, res) => {
       .input('transactionId', sql.VarChar(50), Transaction_ID || null)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
-      .input('paymentMode', sql.VarChar(50), Payment_Mode || null)
-      .input('upiPhone', sql.VarChar(20), UPI_Phone_Number || null)
+      .input('paymentMode', sql.VarChar(50), Payment_Mode)
+      .input('upiPhone', sql.VarChar(20), UPI_Phone_Number)
       .query(`
         INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
         OUTPUT INSERTED.Pay_ID
@@ -111,10 +112,11 @@ const recordPayment = async (req, res) => {
             .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }
 
-    return sendSuccess(res, 'Payment recorded successfully', { payId: result.recordset[0].Pay_ID }, 201);
+    res.status(201).json({ message: 'Payment recorded successfully', payId: result.recordset[0].Pay_ID });
   } catch (error) {
     if (transaction.active) await transaction.rollback();
-    return sendError(res, 'Failed to record payment', error);
+    console.error('❌ recordPayment Error:', error);
+    res.status(500).json({ error: error.message });
   } finally {
     // await connection.close(); // Main pool handles management usually
   }
@@ -133,6 +135,7 @@ const getAllPayments = async (req, res) => {
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
+        pm.Payment_Mode,
         pm.Payment_Mode,
         pm.UPI_Phone_Number,
         pm.Due_number,
@@ -209,7 +212,7 @@ const getAllPayments = async (req, res) => {
       executeQuery(countQuery, params)
     ]);
 
-    return sendSuccess(res, 'Payments fetched successfully', {
+    res.json({
       payments,
       pagination: {
         totalRecords: totalResult[0]?.total || 0,
@@ -219,7 +222,8 @@ const getAllPayments = async (req, res) => {
       }
     });
   } catch (error) {
-    return sendError(res, 'Failed to fetch payments', error);
+    console.error('❌ getAllPayments Error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -231,7 +235,7 @@ const payAllDues = async (req, res) => {
     const { fundNumber } = req.body;
     
     if (!fundNumber) {
-      return sendError(res, 'Fund Number is required', null, 400);
+      return res.status(400).json({ error: 'Fund Number is required' });
     }
 
     // Lookup Member Details
@@ -240,7 +244,7 @@ const payAllDues = async (req, res) => {
         .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
 
     if (memberCheck.recordset.length === 0) {
-        return sendError(res, 'Invalid Fund Number', null, 404);
+        return res.status(404).json({ error: 'Invalid Fund Number' });
     }
 
     const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
@@ -262,7 +266,7 @@ const payAllDues = async (req, res) => {
 
     if (pendingDues.recordset.length === 0) {
         await transaction.rollback();
-        return sendSuccess(res, 'No pending dues found for this Fund Number');
+        return res.json({ success: true, message: 'No pending dues found for this Fund Number.' });
     }
 
     let totalPaid = 0;
@@ -304,88 +308,17 @@ const payAllDues = async (req, res) => {
     }
 
     await transaction.commit();
-    return sendSuccess(res, `Successfully paid all dues. Total Amount: ₹${totalPaid}`, { transactionId });
+    res.json({ 
+        success: true, 
+        message: `Successfully paid all dues. Total Amount: ₹${totalPaid}`, 
+        transactionId 
+    });
 
   } catch (error) {
     if (transaction.active) await transaction.rollback();
-    return sendError(res, 'Failed to pay all dues', error);
+    console.error('❌ payAllDues Error:', error);
+    res.status(500).json({ error: error.message });
   }
 };
 
-const updatePayment = async (req, res) => {
-  const connection = await sql.connect(require('../config/database').dbConfig);
-  const transaction = new sql.Transaction(connection);
-
-  try {
-    const { payId } = req.params;
-    const { Amount_Received, Payment_Date, Payment_Mode, Transaction_ID, UPI_Phone_Number } = req.body;
-
-    if (!payId) {
-      return sendError(res, 'Payment ID is required', null, 400);
-    }
-
-    // 1. Get old payment details to calculate difference
-    const lookupReq = new sql.Request(connection);
-    const oldPayment = await lookupReq.input('payId', sql.Int, payId)
-      .query('SELECT * FROM Payment_Master WHERE Pay_ID = @payId');
-
-    if (oldPayment.recordset.length === 0) {
-      return sendError(res, 'Payment record not found', null, 404);
-    }
-
-    const oldRecord = oldPayment.recordset[0];
-    const amountDiff = parseFloat(Amount_Received) - parseFloat(oldRecord.Amount_Received);
-
-    await transaction.begin();
-
-    // 2. Update Payment_Master
-    const updatePayReq = new sql.Request(transaction);
-    await updatePayReq
-      .input('payId', sql.Int, payId)
-      .input('amount', sql.Decimal(15, 2), Amount_Received)
-      .input('date', sql.Date, Payment_Date || new Date())
-      .input('paymentMode', sql.VarChar(50), Payment_Mode || null)
-      .input('transactionId', sql.VarChar(50), Transaction_ID || null)
-      .input('upiPhone', sql.VarChar(20), UPI_Phone_Number || null)
-      .query(`
-        UPDATE Payment_Master 
-        SET Amount_Received = @amount,
-            Amount_Received_date = @date,
-            Payment_Mode = @paymentMode,
-            Transaction_ID = @transactionId,
-            UPI_Phone_Number = @upiPhone
-        WHERE Pay_ID = @payId
-      `);
-
-    // 3. Update Scheme_Due (Adjust Recd_amount by difference)
-    if (amountDiff !== 0) {
-      const updateDueReq = new sql.Request(transaction);
-      await updateDueReq
-        .input('fundNum', sql.VarChar(50), oldRecord.Fund_Number)
-        .input('dueNumber', sql.Int, oldRecord.Due_number)
-        .input('diff', sql.Decimal(15, 2), amountDiff)
-        .input('date', sql.Date, Payment_Date || new Date())
-        .query(`
-          UPDATE Scheme_Due 
-          SET Recd_amount = ISNULL(Recd_amount, 0) + @diff,
-              amt_received_date = @date
-          WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
-        `);
-    }
-
-    await transaction.commit();
-    return sendSuccess(res, 'Payment updated successfully');
-  } catch (error) {
-    if (transaction.active) await transaction.rollback();
-    return sendError(res, 'Failed to update payment', error);
-  }
-};
-
-module.exports = { 
-  getPaymentsByCustomer, 
-  recordPayment, 
-  getDuesByFundNumber, 
-  getAllPayments, 
-  payAllDues, 
-  updatePayment 
-};
+module.exports = { getPaymentsByCustomer, recordPayment, getDuesByFundNumber, getAllPayments, payAllDues };

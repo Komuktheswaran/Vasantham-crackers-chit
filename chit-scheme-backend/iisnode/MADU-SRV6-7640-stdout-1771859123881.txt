@@ -1,0 +1,14 @@
+
+🚀 Server: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e
+✅ Health: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/health
+🔐 Login: POST http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/auth/login
+👤 Users: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/users
+👥 Customers: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/customers
+📋 Schemes: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/schemes
+💰 Payments: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/payments
+🌍 States: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/states
+🏘️ Districts: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/transporters
+📥 Exports: http://localhost:\\.\pipe\62e590e9-09c8-4dbe-b256-13d416b0b79e/api/exports
+[2026-02-23T15:05:44.627Z] GET /
+- - - [23/Feb/2026:15:05:45 +0000] "GET / HTTP/1.1" 404 38 "-" "Mozilla/5.0 (compatible; InternetMeasurement/1.0; +https://internet-measurement.com/)"

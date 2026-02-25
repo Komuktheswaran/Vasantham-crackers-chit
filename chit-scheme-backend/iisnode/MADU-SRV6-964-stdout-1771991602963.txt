@@ -1,0 +1,12 @@
+
+🚀 Server: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d
+✅ Health: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/health
+🔐 Login: POST http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/auth/login
+👤 Users: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/users
+👥 Customers: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/customers
+📋 Schemes: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/schemes
+💰 Payments: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/payments
+🌍 States: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/states
+🏘️ Districts: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/transporters
+📥 Exports: http://localhost:\\.\pipe\6ee9bb66-2abf-4361-b57f-3cfb6cb7ca1d/api/exports

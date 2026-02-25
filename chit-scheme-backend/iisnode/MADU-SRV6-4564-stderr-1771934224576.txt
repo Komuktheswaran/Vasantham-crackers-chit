@@ -1,0 +1,209 @@
+(node:4564) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}
+Error: Failed to update payment RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+    at D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:449:19
+    at Array.forEach (<anonymous>)
+    at Request.userCallback (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:446:46)
+    at Request.callback (D:\vasantham backend\node_modules\tedious\lib\request.js:239:14)
+    at D:\vasantham backend\node_modules\tedious\lib\connection.js:1616:17
+    at process.processTicksAndRejections (node:internal/process/task_queues:77:11) {
+  code: 'EPARAM',
+  originalError: RequestError: Validation failed for parameter 'paymentMode'. Invalid string.
+      at Request.validateParameters (D:\vasantham backend\node_modules\tedious\lib\request.js:331:15)
+      at Connection.execSql (D:\vasantham backend\node_modules\tedious\lib\connection.js:1611:15)
+      at Immediate.<anonymous> (D:\vasantham backend\node_modules\mssql\lib\tedious\request.js:705:65)
+      at process.processImmediate (node:internal/timers:480:21) {
+    code: 'EPARAM'
+  },
+  number: 'EPARAM',
+  lineNumber: undefined,
+  state: undefined,
+  class: undefined,
+  serverName: undefined,
+  procName: undefined,
+  precedingErrors: []
+}

@@ -13,16 +13,6 @@ const app = express();
 // Enable trust proxy for rate limiting behind proxies (e.g., Heroku, Nginx, or local dev)
 app.set("trust proxy", 1);
 
-// DEBUG LOGGING for 400 Errors
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  // Check User-Agent for modern Chrome rejection issues
-  if (req.headers['user-agent']?.includes('Chrome/144')) {
-    console.log('Detected Chromium 144 Request');
-  }
-  next();
-});
-
 // ====================================================================
 // SECURITY FIX: Secure CORS Configuration
 // ====================================================================
@@ -163,21 +153,6 @@ app.use('/api/exports', require('./routes/exports'));
 app.use('/api/states', require('./routes/states'));
 app.use('/api/districts', require('./routes/districts'));
 app.use('/api/order-tracking', require('./routes/orderTracking'));
-app.use('/api/transporters', require('./routes/transporters'));
-
-// JSON Parsing Error Handler (Captures 400 errors from bodyParser)
-app.use((err, req, res, next) => {
-  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('JSON Parsing Error (400):', err.message);
-    console.error('Malformed Body Snippet:', req.body || 'Unavailable');
-    return res.status(400).json({ 
-      error: 'Malformed JSON payload', 
-      details: err.message,
-      tip: 'Check for trailing commas or unescaped characters' 
-    });
-  }
-  next(err);
-});
 
 // 404 handler - FIXED (no wildcard parameter issue)
 app.use((req, res) => {
@@ -188,20 +163,15 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-// if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Server: http://localhost:${PORT}`);
-    console.log(`✅ Health: http://localhost:${PORT}/api/health`);
-    console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
-    console.log(`👤 Users: http://localhost:${PORT}/api/users`);
-    console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
-    console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
-    console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
-    console.log(`🌍 States: http://localhost:${PORT}/api/states`);
-    console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
-    console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
-    console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
-  });
-// }
-
-module.exports = app;
+app.listen(PORT, () => {
+  console.log(`\n🚀 Server: http://localhost:${PORT}`);
+  console.log(`✅ Health: http://localhost:${PORT}/api/health`);
+  console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
+  console.log(`👤 Users: http://localhost:${PORT}/api/users`);
+  console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
+  console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
+  console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
+  console.log(`🌍 States: http://localhost:${PORT}/api/states`);
+  console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
+  console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
+});
