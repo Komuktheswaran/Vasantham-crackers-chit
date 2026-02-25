@@ -298,15 +298,18 @@ const createCustomer = async (req, res) => {
             const schemeId = schemeItem.schemeId;
             const fundNum = schemeItem.fundNumber || await generateFundNumber();
 
-            // Insert Member
+            // Insert Member and capture the auto-generated Membership_ID (IDENTITY)
             const assignReq = new sql.Request(transaction);
-            await assignReq.input('customerId', sql.VarChar(50), Customer_ID)
+            const memberInsertResult = await assignReq
+                           .input('customerId', sql.VarChar(50), Customer_ID)
                            .input('schemeId', sql.Int, schemeId)
                            .input('fundNum', sql.VarChar(50), fundNum)
                            .query(`
-                               INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
+                               INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at)
+                               OUTPUT INSERTED.Membership_ID
                                VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
                            `);
+            const membershipId = memberInsertResult.recordset[0].Membership_ID;
 
             // Generate Dues Logic
             const schemeDetailsReq = new sql.Request(transaction);
@@ -321,15 +324,14 @@ const createCustomer = async (req, res) => {
                     dueDate.setDate(10); // Set due date to 10th of the month
 
                     const insertDueReq = new sql.Request(transaction);
-                    await insertDueReq.input('schemeId', sql.Int, schemeId)
+                    await insertDueReq.input('membershipId', sql.Int, membershipId)
                                       .input('customerId', sql.VarChar(50), Customer_ID)
-                                      .input('fundNum', sql.VarChar(50), fundNum)
                                       .input('dueNumber', sql.Int, i)
                                       .input('dueDate', sql.Date, dueDate)
                                       .input('dueAmount', sql.Decimal(15, 2), scheme.Amount_per_month)
                                       .query(`
-                                          INSERT INTO Scheme_Due (Scheme_ID, Customer_ID, Fund_Number, Due_number, Due_date, Due_amount)
-                                          VALUES (@schemeId, @customerId, @fundNum, @dueNumber, @dueDate, @dueAmount)
+                                          INSERT INTO Scheme_Due (Membership_ID, Customer_ID, Due_number, Due_date, Due_amount)
+                                          VALUES (@membershipId, @customerId, @dueNumber, @dueDate, @dueAmount)
                                       `);
                 }
             }
@@ -423,11 +425,15 @@ const deleteCustomer = async (req, res) => {
 
     const request = new sql.Request(transaction);
 
-    // 0. Delete Auction Participation/Wins
-    // Found via sys.foreign_keys: Auctions references Customer_Master
+    // 0. Delete Auction Participation/Wins (Auctions has no Customer_ID — route via Scheme_Members)
     const req0 = new sql.Request(transaction);
     await req0.input('customerId', sql.VarChar(50), id)
-              .query('DELETE FROM Auctions WHERE Customer_ID = @customerId');
+              .query(`
+                DELETE FROM Auctions 
+                WHERE Membership_ID IN (
+                  SELECT Membership_ID FROM Scheme_Members WHERE Customer_ID = @customerId
+                )
+              `);
 
     // 1. Delete Payments
     await request.input('customerId', sql.VarChar(50), id)
@@ -682,6 +688,7 @@ const getCustomerByFundNumber = async (req, res) => {
                 c.Customer_ID, 
                 c.Name, 
                 c.Phone_Number,
+                sm.Membership_ID,
                 sm.Scheme_ID, 
                 sm.Fund_Number, 
                 cm.Name as Scheme_Name
@@ -704,9 +711,9 @@ const getCustomerByFundNumber = async (req, res) => {
 const getCustomerSchemes = async (req, res) => {
   try {
     const { id } = req.params;
-    // Simple JOIN to get Scheme details and Fund Number directly
+    // Simple JOIN to get Scheme details, Fund Number, and Membership_ID
     const schemes = await executeQuery(
-      `SELECT sm.Scheme_ID, sm.Fund_Number, cm.Name as Scheme_Name 
+      `SELECT sm.Membership_ID, sm.Scheme_ID, sm.Fund_Number, sm.Status, sm.Join_date, cm.Name as Scheme_Name 
        FROM Scheme_Members sm
        JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
        WHERE sm.Customer_ID = @param0`,
@@ -728,23 +735,46 @@ const removeScheme = async (req, res) => {
     try {
         await transaction.begin();
 
-        // 1. Delete associated Dues
-        const reqDue = new sql.Request(transaction);
-        const dueResult = await reqDue.input('customerId', sql.VarChar(50), id)
-                    .input('schemeId', sql.Int, parseInt(schemeId))
-                    .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
-        console.log(`[RemoveScheme] Deleted ${dueResult.rowsAffected[0]} dues for Cust: ${id}, Scheme: ${schemeId}`);
+        // 0. Lookup Membership_ID for this customer+scheme combination
+        const memberLookupReq = new sql.Request(transaction);
+        const memberLookup = await memberLookupReq
+            .input('customerId', sql.VarChar(50), id)
+            .input('schemeId', sql.Int, parseInt(schemeId))
+            .query('SELECT Membership_ID FROM Scheme_Members WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
 
-        // 2. Delete Scheme Member record
-        const reqMember = new sql.Request(transaction);
-        const memberResult = await reqMember.input('customerId', sql.VarChar(50), id)
-                       .input('schemeId', sql.Int, parseInt(schemeId))
-                       .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
-        console.log(`[RemoveScheme] Deleted ${memberResult.rowsAffected[0]} members for Cust: ${id}, Scheme: ${schemeId}`);
-
-        if (memberResult.rowsAffected[0] === 0) {
-            console.warn(`[RemoveScheme] Limit warning: No member record found to delete for Cust: ${id}, Scheme: ${schemeId}`);
+        if (memberLookup.recordset.length === 0) {
+            await transaction.rollback();
+            return sendError(res, 'No matching scheme membership found for this customer', null, 404);
         }
+        const membershipId = memberLookup.recordset[0].Membership_ID;
+
+        // 1. Delete associated Payments (by Membership_ID)
+        const reqPay = new sql.Request(transaction);
+        const payResult = await reqPay
+            .input('membershipId', sql.Int, membershipId)
+            .query('DELETE FROM Payment_Master WHERE Membership_ID = @membershipId');
+        console.log(`[RemoveScheme] Deleted ${payResult.rowsAffected[0]} payments for Membership_ID: ${membershipId}`);
+
+        // 2. Delete associated Dues (by Membership_ID)
+        const reqDue = new sql.Request(transaction);
+        const dueResult = await reqDue
+            .input('membershipId', sql.Int, membershipId)
+            .query('DELETE FROM Scheme_Due WHERE Membership_ID = @membershipId');
+        console.log(`[RemoveScheme] Deleted ${dueResult.rowsAffected[0]} dues for Membership_ID: ${membershipId}`);
+
+        // 3. Delete associated Auctions (by Membership_ID)
+        const reqAuction = new sql.Request(transaction);
+        const auctionResult = await reqAuction
+            .input('membershipId', sql.Int, membershipId)
+            .query('DELETE FROM Auctions WHERE Membership_ID = @membershipId');
+        console.log(`[RemoveScheme] Deleted ${auctionResult.rowsAffected[0]} auctions for Membership_ID: ${membershipId}`);
+
+        // 4. Delete Scheme Member record
+        const reqMember = new sql.Request(transaction);
+        const memberResult = await reqMember
+            .input('membershipId', sql.Int, membershipId)
+            .query('DELETE FROM Scheme_Members WHERE Membership_ID = @membershipId');
+        console.log(`[RemoveScheme] Deleted ${memberResult.rowsAffected[0]} membership record, Membership_ID: ${membershipId}`);
 
         await transaction.commit();
         return sendSuccess(res, 'Scheme removed successfully');
@@ -825,13 +855,20 @@ const assignSchemes = async (req, res) => {
       const fundNum = fundNumber || await generateFundNumber(); // Use provided or generate
       assignedSchemesList.push(fundNum);
       
-      // Insert Member - Keeping individual insert for members as volume is low (usually 1)
+      // Insert Member and capture the auto-generated Membership_ID (IDENTITY)
       console.log(`Inserting member for scheme ${schemeId}...`);
       const insertMemberReq = new sql.Request(transaction);
-      await insertMemberReq.input('customerId', sql.VarChar(50), id)
+      const memberInsertResult = await insertMemberReq
+                            .input('customerId', sql.VarChar(50), id)
                             .input('schemeId', sql.Int, schemeId)
                             .input('fundNum', sql.VarChar(50), fundNum)
-                            .query('INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) VALUES (@customerId, @schemeId, @fundNum, \'Active\', GETDATE(), GETDATE(), GETDATE())');
+                            .query(`
+                                INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at)
+                                OUTPUT INSERTED.Membership_ID
+                                VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
+                            `);
+      const newMembershipId = memberInsertResult.recordset[0].Membership_ID;
+      console.log(`Membership_ID ${newMembershipId} created for scheme ${schemeId}.`);
 
       // 3b. Calculate Dues for Bulk Insert
       const schemeDetailsReq = new sql.Request(transaction);
@@ -846,6 +883,7 @@ const assignSchemes = async (req, res) => {
               dueDate.setDate(10); // Set due date to 10th of the month
               
               allDues.push({
+                  membershipId: newMembershipId,
                   schemeId,
                   customerId: id,
                   fundNum,
@@ -857,46 +895,23 @@ const assignSchemes = async (req, res) => {
       }
     }
 
-    // 4. Bulk Insert Dues using sql.Table (Much Faster)
+    // 4. Insert Dues individually using parameterized queries (avoids BCP column ordering issues)
       if (allDues.length > 0) {
-        console.log(`Bulk inserting ${allDues.length} dues...`);
-        const table = new sql.Table('Scheme_Due');
-        table.create = false;
-        
-        // Match DB Column Order EXACTLY:
-        // 1. Scheme_ID
-        // 2. Due_number
-        // 3. Due_date
-        // 4. Due_amount
-        // 5. Recd_amount
-        // 6. amt_received_date
-        // 7. Customer_ID
-        // 8. Fund_Number
-
-        table.columns.add('Scheme_ID', sql.Int, { nullable: false });
-        table.columns.add('Due_number', sql.Int, { nullable: false });
-        table.columns.add('Due_date', sql.Date, { nullable: true });
-        table.columns.add('Due_amount', sql.Decimal(15, 2), { nullable: true });
-        table.columns.add('Recd_amount', sql.Decimal(15, 2), { nullable: true });
-        table.columns.add('amt_received_date', sql.Date, { nullable: true });
-        table.columns.add('Customer_ID', sql.VarChar(50), { nullable: false });
-        table.columns.add('Fund_Number', sql.VarChar(50), { nullable: true });
-
-        allDues.forEach(due => {
-          table.rows.add(
-            due.schemeId,       // Scheme_ID
-            due.dueNumber,      // Due_number
-            due.dueDate,        // Due_date
-            due.dueAmount,      // Due_amount
-            null,               // Recd_amount
-            null,               // amt_received_date
-            due.customerId,     // Customer_ID
-            due.fundNum         // Fund_Number
-          );
-        });
-
-        const bulkReq = new sql.Request(transaction);
-        await bulkReq.bulk(table);
+        console.log(`Inserting ${allDues.length} dues individually...`);
+        for (const due of allDues) {
+          const insertDueReq = new sql.Request(transaction);
+          await insertDueReq
+            .input('membershipId', sql.Int, due.membershipId)
+            .input('customerId', sql.VarChar(50), due.customerId)
+            .input('dueNumber', sql.Int, due.dueNumber)
+            .input('dueDate', sql.Date, due.dueDate)
+            .input('dueAmount', sql.Decimal(15, 2), due.dueAmount)
+            .query(`
+              INSERT INTO Scheme_Due (Membership_ID, Customer_ID, Due_number, Due_date, Due_amount)
+              VALUES (@membershipId, @customerId, @dueNumber, @dueDate, @dueAmount)
+            `);
+        }
+        console.log(`All ${allDues.length} dues inserted successfully.`);
       }
 
     await transaction.commit();

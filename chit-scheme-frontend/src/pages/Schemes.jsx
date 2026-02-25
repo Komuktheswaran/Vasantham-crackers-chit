@@ -40,7 +40,7 @@ const Schemes = () => {
 
   const uploadProps = {
     name: "file",
-    action: `${process.env.REACT_APP_API_URL || "https://103.38.50.149:5006/api"}/schemes/upload`,
+    action: `${process.env.REACT_APP_API_URL || "https://103.38.50.247:100/api"}/schemes/upload`,
     accept: ".csv",
     onChange(info) {
       if (info.file.status === "done") {

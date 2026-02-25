@@ -5,7 +5,7 @@ test.use({
 });
 
 test('test', async ({ page }) => {
-  await page.goto('https://103.38.50.149:5005/login');
+  await page.goto('https://103.38.50.247/login');
   await page.getByRole('textbox', { name: 'Username' }).click();
   await page.getByRole('textbox', { name: 'Username' }).fill('admin');
   await page.getByRole('textbox', { name: 'Username' }).press('Tab');

@@ -1,0 +1,7 @@
+--- VASANTHAMDBLIVE ---
+Tables: Auctions, Audit_Logs, Chit_Master, Customer_Master, Delivery_Points, District_Master, Order_Tracking, Payment_Master, Scheme_Due, State_Master, Transporters, Users
+Scheme_Members check failed: Invalid object name 'Scheme_Members'.
+
+--- VASANTHAMDB ---
+Tables: Auctions, Audit_Logs, Chit_Master, Customer_Master, Delivery_Points, District_Master, Order_Tracking, Payment_Master, Scheme_Due, Scheme_Members, State_Master, Transporters, Users
+Scheme_Members count: 5

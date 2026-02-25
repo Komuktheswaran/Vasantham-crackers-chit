@@ -10,10 +10,11 @@ const getPaymentsByCustomer = async (req, res) => {
     const result = await executeQuery(`
       SELECT p.*, cm.Name as scheme_name
       FROM Payment_Master p
-      JOIN Chit_Master cm ON p.Scheme_ID = cm.Scheme_ID
+      JOIN Scheme_Members sm ON p.Membership_ID = sm.Membership_ID
+      JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
       WHERE p.Customer_ID = @param0
-      ORDER BY p.Due_Month DESC
-    `, [{ value: parseInt(customerId), type: sql.Int }]);
+      ORDER BY p.Amount_Received_date DESC
+    `, [{ value: customerId, type: sql.VarChar(50) }]);
     
     return sendSuccess(res, 'Payments fetched successfully', result);
   } catch (error) {
@@ -24,13 +25,14 @@ const getPaymentsByCustomer = async (req, res) => {
 const getDuesByFundNumber = async (req, res) => {
   try {
     const { fundNumber } = req.params;
+    // Scheme_Due has no Fund_Number — look up Membership_ID via Scheme_Members
     const result = await executeQuery(`
-      SELECT * FROM Scheme_Due 
-      WHERE Fund_Number = @param0
-      ORDER BY Due_number ASC
-    `, [
-      { value: fundNumber, type: sql.VarChar(50) }
-    ]);
+      SELECT sd.*
+      FROM Scheme_Due sd
+      JOIN Scheme_Members sm ON sd.Membership_ID = sm.Membership_ID
+      WHERE sm.Fund_Number = @param0
+      ORDER BY sd.Due_number ASC
+    `, [{ value: fundNumber, type: sql.VarChar(50) }]);
     return sendSuccess(res, 'Dues fetched successfully', result);
   } catch (error) {
     return sendError(res, 'Failed to fetch dues', error);
@@ -53,11 +55,11 @@ const recordPayment = async (req, res) => {
          return sendError(res, 'Fund Number is required', null, 400);
     }
 
-    // Lookup Scheme and Customer from Fund_Number to populate Payment_Master
+    // Lookup Membership_ID and Customer_ID from Fund_Number
     const lookupReq = new sql.Request(connection);
     const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), Fund_Number)
         .query(`
-            SELECT sm.Customer_ID, sm.Scheme_ID, c.Phone_Number, c.Name 
+            SELECT sm.Membership_ID, sm.Customer_ID, c.Phone_Number, c.Name
             FROM Scheme_Members sm
             JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
             WHERE sm.Fund_Number = @fundNum
@@ -67,16 +69,15 @@ const recordPayment = async (req, res) => {
         return sendError(res, 'Invalid Fund Number', null, 404);
     }
 
-    const { Customer_ID, Scheme_ID, Phone_Number, Name } = memberCheck.recordset[0];
+    const { Membership_ID, Customer_ID, Phone_Number, Name } = memberCheck.recordset[0];
 
     await transaction.begin();
 
-    // 1. Insert into Payment_Master
+    // 1. Insert into Payment_Master (Membership_ID + Customer_ID only — no Scheme_ID/Fund_Number in table)
     const request = new sql.Request(transaction);
     const result = await request
-      .input('schemeId', sql.Int, Scheme_ID)
+      .input('membershipId', sql.Int, Membership_ID)
       .input('customerId', sql.VarChar(50), Customer_ID)
-      .input('fundNum', sql.VarChar(50), Fund_Number)
       .input('dueNumber', sql.Int, Due_number)
       .input('transactionId', sql.VarChar(50), Transaction_ID || null)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
@@ -84,23 +85,23 @@ const recordPayment = async (req, res) => {
       .input('paymentMode', sql.VarChar(50), Payment_Mode)
       .input('upiPhone', sql.VarChar(20), UPI_Phone_Number)
       .query(`
-        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
+        INSERT INTO Payment_Master (Membership_ID, Customer_ID, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
         OUTPUT INSERTED.Pay_ID
-        VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
+        VALUES (@membershipId, @customerId, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
       `);
 
-    // 2. Update Scheme_Due using Fund_Number
+    // 2. Update Scheme_Due using Membership_ID + Due_number
     const updateRequest = new sql.Request(transaction);
     await updateRequest
-      .input('fundNum', sql.VarChar(50), Fund_Number)
+      .input('membershipId', sql.Int, Membership_ID)
       .input('dueNumber', sql.Int, Due_number)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
       .query(`
-        UPDATE Scheme_Due 
+        UPDATE Scheme_Due
         SET Recd_amount = ISNULL(Recd_amount, 0) + @amount,
             amt_received_date = @date
-        WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
+        WHERE Membership_ID = @membershipId AND Due_number = @dueNumber
       `);
 
     await transaction.commit();
@@ -125,22 +126,23 @@ const getAllPayments = async (req, res) => {
     const { page = 1, limit, date_from, date_to, customer_id, scheme_id, transaction_id } = req.query;
 
     let query = `
-      SELECT 
+      SELECT
         pm.Pay_ID,
+        pm.Membership_ID,
         pm.Customer_ID,
-        c.Name as Customer_Name,
-        cm.Name as Scheme_Name,
+        c.Name  AS Customer_Name,
+        cm.Name AS Scheme_Name,
+        sm.Fund_Number,
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
         pm.Payment_Mode,
-        pm.Payment_Mode,
         pm.UPI_Phone_Number,
-        pm.Due_number,
-        pm.Fund_Number
+        pm.Due_number
       FROM Payment_Master pm
-      JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
-      JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      JOIN Customer_Master c  ON pm.Customer_ID  = c.Customer_ID
+      JOIN Scheme_Members  sm ON pm.Membership_ID = sm.Membership_ID
+      JOIN Chit_Master     cm ON sm.Scheme_ID     = cm.Scheme_ID
     `;
 
     const params = [];
@@ -167,9 +169,9 @@ const getAllPayments = async (req, res) => {
       paramIndex++;
     }
 
-    // Add scheme filter
+    // Add scheme filter — route through sm.Scheme_ID (not on Payment_Master directly)
     if (scheme_id) {
-      whereClauses.push(`pm.Scheme_ID = @param${paramIndex}`);
+      whereClauses.push(`sm.Scheme_ID = @param${paramIndex}`);
       params.push({ value: parseInt(scheme_id), type: sql.Int });
       paramIndex++;
     }
@@ -181,9 +183,9 @@ const getAllPayments = async (req, res) => {
       paramIndex++;
     }
 
-    // Add fund number filter
+    // Add fund number filter — route through sm.Fund_Number
     if (req.query.fund_number) {
-      whereClauses.push(`pm.Fund_Number LIKE @param${paramIndex}`);
+      whereClauses.push(`sm.Fund_Number LIKE @param${paramIndex}`);
       params.push({ value: `%${req.query.fund_number}%`, type: sql.VarChar(50) });
       paramIndex++;
     }
@@ -192,9 +194,11 @@ const getAllPayments = async (req, res) => {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
     }
 
-    const countQuery = `SELECT COUNT(*) as total FROM Payment_Master pm 
-                        JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
-                        JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+    const countQuery = `SELECT COUNT(*) as total
+                        FROM Payment_Master pm
+                        JOIN Customer_Master c  ON pm.Customer_ID  = c.Customer_ID
+                        JOIN Scheme_Members  sm ON pm.Membership_ID = sm.Membership_ID
+                        JOIN Chit_Master     cm ON sm.Scheme_ID     = cm.Scheme_ID
                         ${whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : ''}`;
 
     query += ` ORDER BY pm.Amount_Received_date DESC`;
@@ -235,16 +239,16 @@ const payAllDues = async (req, res) => {
       return sendError(res, 'Fund Number is required', null, 400);
     }
 
-    // Lookup Member Details
+    // Lookup Member Details including Membership_ID
     const lookupReq = new sql.Request(connection);
     const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), fundNumber)
-        .query('SELECT Customer_ID, Scheme_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
+        .query('SELECT Membership_ID, Customer_ID FROM Scheme_Members WHERE Fund_Number = @fundNum');
 
     if (memberCheck.recordset.length === 0) {
         return sendError(res, 'Invalid Fund Number', null, 404);
     }
 
-    const { Customer_ID, Scheme_ID } = memberCheck.recordset[0];
+    const { Membership_ID, Customer_ID } = memberCheck.recordset[0];
     
     // Calculate Transaction ID
     const date = new Date();
@@ -252,12 +256,12 @@ const payAllDues = async (req, res) => {
 
     await transaction.begin();
 
-    // Find all pending dues
+    // Find all pending dues by Membership_ID
     const duesReq = new sql.Request(transaction);
-    const pendingDues = await duesReq.input('fundNum', sql.VarChar(50), fundNumber)
+    const pendingDues = await duesReq.input('membershipId', sql.Int, Membership_ID)
         .query(`
-            SELECT * FROM Scheme_Due 
-            WHERE Fund_Number = @fundNum 
+            SELECT * FROM Scheme_Due
+            WHERE Membership_ID = @membershipId
             AND (Recd_amount IS NULL OR Recd_amount < Due_amount)
         `);
 
@@ -271,34 +275,33 @@ const payAllDues = async (req, res) => {
     for (const due of pendingDues.recordset) {
         const remainingAmount = due.Due_amount - (due.Recd_amount || 0);
         
-        // 1. Insert into Payment_Master
+        // 1. Insert into Payment_Master (Membership_ID + Customer_ID — no Scheme_ID/Fund_Number)
         const insertPayReq = new sql.Request(transaction);
         await insertPayReq
-          .input('schemeId', sql.Int, Scheme_ID)
+          .input('membershipId', sql.Int, Membership_ID)
           .input('customerId', sql.VarChar(50), Customer_ID)
-          .input('fundNum', sql.VarChar(50), fundNumber)
           .input('dueNumber', sql.Int, due.Due_number)
           .input('transactionId', sql.VarChar(50), transactionId)
           .input('amount', sql.Decimal(15, 2), remainingAmount)
           .input('date', sql.Date, date)
           .input('paymentMode', sql.VarChar(50), 'Auction')
           .query(`
-            INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode)
-            VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode)
+            INSERT INTO Payment_Master (Membership_ID, Customer_ID, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode)
+            VALUES (@membershipId, @customerId, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode)
           `);
 
-        // 2. Update Scheme_Due
+        // 2. Update Scheme_Due by Membership_ID + Due_number
         const updateDueReq = new sql.Request(transaction);
         await updateDueReq
-          .input('fundNum', sql.VarChar(50), fundNumber)
+          .input('membershipId', sql.Int, Membership_ID)
           .input('dueNumber', sql.Int, due.Due_number)
           .input('amount', sql.Decimal(15, 2), remainingAmount)
           .input('date', sql.Date, date)
           .query(`
-            UPDATE Scheme_Due 
+            UPDATE Scheme_Due
             SET Recd_amount = ISNULL(Recd_amount, 0) + @amount,
                 amt_received_date = @date
-            WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
+            WHERE Membership_ID = @membershipId AND Due_number = @dueNumber
           `);
 
         totalPaid += remainingAmount;
@@ -358,19 +361,19 @@ const updatePayment = async (req, res) => {
         WHERE Pay_ID = @payId
       `);
 
-    // 3. Update Scheme_Due (Adjust Recd_amount by difference)
+    // 3. Update Scheme_Due (Adjust Recd_amount by difference) using Membership_ID
     if (amountDiff !== 0) {
       const updateDueReq = new sql.Request(transaction);
       await updateDueReq
-        .input('fundNum', sql.VarChar(50), oldRecord.Fund_Number)
+        .input('membershipId', sql.Int, oldRecord.Membership_ID)
         .input('dueNumber', sql.Int, oldRecord.Due_number)
         .input('diff', sql.Decimal(15, 2), amountDiff)
         .input('date', sql.Date, Payment_Date || new Date())
         .query(`
-          UPDATE Scheme_Due 
+          UPDATE Scheme_Due
           SET Recd_amount = ISNULL(Recd_amount, 0) + @diff,
               amt_received_date = @date
-          WHERE Fund_Number = @fundNum AND Due_number = @dueNumber
+          WHERE Membership_ID = @membershipId AND Due_number = @dueNumber
         `);
     }
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getToken } from './authService';
 import { message } from 'antd';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.149:5006/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://103.38.50.247:100/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -73,7 +73,7 @@ export const customersAPI = {
   getNextCustomerId: () => api.get('/customers/next-customer-id'),
   getNextFundNumber: () => api.get('/customers/next-fund-number'),
   getNextIds: () => api.get('/customers/next-ids'),
-  getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
+  getByFundNumber: (fundNumber) => api.get(`/customers/fund/${encodeURIComponent(fundNumber)}`),
   getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
 };
 

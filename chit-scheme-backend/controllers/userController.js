@@ -30,8 +30,8 @@ const createUser = async (req, res) => {
     }
 
     // Validate role
-    if (role && !['admin', 'user'].includes(role)) {
-      return sendError(res, 'Invalid role. Must be "admin" or "user"', null, 400);
+    if (role && !['Admin', 'Staff'].includes(role)) {
+      return sendError(res, 'Invalid role. Must be "Admin" or "Staff"', null, 400);
     }
 
     // Check if username already exists
@@ -55,7 +55,7 @@ const createUser = async (req, res) => {
         { name: 'username', value: username, type: mssql.VarChar },
         { name: 'passwordHash', value: passwordHash, type: mssql.VarChar },
         { name: 'fullName', value: fullName || null, type: mssql.VarChar },
-        { name: 'role', value: role || 'user', type: mssql.VarChar }
+        { name: 'role', value: role || 'Staff', type: mssql.VarChar }
       ]
     );
 
@@ -74,8 +74,8 @@ const updateUser = async (req, res) => {
     const { username, password, fullName, role } = req.body;
 
     // Validate role if provided
-    if (role && !['admin', 'user'].includes(role)) {
-      return sendError(res, 'Invalid role. Must be "admin" or "user"', null, 400);
+    if (role && !['Admin', 'Staff'].includes(role)) {
+      return sendError(res, 'Invalid role. Must be "Admin" or "Staff"', null, 400);
     }
 
     // Check if user exists

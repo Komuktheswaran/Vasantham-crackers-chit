@@ -1,0 +1,3 @@
+Connecting to: 103.38.50.247 DB: VASANTHAMDB
+1. Listing all tables in VASANTHAMDB...
+Tables in VASANTHAMDB: Auctions, Audit_Logs, Chit_Master, Customer_Master, Delivery_Points, District_Master, Order_Tracking, Payment_Master, Scheme_Due, Scheme_Members, State_Master, Transporters, Users

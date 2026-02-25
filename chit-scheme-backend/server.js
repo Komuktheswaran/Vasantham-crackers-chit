@@ -164,6 +164,7 @@ app.use('/api/states', require('./routes/states'));
 app.use('/api/districts', require('./routes/districts'));
 app.use('/api/order-tracking', require('./routes/orderTracking'));
 app.use('/api/transporters', require('./routes/transporters'));
+app.use('/api/auctions', require('./routes/auctions'));
 
 // JSON Parsing Error Handler (Captures 400 errors from bodyParser)
 app.use((err, req, res, next) => {
@@ -201,6 +202,7 @@ const PORT = process.env.PORT || 5000;
     console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
     console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
     console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
+    console.log(`🔨 Auctions: http://localhost:${PORT}/api/auctions`);
   });
 // }
 

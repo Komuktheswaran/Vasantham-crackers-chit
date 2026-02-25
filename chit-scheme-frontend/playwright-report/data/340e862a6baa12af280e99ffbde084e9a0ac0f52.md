@@ -1,7 +1,7 @@
 # Page snapshot
 
 ```yaml
-- generic [active] [ref=e1]:
+- generic [ref=e1]:
   - generic [ref=e3]:
     - complementary [ref=e4]:
       - generic [ref=e5]:
@@ -228,8 +228,34 @@
                   - img "right" [ref=e308]:
                     - img [ref=e309]
       - contentinfo [ref=e311]: MaDuSOFT Solutions © 2026
-  - generic:
-    - generic: "*"
+  - generic [ref=e312]:
+    - dialog "Add Transporter":
+      - generic [ref=e313]:
+        - button "Close" [ref=e314] [cursor=pointer]:
+          - generic "Close" [ref=e315]:
+            - img "close" [ref=e316]:
+              - img [ref=e317]
+        - generic [ref=e320]: Add Transporter
+        - generic [ref=e322]:
+          - generic [ref=e324]:
+            - generic "Transporter Name" [ref=e326]: "* Transporter Name"
+            - textbox "* Transporter Name" [ref=e330]:
+              - /placeholder: Enter name
+              - text: test_1771917624445_254
+          - generic [ref=e332]:
+            - generic "Contact Person" [ref=e334]
+            - textbox "Contact Person" [ref=e338]:
+              - /placeholder: Enter contact person name
+              - text: ContactPerson
+          - generic [ref=e340]:
+            - generic "Phone Number" [ref=e342]
+            - textbox "Phone Number" [active] [ref=e346]:
+              - /placeholder: Enter phone
+        - generic [ref=e347]:
+          - button "Cancel" [ref=e348] [cursor=pointer]:
+            - generic [ref=e349]: Cancel
+          - button "OK" [ref=e350] [cursor=pointer]:
+            - generic [ref=e351]: OK
   - generic:
     - generic: "*"
 ```

@@ -171,26 +171,43 @@ const deleteScheme = async (req, res) => {
     const { id } = req.params;
     const schemeId = parseInt(id);
     
-    // We using a sequential delete approach instead of strict transaction object for simplicity with the current db helper
     // 1. Delete dependent Payments
+    // Payment_Master has no Scheme_ID — route via Membership_ID through Scheme_Members
     await executeUpdate(
-      'DELETE FROM Payment_Master WHERE Scheme_ID = @param0',
+      `DELETE FROM Payment_Master 
+       WHERE Membership_ID IN (
+         SELECT Membership_ID FROM Scheme_Members WHERE Scheme_ID = @param0
+       )`,
       [{ value: schemeId, type: sql.Int }]
     );
 
-    // 2. Delete dependent Scheme Dues
+    // 2. Delete dependent Auctions
+    // Auctions has no Scheme_ID either — same pattern
     await executeUpdate(
-      'DELETE FROM Scheme_Due WHERE Scheme_ID = @param0',
+      `DELETE FROM Auctions 
+       WHERE Membership_ID IN (
+         SELECT Membership_ID FROM Scheme_Members WHERE Scheme_ID = @param0
+       )`,
       [{ value: schemeId, type: sql.Int }]
     );
 
-    // 3. Delete dependent Scheme Members
+    // 3. Delete dependent Scheme Dues
+    // Scheme_Due has no Scheme_ID — route via Membership_ID
+    await executeUpdate(
+      `DELETE FROM Scheme_Due 
+       WHERE Membership_ID IN (
+         SELECT Membership_ID FROM Scheme_Members WHERE Scheme_ID = @param0
+       )`,
+      [{ value: schemeId, type: sql.Int }]
+    );
+
+    // 4. Delete dependent Scheme Members (Scheme_Members DOES have Scheme_ID)
     await executeUpdate(
       'DELETE FROM Scheme_Members WHERE Scheme_ID = @param0',
       [{ value: schemeId, type: sql.Int }]
     );
 
-    // 4. Delete the Scheme itself
+    // 5. Delete the Scheme itself
     await executeUpdate(
       'DELETE FROM Chit_Master WHERE Scheme_ID = @param0', 
       [{ value: schemeId, type: sql.Int }]

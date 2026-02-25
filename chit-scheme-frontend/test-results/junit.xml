@@ -1,30 +1,44 @@
-<testsuites id="" name="" tests="14" failures="1" skipped="11" errors="0" time="68.95406">
-<testsuite name="chit-ultimate-performance.spec.js" timestamp="2026-02-19T09:58:48.957Z" hostname="chromium-latest" tests="14" failures="1" skipped="11" time="28.332" errors="0">
-<testcase name="Chit Scheme - Complete Realistic Performance Testing › 1. Application Loading" classname="chit-ultimate-performance.spec.js" time="1.329">
+<testsuites id="" name="" tests="14" failures="1" skipped="11" errors="0" time="57.472648">
+<testsuite name="chit-ultimate-performance.spec.js" timestamp="2026-02-24T07:19:50.135Z" hostname="chromium-latest" tests="14" failures="1" skipped="11" time="47.704" errors="0">
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 1. Application Loading" classname="chit-ultimate-performance.spec.js" time="3.177">
 <system-out>
 <![CDATA[
 ======================================================================
 🚀 Starting CHROMIUM Realistic Performance Test
-   Time: 19/2/2026, 3:29:26 pm
+   Time: 24/2/2026, 12:49:52 pm
 ======================================================================
 
 🔄 STEP 1: Testing Application Load...
-✅ [chromium] App Loading: 1324ms
+✅ [chromium] App Loading: 1725ms
+   └─ Login form visible and ready
+
+
+======================================================================
+🚀 Starting CHROMIUM Realistic Performance Test
+   Time: 24/2/2026, 12:50:21 pm
+======================================================================
+
+🔄 STEP 1: Testing Application Load...
+✅ [chromium] App Loading: 1441ms
    └─ Login form visible and ready
 
 ]]>
 </system-out>
 </testcase>
-<testcase name="Chit Scheme - Complete Realistic Performance Testing › 2. Login" classname="chit-ultimate-performance.spec.js" time="5.6">
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 2. Login" classname="chit-ultimate-performance.spec.js" time="1.678">
 <system-out>
 <![CDATA[🔄 STEP 2: Testing Login (Realistic Interaction)...
-✅ [chromium] Login: 5598ms
-   └─ Redirected to: https://103.38.50.149:5005/
+✅ [chromium] Login: 716ms
+   └─ Redirected to: https://103.38.50.247/
+
+🔄 STEP 2: Testing Login (Realistic Interaction)...
+✅ [chromium] Login: 951ms
+   └─ Redirected to: https://103.38.50.247/
 
 ]]>
 </system-out>
 </testcase>
-<testcase name="Chit Scheme - Complete Realistic Performance Testing › 3. Transport CRUD - Full Workflow" classname="chit-ultimate-performance.spec.js" time="21.403">
+<testcase name="Chit Scheme - Complete Realistic Performance Testing › 3. Transport CRUD - Full Workflow" classname="chit-ultimate-performance.spec.js" time="42.849">
 <failure message="chit-ultimate-performance.spec.js:178:7 3. Transport CRUD - Full Workflow" type="FAILURE">
 <![CDATA[  [chromium-latest] › chit-ultimate-performance.spec.js:178:7 › Chit Scheme - Complete Realistic Performance Testing › 3. Transport CRUD - Full Workflow 
 
@@ -42,17 +56,6 @@
       198 |     console.log('   ✅ Transporter created');
         at F:\React Dev\chit\chit-scheme-frontend\tests\chit-ultimate-performance.spec.js:195:71
 
-    Error: page.waitForTimeout: Test ended.
-
-      123 |     console.log(`   Close manually or wait for auto-close\n`);
-      124 |     
-    > 125 |     await sharedPage.waitForTimeout(600);
-          |                      ^
-      126 |     
-      127 |     console.log(`   Closing browser now...\n`);
-      128 |     await sharedPage?.close();
-        at F:\React Dev\chit\chit-scheme-frontend\tests\chit-ultimate-performance.spec.js:125:22
-
     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
     ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest\test-failed-1.png
     ────────────────────────────────────────────────────────────────────────────────────────────────
@@ -66,11 +69,41 @@
         npx playwright show-trace ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest\trace.zip
 
     ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    TimeoutError: locator.fill: Timeout 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('textbox', { name: '* Phone Number' })
+
+
+      193 |     await sharedPage.getByRole('textbox', { name: 'Contact Person' }).fill('ContactPerson');
+      194 |     await sharedPage.getByRole('textbox', { name: 'Contact Person' }).press('Tab');
+    > 195 |     await sharedPage.getByRole('textbox', { name: '* Phone Number' }).fill('9' + Math.floor(Math.random() * 1e9));
+          |                                                                       ^
+      196 |     await sharedPage.getByRole('button', { name: 'OK' }).click();
+      197 |     await expect(sharedPage.getByText(transporter)).toBeVisible({ timeout: 15000 });
+      198 |     console.log('   ✅ Transporter created');
+        at F:\React Dev\chit\chit-scheme-frontend\tests\chit-ultimate-performance.spec.js:195:71
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\test-results\chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
 ]]>
 </failure>
 <system-out>
 <![CDATA[🔄 STEP 3: Testing Transport Module (Full Workflow)...
-   📝 Creating transporter: test_1771495173967_940
+   📝 Creating transporter: test_1771917596156_483
 
 ======================================================================
    CHROMIUM - COMPLETE PERFORMANCE SUMMARY
@@ -78,16 +111,18 @@
 ┌─────────┬────────────┬──────────────────┬──────┬───────────┐
 │ (index) │ browser    │ step             │ time │ status    │
 ├─────────┼────────────┼──────────────────┼──────┼───────────┤
-│ 0       │ [32m'chromium'[39m │ [32m'1. App Loading'[39m │ [33m1324[39m │ [32m'✅ PASS'[39m │
-│ 1       │ [32m'chromium'[39m │ [32m'2. Login'[39m       │ [33m5598[39m │ [32m'✅ PASS'[39m │
+│ 0       │ [32m'chromium'[39m │ [32m'1. App Loading'[39m │ [33m1725[39m │ [32m'✅ PASS'[39m │
+│ 1       │ [32m'chromium'[39m │ [32m'2. Login'[39m       │ [33m716[39m  │ [32m'✅ PASS'[39m │
 └─────────┴────────────┴──────────────────┴──────┴───────────┘
 
-📊 Total Execution Time: 6922ms (6.9s
+📊 Total Execution Time: 2441ms (2.4s
 
 ✅ All 2 modules tested!
 
 ⏸️  Keeping browser open for 60 seconds for review...
    Close manually or wait for auto-close
+
+   Closing browser now...
 
 
 [[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest\test-failed-1.png]]
@@ -95,6 +130,34 @@
 [[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest\error-context.md]]
 
 [[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest\trace.zip]]
+🔄 STEP 3: Testing Transport Module (Full Workflow)...
+   📝 Creating transporter: test_1771917624445_254
+
+======================================================================
+   CHROMIUM - COMPLETE PERFORMANCE SUMMARY
+======================================================================
+┌─────────┬────────────┬──────────────────┬──────┬───────────┐
+│ (index) │ browser    │ step             │ time │ status    │
+├─────────┼────────────┼──────────────────┼──────┼───────────┤
+│ 0       │ [32m'chromium'[39m │ [32m'1. App Loading'[39m │ [33m1441[39m │ [32m'✅ PASS'[39m │
+│ 1       │ [32m'chromium'[39m │ [32m'2. Login'[39m       │ [33m951[39m  │ [32m'✅ PASS'[39m │
+└─────────┴────────────┴──────────────────┴──────┴───────────┘
+
+📊 Total Execution Time: 2392ms (2.4s
+
+✅ All 2 modules tested!
+
+⏸️  Keeping browser open for 60 seconds for review...
+   Close manually or wait for auto-close
+
+   Closing browser now...
+
+
+[[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\test-failed-1.png]]
+
+[[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\error-context.md]]
+
+[[ATTACHMENT|chit-ultimate-performance--a952a-nsport-CRUD---Full-Workflow-chromium-latest-retry1\trace.zip]]
 ]]>
 </system-out>
 </testcase>

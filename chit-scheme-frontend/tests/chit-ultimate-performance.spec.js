@@ -134,7 +134,7 @@ test.describe.serial('Chit Scheme - Complete Realistic Performance Testing', () 
     console.log('🔄 STEP 1: Testing Application Load...');
     const start = Date.now();
 
-    await sharedPage.goto('https://103.38.50.149:5005/login', {
+    await sharedPage.goto('https://103.38.50.247/login', {
       waitUntil: 'networkidle',
       timeout: 30000
     });
@@ -164,7 +164,7 @@ test.describe.serial('Chit Scheme - Complete Realistic Performance Testing', () 
     await sharedPage.getByRole('checkbox', { name: 'Remember me' }).press('Tab');
     await sharedPage.getByRole('button', { name: 'Log In' }).press('Enter');
 
-    await sharedPage.waitForURL('https://103.38.50.149:5005/', { timeout: 30000 });
+    await sharedPage.waitForURL('https://103.38.50.247/', { timeout: 30000 });
     await sharedPage.waitForLoadState('networkidle', { timeout: 30000 });
 
     const elapsed = Date.now() - start;
@@ -1113,11 +1113,11 @@ test.describe('Load Test: Server Capacity', () => {
       const page = await context.newPage();
 
       const userStart = Date.now();
-      await page.goto('https://103.38.50.149:5005/login');
+      await page.goto('https://103.38.50.247/login');
       await page.getByRole('textbox', { name: 'Username' }).fill('admin');
       await page.getByRole('textbox', { name: 'Password' }).fill('admin123');
       await page.getByRole('button', { name: 'Log In' }).click();
-      await page.waitForURL('https://103.38.50.149:5005/', { timeout: 30000 });
+      await page.waitForURL('https://103.38.50.247/', { timeout: 30000 });
 
       const elapsed = Date.now() - userStart;
       if ((i + 1) % 10 === 0) console.log(`   ✓ ${i + 1}/50 users logged in`);
