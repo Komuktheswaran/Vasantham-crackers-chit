@@ -12,22 +12,26 @@ import {
   Statistic,
   Alert,
   Tag,
+  Table,
 } from "antd";
 import {
   SearchOutlined,
   DollarOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
-import { customersAPI, paymentsAPI } from "../services/api";
+import { customersAPI, paymentsAPI, auctionsAPI } from "../services/api";
+import dayjs from "dayjs";
 import "./css/Auction.css";
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const Auction = () => {
   const [fundNumber, setFundNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [customerData, setCustomerData] = useState(null);
   const [duesData, setDuesData] = useState([]);
+  const [auctionsHistory, setAuctionsHistory] = useState([]);
+  const [transactionId, setTransactionId] = useState("");
   const [payLoading, setPayLoading] = useState(false);
 
   const handleSearch = async () => {
@@ -50,17 +54,29 @@ const Auction = () => {
         return;
       }
 
+      const resolvedFundNumber = customer.Fund_Number;
+
       setCustomerData({
         ...customer,
         Scheme_ID: customer.Scheme_ID,
         Scheme_Name: customer.Scheme_Name,
-        Fund_Number: customer.Fund_Number,
+        Fund_Number: resolvedFundNumber,
       });
 
-      // 3. Get Dues Info (to calculate pending amount)
-      const duesRes = await paymentsAPI.getDues(fundNumber);
-      // API returns { success: true, data: [ ... dues ... ] }
+      // Auto-generate a unique ID for the bulk payment
+      setTransactionId(
+        `PAY-BULK-${dayjs().format("YYYYMMDD")}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+      );
+
+      // 3. Get Dues Info (to calculate pending amount) using resolved full fund number
+      const duesRes = await paymentsAPI.getDues(resolvedFundNumber);
       setDuesData(duesRes.data.data || []);
+
+      // 4. Get Auction History
+      const auctionsRes = await auctionsAPI.getByMembership(
+        customer.Membership_ID,
+      );
+      setAuctionsHistory(auctionsRes.data.data || []);
     } catch (error) {
       console.error(error);
       message.error(error.response?.data?.error || "Fund Number not found");
@@ -100,7 +116,10 @@ const Auction = () => {
       onOk: async () => {
         setPayLoading(true);
         try {
-          const response = await paymentsAPI.payAll({ fundNumber });
+          const response = await paymentsAPI.payAll({
+            fundNumber,
+            Payment_Transaction_ID: transactionId,
+          });
 
           Modal.success({
             title: "Payment Successful",
@@ -199,7 +218,13 @@ const Auction = () => {
                     valueStyle={{ color: "#cf1322" }}
                   />
                 </Col>
-                <Col>
+                <Col xs={24} sm={12} md={8}>
+                  <Input
+                    placeholder="Payment Transaction ID"
+                    value={transactionId}
+                    readOnly
+                    style={{ marginBottom: 16 }}
+                  />
                   <Button
                     type="primary"
                     danger
@@ -207,7 +232,7 @@ const Auction = () => {
                     icon={<DollarOutlined />}
                     loading={payLoading}
                     onClick={handlePayAll}
-                    style={{ minWidth: 200 }}
+                    style={{ width: "100%" }}
                   >
                     Pay All Remaining
                   </Button>
@@ -222,6 +247,43 @@ const Auction = () => {
               />
             )}
           </div>
+        </Card>
+      )}
+
+      {customerData && auctionsHistory.length > 0 && (
+        <Card title="Auction History" style={{ marginTop: 24 }}>
+          <Table
+            dataSource={auctionsHistory}
+            rowKey="Auction_ID"
+            pagination={false}
+            columns={[
+              {
+                title: "Auction ID",
+                dataIndex: "Auction_ID",
+                key: "Auction_ID",
+                width: 100,
+              },
+              {
+                title: "Auction Date",
+                dataIndex: "Auction_date",
+                key: "Auction_date",
+                render: (date) =>
+                  date ? dayjs(date).format("DD-MM-YYYY") : "-",
+              },
+              {
+                title: "Discount Amount",
+                dataIndex: "Discount_amount",
+                key: "Discount_amount",
+                render: (amt) => `₹${parseFloat(amt).toLocaleString()}`,
+              },
+              {
+                title: "Transaction ID / Ref",
+                dataIndex: "Auction_Transaction_ID",
+                key: "Auction_Transaction_ID",
+                render: (txId) => txId || "-",
+              },
+            ]}
+          />
         </Card>
       )}
     </div>

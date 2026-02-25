@@ -688,8 +688,8 @@ const getCustomerByFundNumber = async (req, res) => {
             FROM Scheme_Members sm
             JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
             JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
-            WHERE sm.Fund_Number = @param0
-        `, [{ value: fundNumber, type: sql.VarChar(50) }]);
+            WHERE sm.Fund_Number LIKE @param0
+        `, [{ value: `%${fundNumber}%`, type: sql.VarChar(50) }]);
 
         if (result.length === 0) {
             return sendError(res, 'Fund Number not found', null, 404);

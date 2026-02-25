@@ -140,6 +140,7 @@ const exportPayments = async (req, res) => {
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
+        pm.Payment_Transaction_ID,
         pm.Due_number,
         pm.Fund_Number,
         pm.Payment_Mode,
@@ -197,7 +198,7 @@ const exportPayments = async (req, res) => {
 
     // Add transaction ID filter
     if (transaction_id) {
-      whereClauses.push(`pm.Transaction_ID LIKE @param${paramIndex}`);
+      whereClauses.push(`(pm.Transaction_ID LIKE @param${paramIndex} OR pm.Payment_Transaction_ID LIKE @param${paramIndex})`);
       params.push({ value: `%${transaction_id}%`, type: sql.VarChar(100) });
       paramIndex++;
     }
@@ -214,7 +215,7 @@ const exportPayments = async (req, res) => {
     const formattedPayments = payments.map(p => {
       let paymentMode = p.Payment_Mode || 'Cash'; // Default to Cash if null
       
-      let transactionDisplay = p.Transaction_ID;
+      let transactionDisplay = p.Payment_Transaction_ID || p.Transaction_ID;
       if (paymentMode.toLowerCase() === 'cash') {
         transactionDisplay = 'Cash';
       } else if (!transactionDisplay) {

@@ -159,7 +159,9 @@ const Payments = () => {
     try {
       const res = await paymentsAPI.getAll({ fund_number: selectedFundNumber });
       const result = res.data.data || res.data || {};
-      setPaymentHistory(result.payments || []);
+      const historyArr =
+        result.payments || (Array.isArray(result) ? result : []);
+      setPaymentHistory(historyArr);
     } catch (error) {
       console.error("Failed to fetch payment history:", error);
       message.error("Failed to fetch payment history");
@@ -174,7 +176,8 @@ const Payments = () => {
       Amount_Received: record.Amount_Received,
       Payment_Date: dayjs(record.Amount_Received_date),
       Payment_Mode: record.Payment_Mode,
-      Transaction_ID: record.Transaction_ID,
+      Payment_Transaction_ID:
+        record.Payment_Transaction_ID || record.Transaction_ID,
       UPI_Phone_Number: record.UPI_Phone_Number,
     });
     setEditModalVisible(true);
@@ -211,6 +214,10 @@ const Payments = () => {
     let remainingAmount = parseFloat(pendingPaymentValues.amount);
     let startDueNumber = parseInt(pendingPaymentValues.dueNumber);
     let successfulPayments = 0;
+
+    // Generate a unique ID for this bulk transaction if not provided
+    const generatedTxId = `PAY-${dayjs().format("YYYYMMDD")}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const txIdToUse = pendingPaymentValues.transactionId || generatedTxId;
 
     // Sort dues by Due_number just in case
     const sortedDues = [...dues].sort(
@@ -250,7 +257,7 @@ const Payments = () => {
         const payload = {
           Fund_Number: selectedFundNumber,
           Due_number: currentDue.Due_number.toString(),
-          Transaction_ID: pendingPaymentValues.transactionId,
+          Payment_Transaction_ID: txIdToUse,
           Amount_Received: paymentForThisDue, // Logic handles distribution
           Payment_Date: pendingPaymentValues.date.format("YYYY-MM-DD"),
           Payment_Mode: pendingPaymentValues.paymentMode,
@@ -279,11 +286,11 @@ const Payments = () => {
 
       if (remainingAmount > 0) {
         message.info(
-          `Payment complete. Excess amount ₹${remainingAmount} was not applied (no more dues).`,
+          `Payment complete. Transaction ID: ${txIdToUse}. Excess amount ₹${remainingAmount} was not applied (no more dues).`,
         );
       } else {
         message.success(
-          `Payment successfully distributed across ${successfulPayments} due(s)!`,
+          `Payment successfully distributed across ${successfulPayments} due(s)! (ID: ${txIdToUse})`,
         );
       }
 
@@ -376,11 +383,13 @@ const Payments = () => {
                 type="link"
                 style={{ padding: 0 }}
                 onClick={() => {
+                  const generatedId = `PAY-${dayjs().format("YYYYMMDD")}-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
                   form.setFieldsValue({
                     dueNumber: record.Due_number,
                     amount: due - recd,
                     date: dayjs(),
                     paymentMode: "UPI",
+                    transactionId: generatedId,
                   });
                   setPaymentMode("UPI");
                   setPayModalVisible(true); // Open modal on Pay
@@ -442,7 +451,11 @@ const Payments = () => {
     { title: "Due #", dataIndex: "Due_number", width: 80 },
     { title: "Amount", dataIndex: "Amount_Received", render: (v) => `₹${v}` },
     { title: "Mode", dataIndex: "Payment_Mode" },
-    { title: "Ref No", dataIndex: "Transaction_ID" },
+    {
+      title: "Ref No",
+      render: (_, record) =>
+        record.Payment_Transaction_ID || record.Transaction_ID || "-",
+    },
     {
       title: "Action",
       key: "action",
@@ -461,7 +474,7 @@ const Payments = () => {
       <Row gutter={24}>
         <Col xs={24} md={8}>
           <Card title="Select Customer & Scheme">
-            <Form layout="vertical">
+            <Form form={form} layout="vertical">
               {/* NEW: Search by Fund Number */}
               <Form.Item label="Search by Fund Number">
                 <Input.Search
@@ -472,36 +485,30 @@ const Payments = () => {
                     try {
                       const response =
                         await customersAPI.getByFundNumber(value);
-                      const customers =
-                        response.data.data?.customers ||
-                        response.data.customers ||
-                        [];
+                      const customer = response.data.data || response.data;
 
-                      if (!customers || customers.length === 0) {
+                      if (!customer) {
                         message.error("Fund Number not found.");
                         return;
                       }
 
-                      const customer = customers[0];
+                      const resolvedFundNumber = customer.Fund_Number;
 
                       // 1. Set Customer
                       await handleCustomerSelect(customer.Customer_ID);
 
                       // 2. Get schemes for this customer to find the matching fund number
-                      // handleCustomerSelect already fetches schemes, but we need to wait/set specific one
-                      // We can just rely on auto-select if we want, OR explicitly set it here again
-
                       const schemesResponse = await customersAPI.getSchemes(
                         customer.Customer_ID,
                       );
                       const schemesList =
                         schemesResponse.data.data || schemesResponse.data || [];
                       const matchingScheme = schemesList.find(
-                        (s) => s.Fund_Number === value,
+                        (s) => s.Fund_Number === resolvedFundNumber,
                       );
 
                       if (matchingScheme) {
-                        // Small timeout to allow state updates
+                        // Small timeout to allow state updates from handleCustomerSelect
                         setTimeout(() => {
                           setSelectedScheme(matchingScheme.Scheme_ID);
                           setSelectedFundNumber(matchingScheme.Fund_Number);
@@ -509,7 +516,7 @@ const Payments = () => {
                           form.setFieldsValue({
                             schemeId: matchingScheme.Scheme_ID,
                           });
-                          message.success("Fund Number Found!");
+                          message.success(`Found: ${resolvedFundNumber}`);
                         }, 500);
                       }
                     } catch (error) {
@@ -528,7 +535,8 @@ const Payments = () => {
                   filterOption={false}
                   onSearch={handleSearch}
                   onChange={handleCustomerSelect}
-                  popupClassName="bright-highlight"
+                  dropdownStyle={{ zIndex: 1050 }}
+                  classNames={{ popup: { root: "bright-highlight" } }}
                   notFoundContent={null}
                   allowClear
                 >
@@ -581,7 +589,7 @@ const Payments = () => {
                     value={selectedScheme}
                     showSearch
                     optionFilterProp="children"
-                    popupClassName="bright-highlight"
+                    classNames={{ popup: { root: "bright-highlight" } }}
                   >
                     {schemes.map((s) => (
                       <Option key={s.Scheme_ID} value={s.Scheme_ID}>
@@ -728,7 +736,10 @@ const Payments = () => {
               <Option value="Cheque">Cheque</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="Transaction_ID" label="Reference No">
+          <Form.Item
+            name="Payment_Transaction_ID"
+            label="Reference No (Autogenerated if blank)"
+          >
             <Input />
           </Form.Item>
           <Form.Item name="UPI_Phone_Number" label="UPI Phone Number">
@@ -751,7 +762,7 @@ const Payments = () => {
         open={payModalVisible}
         onCancel={() => setPayModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden={true}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item
@@ -770,6 +781,10 @@ const Payments = () => {
             <Input type="number" prefix="₹" />
           </Form.Item>
 
+          <Form.Item name="transactionId" label="Payment Transaction ID">
+            <Input readOnly placeholder="Autogenerated Transaction ID" />
+          </Form.Item>
+
           <Form.Item
             name="paymentMode"
             label="Payment Mode"
@@ -779,7 +794,7 @@ const Payments = () => {
             <Select
               onChange={setPaymentMode}
               showSearch
-              popupClassName="bright-highlight"
+              classNames={{ popup: { root: "bright-highlight" } }}
             >
               <Option value="Cash">Cash</Option>
               <Option value="UPI">UPI</Option>
@@ -788,21 +803,10 @@ const Payments = () => {
             </Select>
           </Form.Item>
 
-          {paymentMode !== "Cash" && (
-            <>
-              <Form.Item
-                name="transactionId"
-                label="Transaction / Reference No"
-              >
-                <Input placeholder="Enter Ref No / Cheque No" />
-              </Form.Item>
-
-              {paymentMode === "UPI" && (
-                <Form.Item name="upiPhone" label="Phone Number">
-                  <Input placeholder="Enter UPI Phone Number" maxLength={10} />
-                </Form.Item>
-              )}
-            </>
+          {paymentMode === "UPI" && (
+            <Form.Item name="upiPhone" label="Phone Number">
+              <Input placeholder="Enter UPI Phone Number" maxLength={10} />
+            </Form.Item>
           )}
 
           <Form.Item

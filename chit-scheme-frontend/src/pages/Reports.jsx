@@ -180,6 +180,7 @@ const Reports = () => {
         "Payment Date": row.Amount_Received_date
           ? dayjs(row.Amount_Received_date).format("DD-MM-YYYY")
           : "-",
+        "Ref No": row.Payment_Transaction_ID || row.Transaction_ID || "-",
       }));
     } else if (modalType === "unpaid") {
       exportData = modalData.map((row) => ({
@@ -269,6 +270,13 @@ const Reports = () => {
       key: "Amount_Received_date",
       width: 110,
       render: (val) => (val ? dayjs(val).format("DD-MM-YYYY") : "-"),
+    },
+    {
+      title: "Payment Transaction ID",
+      dataIndex: "Payment_Transaction_ID",
+      key: "Payment_Transaction_ID",
+      width: 120,
+      render: (val, record) => val || record.Transaction_ID || "-",
     },
   ];
 
@@ -408,7 +416,7 @@ const Reports = () => {
                 style={{ width: 100 }}
                 showSearch
                 optionFilterProp="children"
-                popupClassName="bright-highlight"
+                classNames={{ popup: { root: "bright-highlight" } }}
               >
                 {years.map((y) => (
                   <Option key={y} value={y}>

@@ -58,6 +58,7 @@ const Customers = () => {
   const [availableSchemes, setAvailableSchemes] = useState([]);
   const [selectedSchemes, setSelectedSchemes] = useState(null); // Changed to single value
   const [currentCustomerId, setCurrentCustomerId] = useState(null);
+  const [selectedFundNumber, setSelectedFundNumber] = useState("");
   const [selectedSchemeForCreate, setSelectedSchemeForCreate] = useState(null);
   // Filter States
   const [fundNumberSearch, setFundNumberSearch] = useState("");
@@ -347,6 +348,7 @@ const Customers = () => {
       const data = assignedResponse.data.data || assignedResponse.data || [];
       // Set to single ID (first scheme) or null
       setSelectedSchemes(data.length > 0 ? data[0].Scheme_ID : null);
+      setSelectedFundNumber(data.length > 0 ? data[0].Fund_Number : "");
     } catch (error) {
       console.error("Error fetching schemes:", error);
       message.error("Failed to load schemes.");
@@ -367,6 +369,7 @@ const Customers = () => {
           currentCustomerId,
           schemeIds,
           sendWhatsapp,
+          selectedFundNumber,
         );
         message.success("Scheme assigned successfully!");
         setAssignSchemeModalVisible(false);
@@ -1009,6 +1012,23 @@ const Customers = () => {
             </Option>
           ))}
         </Select>
+        <p style={{ marginTop: 16 }}>Fund Number:</p>
+        <Input
+          placeholder="Fund Number"
+          value={selectedFundNumber}
+          onChange={(e) => setSelectedFundNumber(e.target.value)}
+          allowClear
+          onFocus={async () => {
+            if (!selectedFundNumber) {
+              try {
+                const res = await customersAPI.getNextFundNumber();
+                setSelectedFundNumber(res.data.data.fundNumber);
+              } catch (err) {
+                console.error("Failed to fetch next fund number:", err);
+              }
+            }
+          }}
+        />
       </Modal>
     </>
   );

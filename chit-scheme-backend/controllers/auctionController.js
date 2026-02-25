@@ -2,6 +2,7 @@
 const { executeQuery } = require('../models/db');
 const sql = require('mssql');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
+const { generateTransactionId } = require('../utils/idGenerator');
 
 // -------------------------------------------------------
 // POST /api/auctions
@@ -15,6 +16,11 @@ const createAuction = async (req, res) => {
 
   try {
     const { Membership_ID, Discount_amount, Auction_date } = req.body;
+    let { Auction_Transaction_ID } = req.body;
+    
+    if (!Auction_Transaction_ID) {
+      Auction_Transaction_ID = generateTransactionId('AUC');
+    }
 
     if (!Membership_ID) {
       return sendError(res, 'Membership_ID is required', null, 400);
@@ -45,16 +51,18 @@ const createAuction = async (req, res) => {
       .input('membershipId', sql.Int, parseInt(Membership_ID))
       .input('discountAmount', sql.Decimal(18, 2), parseFloat(Discount_amount))
       .input('auctionDate', sql.Date, Auction_date || new Date())
+      .input('auctionTxId', sql.VarChar(50), Auction_Transaction_ID || null)
       .query(`
-        INSERT INTO Auctions (Membership_ID, Discount_amount, Auction_date, Created_at, Updated_at)
+        INSERT INTO Auctions (Membership_ID, Discount_amount, Auction_date, Auction_Transaction_ID, Created_at, Updated_at)
         OUTPUT INSERTED.Auction_ID
-        VALUES (@membershipId, @discountAmount, @auctionDate, GETDATE(), GETDATE())
+        VALUES (@membershipId, @discountAmount, @auctionDate, @auctionTxId, GETDATE(), GETDATE())
       `);
 
     await transaction.commit();
 
     return sendSuccess(res, 'Auction created successfully', {
-      auctionId: insertResult.recordset[0].Auction_ID
+      auctionId: insertResult.recordset[0].Auction_ID,
+      transactionId: Auction_Transaction_ID
     }, 201);
 
   } catch (error) {
@@ -100,6 +108,7 @@ const getAuctions = async (req, res) => {
         cm.Name   AS Scheme_Name,
         a.Discount_amount,
         a.Auction_date,
+        a.Auction_Transaction_ID,
         a.Created_at,
         a.Updated_at
       FROM Auctions a
@@ -157,6 +166,7 @@ const getAuctionsByMembership = async (req, res) => {
         cm.Name   AS Scheme_Name,
         a.Discount_amount,
         a.Auction_date,
+        a.Auction_Transaction_ID,
         a.Created_at,
         a.Updated_at
       FROM Auctions a
@@ -180,7 +190,7 @@ const getAuctionsByMembership = async (req, res) => {
 const updateAuction = async (req, res) => {
   try {
     const { id } = req.params;
-    const { Discount_amount, Auction_date } = req.body;
+    const { Discount_amount, Auction_date, Auction_Transaction_ID } = req.body;
 
     const existing = await executeQuery(
       'SELECT Auction_ID FROM Auctions WHERE Auction_ID = @param0',
@@ -198,11 +208,13 @@ const updateAuction = async (req, res) => {
         .input('auctionId', sql.Int, parseInt(id))
         .input('discountAmount', sql.Decimal(18, 2), parseFloat(Discount_amount))
         .input('auctionDate', sql.Date, Auction_date || new Date())
+        .input('auctionTxId', sql.VarChar(50), Auction_Transaction_ID || null)
         .query(`
           UPDATE Auctions
-          SET Discount_amount = @discountAmount,
-              Auction_date    = @auctionDate,
-              Updated_at      = GETDATE()
+          SET Discount_amount        = @discountAmount,
+              Auction_date           = @auctionDate,
+              Auction_Transaction_ID = @auctionTxId,
+              Updated_at             = GETDATE()
           WHERE Auction_ID = @auctionId
         `);
 

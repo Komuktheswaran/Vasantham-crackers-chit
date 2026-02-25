@@ -61,8 +61,8 @@ export const customersAPI = {
   update: (id, data) => api.put(`/customers/${encodeURIComponent(id)}`, data),
   delete: (id) => api.delete(`/customers/${encodeURIComponent(id)}`),
   checkId: (id) => api.get('/customers/check-id', { params: { id } }),
-  assignSchemes: (customerId, schemeIds, sendWhatsapp) =>
-    api.post(`/customers/${encodeURIComponent(customerId)}/schemes`, { schemeIds, sendWhatsapp }),
+  assignSchemes: (customerId, schemeIds, sendWhatsapp, fundNumber) =>
+    api.post(`/customers/${encodeURIComponent(customerId)}/schemes`, { schemeIds, sendWhatsapp, fundNumber }),
   getSchemes: (customerId) => api.get(`/customers/${encodeURIComponent(customerId)}/schemes`),
   removeScheme: (customerId, schemeId) =>
     api.delete(`/customers/${encodeURIComponent(customerId)}/schemes/${schemeId}`),
@@ -73,7 +73,7 @@ export const customersAPI = {
   getNextCustomerId: () => api.get('/customers/next-customer-id'),
   getNextFundNumber: () => api.get('/customers/next-fund-number'),
   getNextIds: () => api.get('/customers/next-ids'),
-  getByFundNumber: (fundNumber) => api.get('/customers', { params: { fund_number: fundNumber, limit: 1 } }),
+  getByFundNumber: (fundNumber) => api.get(`/customers/fund/${encodeURIComponent(fundNumber)}`),
   getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
 };
 
@@ -93,6 +93,14 @@ export const paymentsAPI = {
   create: (data) => api.post('/payments', data),
   payAll: (data) => api.post('/payments/pay-all', data),
   update: (id, data) => api.put(`/payments/${id}`, data),
+};
+
+export const auctionsAPI = {
+  getAll: (params) => api.get('/auctions', { params }),
+  getByMembership: (membershipId) => api.get(`/auctions/by-membership/${membershipId}`),
+  create: (data) => api.post('/auctions', data),
+  update: (id, data) => api.put(`/auctions/${id}`, data),
+  delete: (id) => api.delete(`/auctions/${id}`),
 };
 
 export const statesAPI = {

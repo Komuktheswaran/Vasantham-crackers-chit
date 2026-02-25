@@ -3,6 +3,7 @@ const { executeQuery, executeInsert } = require('../models/db');
 const sql = require('mssql');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
 const { sendWhatsappMessage } = require('../services/whatsappService');
+const { generateTransactionId } = require('../utils/idGenerator');
 
 const getPaymentsByCustomer = async (req, res) => {
   try {
@@ -26,10 +27,10 @@ const getDuesByFundNumber = async (req, res) => {
     const { fundNumber } = req.params;
     const result = await executeQuery(`
       SELECT * FROM Scheme_Due 
-      WHERE Fund_Number = @param0
+      WHERE Fund_Number LIKE @param0
       ORDER BY Due_number ASC
     `, [
-      { value: fundNumber, type: sql.VarChar(50) }
+      { value: `%${fundNumber}%`, type: sql.VarChar(50) }
     ]);
     return sendSuccess(res, 'Dues fetched successfully', result);
   } catch (error) {
@@ -45,6 +46,13 @@ const recordPayment = async (req, res) => {
     // Simplified: Fund Number is now mandatory as per requirement
     console.log('[recordPayment] Request Body:', JSON.stringify(req.body, null, 2));
     const { Fund_Number, Due_number, Transaction_ID, Amount_Received, Payment_Date, Payment_Mode, UPI_Phone_Number, sendWhatsapp } = req.body;
+    let { Payment_Transaction_ID } = req.body;
+    
+    // Always generate a unique ID for the transaction if not provided
+    if (!Payment_Transaction_ID) {
+      Payment_Transaction_ID = generateTransactionId('PAY');
+    }
+    
     console.log('[recordPayment] Extracted Fund_Number:', Fund_Number);
 
     
@@ -78,15 +86,15 @@ const recordPayment = async (req, res) => {
       .input('customerId', sql.VarChar(50), Customer_ID)
       .input('fundNum', sql.VarChar(50), Fund_Number)
       .input('dueNumber', sql.Int, Due_number)
-      .input('transactionId', sql.VarChar(50), Transaction_ID || null)
+      .input('paymentTxId', sql.VarChar(50), Payment_Transaction_ID)
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
       .input('paymentMode', sql.VarChar(50), Payment_Mode || null)
       .input('upiPhone', sql.VarChar(20), UPI_Phone_Number || null)
       .query(`
-        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
+        INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Payment_Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode, UPI_Phone_Number)
         OUTPUT INSERTED.Pay_ID
-        VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode, @upiPhone)
+        VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @paymentTxId, @paymentTxId, @amount, @date, @paymentMode, @upiPhone)
       `);
 
     // 2. Update Scheme_Due using Fund_Number
@@ -111,7 +119,10 @@ const recordPayment = async (req, res) => {
             .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }
 
-    return sendSuccess(res, 'Payment recorded successfully', { payId: result.recordset[0].Pay_ID }, 201);
+    return sendSuccess(res, 'Payment recorded successfully', { 
+      payId: result.recordset[0].Pay_ID,
+      transactionId: Payment_Transaction_ID
+    }, 201);
   } catch (error) {
     if (transaction.active) await transaction.rollback();
     return sendError(res, 'Failed to record payment', error);
@@ -133,6 +144,7 @@ const getAllPayments = async (req, res) => {
         pm.Amount_Received,
         pm.Amount_Received_date,
         pm.Transaction_ID,
+        pm.Payment_Transaction_ID,
         pm.Payment_Mode,
         pm.UPI_Phone_Number,
         pm.Due_number,
@@ -175,7 +187,7 @@ const getAllPayments = async (req, res) => {
 
     // Add transaction ID filter
     if (transaction_id) {
-      whereClauses.push(`pm.Transaction_ID LIKE @param${paramIndex}`);
+      whereClauses.push(`(pm.Transaction_ID LIKE @param${paramIndex} OR pm.Payment_Transaction_ID LIKE @param${paramIndex})`);
       params.push({ value: `%${transaction_id}%`, type: sql.VarChar(100) });
       paramIndex++;
     }
@@ -247,7 +259,7 @@ const payAllDues = async (req, res) => {
     
     // Calculate Transaction ID
     const date = new Date();
-    const transactionId = `auction_${date.getFullYear()}_${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const transactionId = generateTransactionId('PAY-BULK');
 
     await transaction.begin();
 
@@ -282,8 +294,8 @@ const payAllDues = async (req, res) => {
           .input('date', sql.Date, date)
           .input('paymentMode', sql.VarChar(50), 'Auction')
           .query(`
-            INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode)
-            VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @amount, @date, @paymentMode)
+            INSERT INTO Payment_Master (Scheme_ID, Customer_ID, Fund_Number, Due_number, Received_Flag, Transaction_ID, Payment_Transaction_ID, Amount_Received, Amount_Received_date, Payment_Mode)
+            VALUES (@schemeId, @customerId, @fundNum, @dueNumber, 1, @transactionId, @transactionId, @amount, @date, @paymentMode)
           `);
 
         // 2. Update Scheme_Due
@@ -318,7 +330,7 @@ const updatePayment = async (req, res) => {
 
   try {
     const { payId } = req.params;
-    const { Amount_Received, Payment_Date, Payment_Mode, Transaction_ID, UPI_Phone_Number } = req.body;
+    const { Amount_Received, Payment_Date, Payment_Mode, Transaction_ID, Payment_Transaction_ID, UPI_Phone_Number } = req.body;
 
     if (!payId) {
       return sendError(res, 'Payment ID is required', null, 400);
@@ -345,15 +357,16 @@ const updatePayment = async (req, res) => {
       .input('amount', sql.Decimal(15, 2), Amount_Received)
       .input('date', sql.Date, Payment_Date || new Date())
       .input('paymentMode', sql.VarChar(50), Payment_Mode || null)
-      .input('transactionId', sql.VarChar(50), Transaction_ID || null)
+      .input('transactionId', sql.VarChar(50), Payment_Transaction_ID || Transaction_ID || null)
       .input('upiPhone', sql.VarChar(20), UPI_Phone_Number || null)
       .query(`
         UPDATE Payment_Master 
-        SET Amount_Received = @amount,
+        SET Amount_Received      = @amount,
             Amount_Received_date = @date,
-            Payment_Mode = @paymentMode,
-            Transaction_ID = @transactionId,
-            UPI_Phone_Number = @upiPhone
+            Payment_Mode         = @paymentMode,
+            Transaction_ID       = @transactionId,
+            Payment_Transaction_ID = @transactionId,
+            UPI_Phone_Number     = @upiPhone
         WHERE Pay_ID = @payId
       `);
 

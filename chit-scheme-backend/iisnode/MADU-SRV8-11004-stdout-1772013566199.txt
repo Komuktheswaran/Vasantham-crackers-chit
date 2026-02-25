@@ -1,0 +1,280 @@
+
+🚀 Server: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767
+✅ Health: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/health
+🔐 Login: POST http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/auth/login
+👤 Users: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/users
+👥 Customers: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/customers
+📋 Schemes: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/schemes
+💰 Payments: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/payments
+🌍 States: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/states
+🏘️ Districts: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/districts
+🚚 Transporters: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/transporters
+📥 Exports: http://localhost:\\.\pipe\560ccbec-7511-43d6-8559-27a58040a767/api/exports
+[2026-02-25T09:59:28.664Z] GET /api/health
+🔍 Database Configuration: {
+  server: '103.38.50.247',
+  database: 'VASANTHAMDBLIVE',
+  user: 'vasanthamsa',
+  password: '****',
+  port: 5121,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 }
+}
+- - - [25/Feb/2026:09:59:28 +0000] "GET /api/health HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:32.092Z] GET /api/health
+🔍 Database Configuration: {
+  server: '103.38.50.247',
+  database: 'VASANTHAMDBLIVE',
+  user: 'vasanthamsa',
+  password: '****',
+  port: 5121,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 },
+  stream: false,
+  parseJSON: false,
+  arrayRowMode: false,
+  validateConnection: true
+}
+- - - [25/Feb/2026:09:59:32 +0000] "GET /api/health HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:33.876Z] GET /api/health
+🔍 Database Configuration: {
+  server: '103.38.50.247',
+  database: 'VASANTHAMDBLIVE',
+  user: 'vasanthamsa',
+  password: '****',
+  port: 5121,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 },
+  stream: false,
+  parseJSON: false,
+  arrayRowMode: false,
+  validateConnection: true
+}
+- - - [25/Feb/2026:09:59:33 +0000] "GET /api/health HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:34.579Z] GET /api/health
+🔍 Database Configuration: {
+  server: '103.38.50.247',
+  database: 'VASANTHAMDBLIVE',
+  user: 'vasanthamsa',
+  password: '****',
+  port: 5121,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 },
+  stream: false,
+  parseJSON: false,
+  arrayRowMode: false,
+  validateConnection: true
+}
+- - - [25/Feb/2026:09:59:34 +0000] "GET /api/health HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:35.215Z] GET /api/health
+🔍 Database Configuration: {
+  server: '103.38.50.247',
+  database: 'VASANTHAMDBLIVE',
+  user: 'vasanthamsa',
+  password: '****',
+  port: 5121,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    requestTimeout: 300000
+  },
+  pool: { max: 1000, min: 0, idleTimeoutMillis: 3000000 },
+  stream: false,
+  parseJSON: false,
+  arrayRowMode: false,
+  validateConnection: true
+}
+- - - [25/Feb/2026:09:59:35 +0000] "GET /api/health HTTP/1.1" 200 251 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:39.584Z] OPTIONS /api/customers?has_scheme=true&limit=1000
+[2026-02-25T09:59:39.663Z] GET /api/customers?has_scheme=true&limit=1000
+- - - [25/Feb/2026:09:59:39 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 561 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:41.628Z] OPTIONS /api/customers?fund_number=001&limit=1
+[2026-02-25T09:59:41.719Z] GET /api/customers?fund_number=001&limit=1
+- - - [25/Feb/2026:09:59:41 +0000] "GET /api/customers?fund_number=001&limit=1 HTTP/1.1" 200 558 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:41.801Z] OPTIONS /api/customers/CD2026/026/schemes
+[2026-02-25T09:59:41.857Z] GET /api/customers/CD2026/026/schemes
+- - - [25/Feb/2026:09:59:41 +0000] "GET /api/customers/CD2026/026/schemes HTTP/1.1" 200 140 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:41.939Z] OPTIONS /api/payments/dues/F2026/001
+[2026-02-25T09:59:41.941Z] GET /api/customers/CD2026/026/schemes
+- - - [25/Feb/2026:09:59:41 +0000] "GET /api/customers/CD2026/026/schemes HTTP/1.1" 200 140 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:42.018Z] GET /api/payments/dues/F2026/001
+- - - [25/Feb/2026:09:59:42 +0000] "GET /api/payments/dues/F2026/001 HTTP/1.1" 200 1908 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:43.798Z] OPTIONS /api/payments?fund_number=F2026%2F001
+[2026-02-25T09:59:43.882Z] GET /api/payments?fund_number=F2026%2F001
+- - - [25/Feb/2026:09:59:43 +0000] "GET /api/payments?fund_number=F2026%2F001 HTTP/1.1" 200 1252 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:48.572Z] OPTIONS /api/payments/132
+[2026-02-25T09:59:48.659Z] PUT /api/payments/132
+- - - [25/Feb/2026:09:59:48 +0000] "PUT /api/payments/132 HTTP/1.1" 200 69 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:48.821Z] OPTIONS /api/payments/dues/F2026/001
+[2026-02-25T09:59:48.823Z] GET /api/payments?fund_number=F2026%2F001
+- - - [25/Feb/2026:09:59:48 +0000] "GET /api/payments?fund_number=F2026%2F001 HTTP/1.1" 200 1250 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:48.909Z] GET /api/payments/dues/F2026/001
+- - - [25/Feb/2026:09:59:48 +0000] "GET /api/payments/dues/F2026/001 HTTP/1.1" 200 1906 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:55.721Z] OPTIONS /api/transporters
+[2026-02-25T09:59:55.848Z] GET /api/transporters
+- - - [25/Feb/2026:09:59:55 +0000] "GET /api/transporters HTTP/1.1" 200 2038 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T09:59:58.331Z] OPTIONS /api/transporters/137/delivery-points
+[2026-02-25T09:59:58.465Z] GET /api/transporters/137/delivery-points
+- - - [25/Feb/2026:09:59:58 +0000] "GET /api/transporters/137/delivery-points HTTP/1.1" 200 718 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:00:01.910Z] OPTIONS /api/order-tracking?page=1&limit=20&search=
+[2026-02-25T10:00:01.913Z] OPTIONS /api/transporters
+[2026-02-25T10:00:01.914Z] OPTIONS /api/customers?search=&limit=50
+[2026-02-25T10:00:01.997Z] GET /api/customers?search=&limit=50
+[2026-02-25T10:00:01.999Z] GET /api/transporters
+[2026-02-25T10:00:02.003Z] GET /api/order-tracking?page=1&limit=20&search=
+- - - [25/Feb/2026:10:00:02 +0000] "GET /api/customers?search=&limit=50 HTTP/1.1" 200 10541 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [25/Feb/2026:10:00:02 +0000] "GET /api/order-tracking?page=1&limit=20&search= HTTP/1.1" 200 139 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [25/Feb/2026:10:00:02 +0000] "GET /api/transporters HTTP/1.1" 200 2038 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:00:04.688Z] OPTIONS /api/districts
+[2026-02-25T10:00:04.691Z] OPTIONS /api/states
+[2026-02-25T10:00:04.715Z] OPTIONS /api/schemes
+[2026-02-25T10:00:04.747Z] GET /api/districts
+[2026-02-25T10:00:04.774Z] GET /api/states
+[2026-02-25T10:00:04.775Z] GET /api/schemes
+- - - [25/Feb/2026:10:00:04 +0000] "GET /api/districts HTTP/1.1" 200 47420 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [25/Feb/2026:10:00:04 +0000] "GET /api/states HTTP/1.1" 200 1588 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [25/Feb/2026:10:00:04 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:00:09.171Z] OPTIONS /api/customers?fund_number=001&limit=10
+[2026-02-25T10:00:09.274Z] GET /api/customers?fund_number=001&limit=10
+- - - [25/Feb/2026:10:00:09 +0000] "GET /api/customers?fund_number=001&limit=10 HTTP/1.1" 200 559 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:02:16.299Z] OPTIONS /api/auth/login
+[2026-02-25T10:02:16.399Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admin123' }
+- - - [25/Feb/2026:10:02:16 +0000] "POST /api/auth/login HTTP/1.1" 200 328 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:16.751Z] OPTIONS /api/customers?limit=1
+[2026-02-25T10:02:16.752Z] OPTIONS /api/schemes
+[2026-02-25T10:02:16.913Z] GET /api/customers?limit=1
+[2026-02-25T10:02:16.916Z] GET /api/schemes
+- - - [25/Feb/2026:10:02:16 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:17 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:20.462Z] OPTIONS /api/states
+[2026-02-25T10:02:20.465Z] OPTIONS /api/customers?page=1&limit=20&search=&fund_number=
+[2026-02-25T10:02:20.467Z] OPTIONS /api/districts
+[2026-02-25T10:02:20.468Z] GET /api/schemes
+[2026-02-25T10:02:20.469Z] OPTIONS /api/transporters
+- - - [25/Feb/2026:10:02:20 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:20.536Z] GET /api/customers?page=1&limit=20&search=&fund_number=
+[2026-02-25T10:02:20.540Z] GET /api/districts
+[2026-02-25T10:02:20.541Z] GET /api/states
+[2026-02-25T10:02:20.542Z] GET /api/transporters
+- - - [25/Feb/2026:10:02:20 +0000] "GET /api/states HTTP/1.1" 200 1588 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:20 +0000] "GET /api/districts HTTP/1.1" 200 47420 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:20 +0000] "GET /api/customers?page=1&limit=20&search=&fund_number= HTTP/1.1" 200 8184 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:20 +0000] "GET /api/transporters HTTP/1.1" 200 2038 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:26.035Z] OPTIONS /api/customers?page=1&limit=100&search=&fund_number=
+[2026-02-25T10:02:26.102Z] GET /api/customers?page=1&limit=100&search=&fund_number=
+- - - [25/Feb/2026:10:02:26 +0000] "GET /api/customers?page=1&limit=100&search=&fund_number= HTTP/1.1" 200 10542 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:32.779Z] OPTIONS /api/customers?page=1&limit=50&search=&fund_number=
+[2026-02-25T10:02:32.855Z] GET /api/customers?page=1&limit=50&search=&fund_number=
+- - - [25/Feb/2026:10:02:32 +0000] "GET /api/customers?page=1&limit=50&search=&fund_number= HTTP/1.1" 200 10541 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:39.073Z] OPTIONS /api/schemes?page=1&limit=15&search=
+[2026-02-25T10:02:39.213Z] GET /api/schemes?page=1&limit=15&search=
+- - - [25/Feb/2026:10:02:39 +0000] "GET /api/schemes?page=1&limit=15&search= HTTP/1.1" 200 3377 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:45.232Z] OPTIONS /api/schemes/members?page=1&limit=20
+[2026-02-25T10:02:45.235Z] OPTIONS /api/schemes
+[2026-02-25T10:02:45.293Z] GET /api/schemes/members?page=1&limit=20
+[2026-02-25T10:02:45.328Z] GET /api/schemes
+- - - [25/Feb/2026:10:02:45 +0000] "GET /api/schemes/members?page=1&limit=20 HTTP/1.1" 200 532 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:45 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:45.412Z] OPTIONS /api/customers?limit=1000
+[2026-02-25T10:02:45.457Z] GET /api/customers?limit=1000
+- - - [25/Feb/2026:10:02:45 +0000] "GET /api/customers?limit=1000 HTTP/1.1" 200 10543 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:47.453Z] OPTIONS /api/customers?has_scheme=true&limit=1000
+[2026-02-25T10:02:47.545Z] GET /api/customers?has_scheme=true&limit=1000
+- - - [25/Feb/2026:10:02:47 +0000] "GET /api/customers?has_scheme=true&limit=1000 HTTP/1.1" 200 561 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:50.814Z] OPTIONS /api/schemes
+[2026-02-25T10:02:50.816Z] OPTIONS /api/customers?limit=1
+[2026-02-25T10:02:50.892Z] GET /api/schemes
+[2026-02-25T10:02:50.895Z] GET /api/customers?limit=1
+- - - [25/Feb/2026:10:02:50 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:02:50 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:02:58.491Z] OPTIONS /api/users
+[2026-02-25T10:02:58.557Z] GET /api/users
+- - - [25/Feb/2026:10:02:58 +0000] "GET /api/users HTTP/1.1" 200 524 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:03:06.919Z] OPTIONS /api/districts
+[2026-02-25T10:03:06.921Z] OPTIONS /api/states
+[2026-02-25T10:03:06.922Z] OPTIONS /api/schemes
+[2026-02-25T10:03:06.993Z] GET /api/schemes
+[2026-02-25T10:03:06.995Z] GET /api/districts
+[2026-02-25T10:03:06.996Z] GET /api/states
+- - - [25/Feb/2026:10:03:07 +0000] "GET /api/states HTTP/1.1" 200 1588 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:03:07 +0000] "GET /api/districts HTTP/1.1" 200 47420 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:03:07 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:03:10.366Z] OPTIONS /api/order-tracking?page=1&limit=20&search=
+[2026-02-25T10:03:10.368Z] OPTIONS /api/customers?search=&limit=50
+[2026-02-25T10:03:10.391Z] OPTIONS /api/transporters
+[2026-02-25T10:03:10.434Z] GET /api/customers?search=&limit=50
+[2026-02-25T10:03:10.436Z] GET /api/order-tracking?page=1&limit=20&search=
+[2026-02-25T10:03:10.450Z] GET /api/transporters
+- - - [25/Feb/2026:10:03:10 +0000] "GET /api/order-tracking?page=1&limit=20&search= HTTP/1.1" 200 139 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:03:10 +0000] "GET /api/customers?search=&limit=50 HTTP/1.1" 200 10541 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+- - - [25/Feb/2026:10:03:10 +0000] "GET /api/transporters HTTP/1.1" 200 2038 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0"
+[2026-02-25T10:08:39.173Z] OPTIONS /api/auth/login
+[2026-02-25T10:08:39.260Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:08:39 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:08:45.020Z] OPTIONS /api/auth/login
+[2026-02-25T10:08:45.109Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:08:45 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:13:52.251Z] OPTIONS /api/auth/login
+[2026-02-25T10:13:52.354Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:13:52 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:00.628Z] OPTIONS /api/auth/login
+[2026-02-25T10:14:00.788Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:14:00 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:17.905Z] OPTIONS /api/auth/login
+[2026-02-25T10:14:18.703Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:14:18 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:24.048Z] OPTIONS /api/auth/login
+[2026-02-25T10:14:24.229Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:14:24 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:26.588Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:14:26 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:28.748Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admi123' }
+Login failed: Password mismatch for user 'admin'
+- - - [25/Feb/2026:10:14:28 +0000] "POST /api/auth/login HTTP/1.1" 401 62 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:56.394Z] OPTIONS /api/auth/login
+[2026-02-25T10:14:56.521Z] POST /api/auth/login
+Login Request Body: { username: 'admin', password: 'admin123' }
+- - - [25/Feb/2026:10:14:56 +0000] "POST /api/auth/login HTTP/1.1" 200 328 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:14:56.969Z] OPTIONS /api/customers?limit=1
+[2026-02-25T10:14:56.973Z] OPTIONS /api/schemes
+[2026-02-25T10:14:57.174Z] GET /api/customers?limit=1
+[2026-02-25T10:14:57.211Z] GET /api/schemes
+- - - [25/Feb/2026:10:14:57 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+- - - [25/Feb/2026:10:14:57 +0000] "GET /api/customers?limit=1 HTTP/1.1" 200 560 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:15:01.313Z] GET /api/schemes
+[2026-02-25T10:15:01.316Z] OPTIONS /api/dashboard/monthly-stats?year=2026
+- - - [25/Feb/2026:10:15:01 +0000] "GET /api/schemes HTTP/1.1" 200 3601 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+[2026-02-25T10:15:01.379Z] GET /api/dashboard/monthly-stats?year=2026
+- - - [25/Feb/2026:10:15:01 +0000] "GET /api/dashboard/monthly-stats?year=2026 HTTP/1.1" 200 538 "https://103.38.50.247/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
