@@ -1,36 +1,76 @@
-/* Auction Page Styles */
+/* ==========================================================================
+   Premium Light Glossy Auction Styles
+   ========================================================================== */
+
 .auction-container {
-    height: 100%;
+  padding: 0;
 }
 
-.search-section {
-    margin-bottom: 24px;
-    max-width: 600px;
+/* Glassy Search Header */
+.auction-search-card {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 24px !important;
+  margin-bottom: 32px;
+  box-shadow: var(--glass-shadow);
 }
 
-.details-section .ant-descriptions-item-label {
-    font-weight: 600;
-    width: 140px;
+/* Customer Info Light Glass Card */
+.auction-customer-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.08) !important;
 }
 
-.action-footer {
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-color);
+.auction-customer-card .ant-card-head {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.05) !important;
+  color: var(--text-main) !important;
 }
 
-@media (max-width: 576px) {
-    .search-section {
-        max-width: 100%;
-    }
-    
-    .action-footer .ant-row {
-        flex-direction: column;
-        gap: 16px;
-        align-items: stretch;
-    }
-    
-    .action-footer button {
-        width: 100%;
-    }
+/* Stats within Auction */
+.auction-stat-item {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  transition: var(--trans-smooth);
+}
+
+.auction-stat-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-4px);
+  border-color: var(--primary-vibrant);
+  box-shadow: 0 8px 20px rgba(31, 38, 135, 0.05);
+}
+
+.auction-stat-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.auction-stat-value {
+  color: var(--text-main);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* Table Light Gloss Overrides */
+.ant-table {
+  background: transparent !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.02) !important;
+  color: var(--text-secondary) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(59, 130, 246, 0.04) !important;
 }

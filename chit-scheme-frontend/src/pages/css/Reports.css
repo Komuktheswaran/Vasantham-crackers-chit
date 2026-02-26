@@ -1,0 +1,91 @@
+/* ==========================================================================
+   Premium Light Glossy Reports Styles
+   ========================================================================== */
+
+.reports-container {
+  padding: 0;
+}
+
+/* Page Header Blur */
+.reports-header-row {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--glass-shadow);
+}
+
+/* Light Glass Chart Cards */
+.ant-card {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(15px) saturate(160%);
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 24px !important;
+  transition: var(--trans-smooth);
+}
+
+.ant-card:hover {
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(31, 38, 135, 0.08) !important;
+}
+
+.ant-card-head {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.05) !important;
+}
+
+.ant-card-head-title {
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+  font-size: 18px !important;
+}
+
+/* Summary Cards in Reports */
+.report-stat-box {
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(59, 130, 246, 0.05);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  transition: var(--trans-smooth);
+}
+
+.report-stat-box:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: scale(1.05);
+  border-color: var(--primary-vibrant);
+  box-shadow: 0 8px 20px rgba(31, 38, 135, 0.05);
+}
+
+/* Custom Recharts Tooltip Styling (Light) */
+.recharts-default-tooltip {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--text-secondary) !important;
+}
+
+/* Modal and Table Overrides */
+.ant-table {
+  background: transparent !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.02) !important;
+  color: var(--text-secondary) !important;
+}

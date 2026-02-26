@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Space,
   Tag,
-  Card,
 } from "antd";
 import {
   UserAddOutlined,
@@ -192,9 +191,9 @@ const UserManagement = () => {
   ];
 
   return (
-    <Card
-      title="User Management"
-      extra={
+    <div className="page-container">
+      <div className="page-header-row">
+        <h2 className="page-title">User Management</h2>
         <Space>
           <Button
             icon={<ReloadOutlined />}
@@ -211,20 +210,22 @@ const UserManagement = () => {
             Create User
           </Button>
         </Space>
-      }
-    >
-      <Table
-        columns={columns}
-        dataSource={users}
-        loading={loading}
-        rowKey="User_ID"
-        pagination={{
-          pageSize: 10,
-          showTotal: (total) => `Total ${total} users`,
-          showSizeChanger: true,
-        }}
-        scroll={{ x: 800 }}
-      />
+      </div>
+
+      <div className="user-table-surface">
+        <Table
+          columns={columns}
+          dataSource={users}
+          loading={loading}
+          rowKey="User_ID"
+          pagination={{
+            pageSize: 10,
+            showTotal: (total) => `Total ${total} users`,
+            showSizeChanger: true,
+          }}
+          scroll={{ x: 800 }}
+        />
+      </div>
 
       <Modal
         title={editingUser ? "Edit User" : "Create New User"}
@@ -297,7 +298,7 @@ const UserManagement = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 };
 

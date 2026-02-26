@@ -156,28 +156,43 @@ const Auction = () => {
         <h2 className="page-title">Auction & Bulk Payment</h2>
       </div>
 
-      <div className="search-section">
+      <div className="search-section auction-search-card">
         <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
           Enter Fund Number to begin
         </Text>
-        <Input.Search
-          placeholder="e.g. 2024_12_1234"
-          enterButton={
-            <Button type="primary" icon={<SearchOutlined />}>
-              Search
-            </Button>
-          }
-          size="large"
-          value={fundNumber}
-          onChange={(e) => setFundNumber(e.target.value)}
-          onSearch={handleSearch}
-          loading={loading}
-          className="full-width"
-        />
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            maxWidth: "400px",
+          }}
+        >
+          <Input
+            placeholder="e.g. 2024_12_1234"
+            size="large"
+            value={fundNumber}
+            onChange={(e) => setFundNumber(e.target.value)}
+            onPressEnter={handleSearch}
+          />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            size="large"
+            onClick={handleSearch}
+            loading={loading}
+            className="ant-input-search-button"
+          >
+            Search
+          </Button>
+        </div>
       </div>
 
       {customerData && (
-        <Card className="details-section" title="Customer & Scheme Details">
+        <Card
+          className="details-section auction-customer-card"
+          title="Customer & Scheme Details"
+        >
           <Row gutter={[24, 24]}>
             <Col xs={24} md={12}>
               <Descriptions column={1} bordered size="small">
@@ -211,12 +226,14 @@ const Auction = () => {
             {pendingTotal > 0 ? (
               <Row align="middle" justify="end" gutter={16}>
                 <Col>
-                  <Statistic
-                    title="Total Pending Dues"
-                    value={pendingTotal}
-                    prefix="₹"
-                    valueStyle={{ color: "#cf1322" }}
-                  />
+                  <div className="auction-stat-item">
+                    <Statistic
+                      title="Total Pending Dues"
+                      value={pendingTotal}
+                      prefix="₹"
+                      valueStyle={{ color: "#cf1322" }}
+                    />
+                  </div>
                 </Col>
                 <Col xs={24} sm={12} md={8}>
                   <Input

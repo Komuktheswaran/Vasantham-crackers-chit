@@ -1,614 +1,541 @@
-/* Enhanced Global Styles - Responsive, Light/Dark, Modern */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+/* ==========================================================================
+   Premium Light Glossy Design System
+   Bright, Frosted, and Interactive (Light Theme Only)
+   ========================================================================== */
+
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
 :root {
-  /* Light Theme Defaults */
-  --primary-color: #1890ff;
-  --secondary-color: #52c41a;
-  --success-color: #52c41a;
-  --warning-color: #faad14;
-  --danger-color: #f5222d;
-  --bg-light: #f8fafc;
-  --bg-card: #ffffff;
-  --text-main: #0f172a;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --border-radius-sm: 6px;
-  --border-radius-base: 12px;
-  --border-radius-lg: 16px;
-  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Core Colors - Vibrant & Light */
+  --primary-vibrant: #3b82f6; /* Bright Blue */
+  --secondary-vibrant: #10b981; /* Emerald Green */
+  --bg-deep: #f8fafc; /* Slate 50 */
+  --bg-surface: #ffffff; /* White */
+
+  /* Glassmorphism Tokens (Light Mode) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-hover: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(59, 130, 246, 0.1);
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+
+  /* Gradients */
+  --grad-main: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
+  --grad-surface: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  --grad-glossy: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(255, 255, 255, 0.2) 100%
+  );
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --header-height: 72px;
+  --border-radius: 20px;
+
+  /* Transitions */
+  --trans-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* New Tokens for Light Theme */
+  --text-main: #0f172a; /* Slate 900 */
+  --text-secondary: #475569; /* Slate 600 */
+  --text-light: #94a3b8; /* Slate 400 */
 }
 
-[data-theme="dark"] {
-  /* Dark Theme Overrides */
-  --bg-light: #0f1117;
-  --bg-card: #161b22;
-  --text-main: #f0f6fc;
-  --text-secondary: #8b949e;
-  --border-color: #30363d;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
-  --shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.6);
-  --primary-color: #3b82f6;
-  --secondary-color: #10b981;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+/* Base Body Style with Soft Colorful Background */
 body {
   margin: 0;
   padding: 0;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--bg-light);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  background-color: var(--bg-deep);
+  background-image:
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(45, 212, 191, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
   color: var(--text-main);
-  line-height: 1.6;
-  transition: var(--transition-base);
-  color-scheme: light dark;
-}
-
-.App {
-  text-align: left;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 /* ==========================================================================
-Layout Styles
-========================================================================== */
+   Layout & Sider (Light Glass)
+   ========================================================================== */
 .app-main-layout {
+  background: transparent !important;
   min-height: 100vh;
-  /* Ant Design Layout uses flexbox by default */
 }
 
 .app-sider {
-  box-shadow: 2px 0 8px 0 rgba(29, 35, 41, 0.05);
-  z-index: 10;
-  background: #001529 !important;
-  border-right: none;
-  height: 100vh;
-  position: sticky !important;
-  top: 0;
-  overflow-y: auto;
-}
-
-/* Custom Menu Styles to match screenshot */
-.ant-menu.ant-menu-dark {
-  background: transparent;
-}
-
-.ant-menu-dark .ant-menu-item {
-  margin: 4px 10px !important;
-  width: calc(100% - 20px) !important;
-  border-radius: 4px;
-}
-
-.ant-menu-dark .ant-menu-item-selected {
-  background-color: var(--primary-color) !important;
-  border-radius: 4px;
-}
-
-.ant-layout-sider-children {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  background: #001529;
-}
-
-.ant-layout-sider-children .ant-menu {
-  flex: 1;
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
 }
 
 .app-logo-container {
-  height: 64px;
-  margin: 16px;
-  background: linear-gradient(90deg, #1890ff 0%, #13c2c2 100%);
-  display: flex;
+  height: 80px;
+  margin: 20px;
+  background: var(--grad-main) !important;
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  display: flex !important;
   justify-content: center;
   align-items: center;
-  border-radius: var(--border-radius-sm);
-  transition: var(--transition-base);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
 }
 
-.app-logo-container:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+.app-logo-container::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: glossy-sweep 3s infinite;
+}
+
+@keyframes glossy-sweep {
+  0% {
+    transform: translate(-100%, -100%) rotate(45deg);
+  }
+  100% {
+    transform: translate(100%, 100%) rotate(45deg);
+  }
 }
 
 .app-logo-text {
-  color: white;
-  font-size: clamp(14px, 3vw, 18px);
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px;
+  color: #fff !important;
+  text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.app-content-layout {
-  transition: var(--transition-base);
+/* ==========================================================================
+   Navigation Menu (Light Style)
+   ========================================================================== */
+.ant-menu {
+  background: transparent !important;
+  border: none !important;
 }
 
+.ant-menu-item {
+  height: 48px !important;
+  line-height: 48px !important;
+  margin: 8px 16px !important;
+  width: calc(100% - 32px) !important;
+  border-radius: 12px !important;
+  transition: var(--trans-smooth) !important;
+  font-weight: 500;
+  color: var(--text-secondary) !important;
+}
+
+.ant-menu-item-selected {
+  background: var(--grad-main) !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+  color: white !important;
+}
+
+.ant-menu-item:hover:not(.ant-menu-item-selected) {
+  background: rgba(59, 130, 246, 0.05) !important;
+  color: var(--primary-vibrant) !important;
+  transform: translateX(5px);
+}
+
+/* ==========================================================================
+   Header & User Menu (Light Glass)
+   ========================================================================== */
 .app-header {
-  padding: 0 24px !important;
-  background: #ffffff !important;
-  border-bottom: 1px solid #f0f0f0;
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  height: var(--header-height) !important;
+  padding: 0 32px !important;
   display: flex !important;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 9;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  height: 64px;
-}
-
-.header-left-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
-}
-
-/* Mobile Menu Trigger */
-.mobile-menu-trigger {
-  display: none;
-  font-size: 18px;
-  padding: 0 8px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  color: var(--text-main) !important;
-}
-
-/* On Desktop, we might want to hide it if we only toggle persistent sidebar, 
-   BUT user wants to move it there. So let's keep it visible or conditionally hide.
-   For responsive Sidebar behavior (Drawer like), we usually show it on mobile. 
-   If user wants to toggle on Desktop too, keep it.
-*/
-@media (min-width: 769px) {
-  .mobile-menu-trigger {
-    /* If you want to hide on desktop and use collapsible Sider logic properly: */
-    /* display: none; */
-    /* But Sider logic in App.jsx seems to use it for collapsing too. */
-    display: flex;
-  }
+  z-index: 1000;
 }
 
 .app-header-title {
-  color: var(--primary-color) !important;
-  font-size: 18px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: var(--transition-fast);
-  white-space: nowrap;
-  display: block;
-}
-
-.app-header-title:hover {
-  opacity: 0.8;
+  background: var(--grad-main);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800 !important;
+  font-size: 22px !important;
 }
 
 .app-user-menu {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border-radius: var(--border-radius-sm);
-  transition: var(--transition-base);
-  border: 1px solid transparent;
-  flex-shrink: 0; /* Keep user menu intact */
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--glass-border) !important;
+  border-radius: 50px !important;
+  padding: 4px 16px !important;
+  transition: var(--trans-smooth);
 }
 
 .app-user-menu:hover {
-  background: var(--border-color);
-  border-color: var(--primary-color);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 0 15px rgba(79, 172, 254, 0.2);
 }
 
-.app-user-name {
-  color: var(--text-main);
-  font-weight: 500;
-  font-size: 14px;
-  display: block;
+/* ==========================================================================
+   Content Area & Cards
+   ========================================================================== */
+.app-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--border-radius) !important;
+  margin: 32px !important;
+  padding: 32px !important;
+  box-shadow: var(--glass-shadow);
+  animation: page-enter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* Hide user name on smaller screens to save space */
-@media (max-width: 768px) {
-  .app-user-name {
-    display: none;
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
-.app-content-wrapper {
-  margin: clamp(8px, 4vw, 24px) clamp(8px, 2vw, 16px);
-  padding: clamp(16px, 5vw, 24px);
-  background: var(--bg-card);
-  min-height: 280px;
-  border-radius: var(--border-radius-base);
-  box-shadow: var(--shadow-md);
-  transition: var(--transition-base);
+.ant-card {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  transition: var(--trans-smooth) !important;
+}
+
+.ant-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+}
+
+/* Glassy Buttons */
+.ant-btn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: var(--trans-smooth) !important;
+}
+
+.ant-btn-primary {
+  background: var(--grad-main) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+  color: white !important;
+}
+
+.ant-btn-primary:hover {
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+/* Glassy Inputs & Selects */
+.ant-input,
+.ant-select-selector,
+.ant-picker,
+.ant-input-number,
+.ant-input-affix-wrapper,
+.ant-select-selection-search-input {
+  background: rgba(255, 255, 255, 0.5) !important;
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 12px !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+  height: 48px !important;
+  padding: 4px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ant-input-affix-wrapper {
+  padding: 0 12px !important;
+}
+
+.ant-input-affix-wrapper .ant-input {
+  height: auto !important;
+}
+
+.ant-input-search-button {
+  background: var(--grad-main) !important;
+  border: none !important;
+  color: white !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+  padding: 0 28px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2) !important;
+}
+
+.ant-input-affix-wrapper-focused,
+.ant-input:focus {
+  border-color: var(--primary-vibrant) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+.ant-input-affix-wrapper > input.ant-input {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.ant-input::placeholder,
+.ant-input-affix-wrapper::placeholder {
+  color: var(--text-light) !important;
+  opacity: 0.7;
+}
+
+.ant-input:hover,
+.ant-select:hover .ant-select-selector,
+.ant-picker:hover,
+.ant-input-affix-wrapper:hover {
+  border-color: var(--primary-vibrant) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* End of duplicated button block removal */
+
+.search-input {
+  width: 100% !important;
+  max-width: 220px !important;
+}
+
+.ant-input-group-wrapper {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.ant-input-group {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.ant-input-group .ant-input-affix-wrapper {
+  border-radius: 12px 0 0 12px !important;
+  flex: 1 !important;
+  min-width: 0 !important; /* Allow shrinking */
+}
+
+/* Glassy Tables (Light) */
+.ant-table {
+  background: transparent !important;
+  color: var(--text-main) !important;
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.03) !important;
+  color: var(--text-secondary) !important;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.05) !important;
+  font-weight: 700 !important;
+}
+
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.02) !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(59, 130, 246, 0.05) !important;
+}
+
+/* Glassy Tags */
+.ant-tag {
+  background: rgba(59, 130, 246, 0.05) !important;
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  color: var(--primary-vibrant) !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  padding: 2px 12px !important;
+}
+
+/* Highlighter Polish */
+.customer-search-highlight {
+  background: rgba(59, 130, 246, 0.15) !important;
+  color: var(--primary-vibrant) !important;
+  padding: 0 4px !important;
+  border-radius: 4px;
+}
+
+.ant-tag-blue {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #2563eb !important;
+}
+
+.ant-tag-success,
+.ant-tag-green {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #059669 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.ant-tag-error,
+.ant-tag-red {
+  background: rgba(244, 63, 94, 0.1) !important;
+  color: #e11d48 !important;
+  border-color: rgba(244, 63, 94, 0.2) !important;
+}
+
+/* Popover / Dropdown Glass */
+.ant-dropdown-menu,
+.ant-select-dropdown {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  z-index: 1050 !important;
+}
+
+/* Global Custom Highlighting for Selected Select Options */
+.ant-select-item-option-selected {
+  background-color: #e6f4ff !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+  position: relative;
+}
+
+.ant-select-item-option-selected::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 4px;
+  background-color: #1677ff;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Dropdown navigation highlighting via arrow keys */
+.ant-select-item-option-active:not(.ant-select-item-option-selected) {
+  background-color: #e6f4ff !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+  position: relative;
+}
+
+.ant-select-item-option-active:not(.ant-select-item-option-selected)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10%;
+  height: 80%;
+  width: 4px;
+  background-color: #1677ff;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Color Tokens for Stats */
+.stat-vibrant-blue .ant-statistic-content-value {
+  color: #3b82f6 !important;
+}
+.stat-vibrant-emerald .ant-statistic-content-value {
+  color: #10b981 !important;
+}
+.stat-vibrant-amber .ant-statistic-content-value {
+  color: #f59e0b !important;
+}
+.stat-vibrant-rose .ant-statistic-content-value {
+  color: #f43f5e !important;
+}
+.stat-vibrant-violet .ant-statistic-content-value {
+  color: #8b5cf6 !important;
+}
+
+/* Scrollbars (Light) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-vibrant);
+}
+
+/* Loading & Footer (Light) */
+.app-loading,
+.loading-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-deep);
 }
 
 .app-footer {
   text-align: center;
-  padding: clamp(12px, 4vh, 16px) 0;
-  color: var(--text-secondary);
-  border-top: 1px solid var(--border-color);
+  padding: 24px !important;
+  background: transparent !important;
+  color: var(--text-light) !important;
+  font-weight: 500;
+  border-top: 1px solid rgba(59, 130, 246, 0.05);
 }
 
-/* Dashboard specific styles moved to src/pages/css/Dashboard.css */
-
-/* Sidebar overlay for mobile - closes menu on tap outside */
-.sidebar-overlay {
-  display: none;
-}
-
-@media (max-width: 768px) {
+@media (max-width: 991px) {
   .sidebar-overlay {
-    display: block;
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
     z-index: 999;
   }
 }
 
-/* Sidebar Collapse on Mobile - Keep global layout styles */
-@media (max-width: 768px) {
-  .app-sider {
-    position: fixed !important;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    transform: translateX(-100%);
-    transition: var(--transition-base);
-    z-index: 1000;
-  }
-
-  .app-sider:not(.ant-layout-sider-collapsed) {
-    transform: translateX(0);
-  }
-
-  .app-content-layout {
-    margin-left: 0 !important;
-  }
-
-  .mobile-menu-trigger {
-    display: flex;
-  }
-
-  /* Tables scroll horizontally on small screens */
-  .ant-table-wrapper {
-    overflow-x: auto;
-  }
-
-  .ant-table {
-    min-width: 600px;
+@media (min-width: 992px) {
+  .sidebar-overlay {
+    display: none !important;
   }
 }
 
-/* ==========================================================================
-Standard Page Templates
-========================================================================== */
-.page-container {
-  height: 100%;
+/* Animations for Page Transitions (Simulated) */
+.page-fade-enter {
+  animation: fade-in 0.3s ease-out forwards;
 }
 
-.page-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: clamp(16px, 4vh, 24px);
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-color);
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.page-title {
-  font-size: clamp(20px, 5vw, 28px);
-  margin: 0 !important;
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.page-action-bar {
-  display: flex;
-  gap: clamp(8px, 2vw, 16px);
-  flex-wrap: wrap;
-}
-
-.search-input {
-  max-width: clamp(200px, 25vw, 300px);
-  width: 100%;
-}
-
-.stats-card {
-  margin-bottom: clamp(16px, 3vh, 24px);
-  box-shadow: var(--shadow-sm);
-  border-radius: var(--border-radius-base);
-  transition: var(--transition-base);
-}
-
-.stats-card:hover {
-  box-shadow: var(--shadow-lg);
-}
-
-/* ==========================================================================
-Utilities / Helpers
-========================================================================== */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 60vh;
-  min-height: 300px;
-}
-
-.mb-24 {
-  margin-bottom: clamp(16px, 4vh, 24px);
-}
-.mt-16 {
-  margin-top: 16px;
-}
-.p-50 {
-  padding: clamp(24px, 10vh, 50px);
-}
-.flex-gap-8 {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.full-width {
-  width: 100% !important;
-}
-.full-width-mobile {
-  width: 100% !important;
-}
-.text-success {
-  color: var(--success-color);
-}
-.text-danger {
-  color: var(--danger-color);
-}
-.text-primary {
-  color: var(--primary-color);
-}
-.mt-2 {
-  margin-top: clamp(8px, 2vh, 16px);
-}
-.mb-2 {
-  margin-bottom: clamp(8px, 2vh, 16px);
-}
-
-/* AntD Overrides & Statistics */
-.ant-card {
-  border-radius: var(--border-radius-base);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  transition: var(--transition-base);
-  background: var(--bg-card) !important;
-  color: var(--text-main) !important;
-}
-
-.ant-statistic-content {
-  color: var(--text-main) !important;
-}
-
-/* Dark Mode Table Overrides */
-[data-theme="dark"] .ant-table {
-  background: var(--bg-card);
-  color: var(--text-main);
-}
-
-[data-theme="dark"] .ant-table-thead > tr > th {
-  background: #1f2937; /* Darker shade for header */
-  color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .ant-table-tbody > tr > td {
-  background: var(--bg-card);
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border-color);
-}
-
-[data-theme="dark"] .ant-table-tbody > tr:hover > td {
-  background: #1f2937 !important; /* Hover state */
-}
-
-[data-theme="dark"] .ant-pagination-item a {
-  color: var(--text-main);
-}
-
-[data-theme="dark"] .ant-pagination-item-active {
-  background: transparent;
-  border-color: var(--primary-color);
-}
-
-/* Dark Mode Input & Select Overrides */
-[data-theme="dark"] .ant-input,
-[data-theme="dark"] .ant-select-selector,
-[data-theme="dark"] .ant-picker {
-  background-color: var(--bg-card) !important;
-  border-color: var(--border-color) !important;
-  color: var(--text-main) !important;
-}
-
-[data-theme="dark"] .ant-select-arrow {
-  color: var(--text-secondary);
-}
-
-[data-theme="dark"] .ant-modal-content,
-[data-theme="dark"] .ant-modal-header {
-  background-color: var(--bg-card);
-  color: var(--text-main);
-}
-
-[data-theme="dark"] .ant-modal-title {
-  color: var(--text-main);
-}
-
-[data-theme="dark"] .ant-drawer-content,
-[data-theme="dark"] .ant-drawer-header {
-  background-color: var(--bg-card);
-  color: var(--text-main);
-}
-[data-theme="dark"] .ant-drawer-title {
-  color: var(--text-main);
-}
-
-.ant-card:hover {
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px);
-}
-
-.stat-dark-green .ant-statistic-content-value {
-  color: #3f8600 !important;
-}
-.stat-primary .ant-statistic-content-value {
-  color: var(--primary-color) !important;
-}
-.stat-success .ant-statistic-content-value {
-  color: var(--secondary-color) !important;
-}
-.stat-warning .ant-statistic-content-value {
-  color: var(--warning-color) !important;
-}
-.stat-danger .ant-statistic-content-value {
-  color: var(--danger-color) !important;
-}
-
-.ant-table-wrapper {
-  background: var(--bg-card);
-  border-radius: var(--border-radius-base);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-}
-
-/* ==========================================================================
-Responsive Design Breakpoints
-========================================================================== */
-@media (max-width: 480px) {
-  .app-header {
-    /* flex-direction: column; -- Don't do this anymore, keep row for header */
-    padding: 0 12px !important;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    filter: blur(10px);
   }
-
-  .page-header-row {
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
+  to {
+    opacity: 1;
+    filter: blur(0);
   }
-
-  .page-action-bar {
-    justify-content: center;
-    width: 100%;
-  }
-
-  .page-title {
-    font-size: 20px;
-    margin-bottom: 8px !important;
-  }
-
-  .app-content-wrapper {
-    margin: 4px;
-    padding: 12px;
-  }
-}
-
-@media (max-width: 576px) {
-  .page-header-container {
-    margin-bottom: 12px;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-content-wrapper {
-    margin: 8px;
-    padding: 16px;
-  }
-
-  .stats-card,
-  .ant-table-wrapper {
-    margin-bottom: 16px;
-  }
-
-  .search-input {
-    max-width: 100%;
-  }
-}
-
-@media (min-width: 577px) {
-  /* Global responsive styles if any */
-}
-
-@media (min-width: 1200px) {
-  /* Allow full width usage on large screens */
-}
-
-/* High DPI / Large Screens */
-@supports (selector(:focus-visible)) {
-  .app-user-menu:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
-  }
-}
-
-/* ==========================================================================
-Bright Highlighting for UX
-========================================================================== */
-.bright-highlight
-  .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
-  background-color: #ffd666 !important; /* Bright Yellow/Orange */
-  color: #000 !important;
-  font-weight: 700 !important;
-}
-
-.bright-highlight
-  .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background-color: #e6f7ff !important;
-  border-left: 4px solid #1890ff;
-}
-
-/* Global Select Focus Style */
-.ant-select-focused:not(.ant-select-disabled).ant-select-single:not(
-    .ant-select-customize-input
-  )
-  .ant-select-selector {
-  border-color: #ff4d4f !important; /* Vivid Red for focus */
-  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2) !important;
 }

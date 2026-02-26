@@ -1,1 +1,60 @@
-/* User Management Page Styles */
+/* ==========================================================================
+   Premium Light Glossy User Management Styles
+   ========================================================================== */
+
+.page-header-row {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--glass-shadow);
+}
+
+.page-title {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  background: var(--grad-main);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 !important;
+  letter-spacing: -0.5px;
+}
+
+/* User Management Surface */
+.user-table-surface {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(59, 130, 246, 0.05);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.02) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 700 !important;
+}
+
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+}
+
+/* Action Links Polish */
+.ant-btn-link {
+  font-weight: 600 !important;
+}
+
+/* Modal Polish */
+.ant-modal-content {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(25px) saturate(180%) !important;
+  border-radius: 24px !important;
+}

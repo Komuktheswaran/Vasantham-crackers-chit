@@ -232,26 +232,16 @@ const TransportMaster = () => {
   ];
 
   return (
-    <div className="transport-master-container">
-      <div className="page-header-container">
-        <Row
-          justify="space-between"
-          align="middle"
-          style={{ marginBottom: 16 }}
+    <div className="page-container">
+      <div className="page-header-row">
+        <h2 className="page-title">Transport Master</h2>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={handleAddTransporter}
         >
-          <Col>
-            <h2 className="page-title">Transport Master</h2>
-          </Col>
-          <Col>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={handleAddTransporter}
-            >
-              Add Transporter
-            </Button>
-          </Col>
-        </Row>
+          Add Transporter
+        </Button>
       </div>
 
       <div className="table-container">
@@ -354,12 +344,24 @@ const TransportMaster = () => {
               <h4>Existing Branches</h4>
             </Col>
             <Col>
-              <Input.Search
-                placeholder="Search Branch Name"
-                onSearch={(val) => setDpSearch(val)}
-                onChange={(e) => setDpSearch(e.target.value)}
-                style={{ width: 200 }}
-              />
+              <div
+                style={{ display: "flex", gap: "8px", alignItems: "center" }}
+              >
+                <Input
+                  placeholder="Search Branch Name"
+                  value={dpSearch}
+                  onChange={(e) => setDpSearch(e.target.value)}
+                  onPressEnter={() => setDpSearch(dpSearch)}
+                  style={{ width: 200 }}
+                />
+                <Button
+                  type="primary"
+                  onClick={() => setDpSearch(dpSearch)}
+                  className="ant-input-search-button"
+                >
+                  Search
+                </Button>
+              </div>
             </Col>
           </Row>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Table,
   Button,
@@ -31,7 +31,13 @@ const Schemes = () => {
     pageSize: 15,
     total: 0,
   });
+  const paginationRef = useRef(pagination);
   const [loading, setLoading] = useState(false);
+
+  // Keep ref in sync to avoid infinite loops in fetchSchemes
+  useEffect(() => {
+    paginationRef.current = pagination;
+  }, [pagination]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingScheme, setEditingScheme] = useState(null);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
@@ -97,39 +103,42 @@ const Schemes = () => {
     },
   ];
 
+  const fetchSchemes = useCallback(
+    async (params = {}) => {
+      setLoading(true);
+      try {
+        const queryParams = {
+          page: params.page || paginationRef.current.current,
+          limit: params.limit || paginationRef.current.pageSize,
+          search: searchText,
+          ...params,
+        };
+
+        const response = await schemesAPI.getAll(queryParams);
+        // Handle both old array format (fallback) and new object format
+        if (Array.isArray(response.data)) {
+          setSchemes(response.data);
+        } else {
+          setSchemes(response.data.schemes || []);
+          setPagination({
+            current: response.data.page || 1,
+            pageSize: response.data.limit || 15,
+            total: response.data.total || 0,
+          });
+        }
+      } catch (error) {
+        console.error("Fetch schemes error:", error);
+        message.error("Failed to fetch schemes.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [searchText],
+  );
+
   useEffect(() => {
     fetchSchemes();
-  }, []);
-
-  const fetchSchemes = async (params = {}) => {
-    setLoading(true);
-    try {
-      const queryParams = {
-        page: params.page || pagination.current,
-        limit: params.limit || pagination.pageSize,
-        search: searchText,
-        ...params,
-      };
-
-      const response = await schemesAPI.getAll(queryParams);
-      // Handle both old array format (fallback) and new object format
-      if (Array.isArray(response.data)) {
-        setSchemes(response.data);
-      } else {
-        setSchemes(response.data.schemes || []);
-        setPagination({
-          current: response.data.page || 1,
-          pageSize: response.data.limit || 15,
-          total: response.data.total || 0,
-        });
-      }
-    } catch (error) {
-      console.error("Fetch schemes error:", error);
-      message.error("Failed to fetch schemes.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fetchSchemes]);
 
   const handleTableChange = (newPagination) => {
     fetchSchemes({
@@ -275,17 +284,15 @@ const Schemes = () => {
           <h2 className="page-title">
             Chit Schemes ({pagination.total} total)
           </h2>
-          <div className="page-action-bar">
-            <Input.Search
-              placeholder="Search schemes"
-              allowClear
-              enterButton="Search"
-              onSearch={(value) => {
-                setSearchText(value);
-                fetchSchemes({ search: value });
-              }}
-              className="search-input"
-            />
+          <div
+            className="page-action-bar"
+            style={{
+              display: "flex",
+              gap: "16px",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <Space wrap>
               <Button type="primary" onClick={() => openModal()}>
                 + New Scheme
@@ -299,6 +306,24 @@ const Schemes = () => {
                 </Button>
               </Dropdown>
             </Space>
+
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <Input
+                placeholder="Search schemes"
+                allowClear
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => fetchSchemes({ search: searchText })}
+                style={{ maxWidth: "250px" }}
+              />
+              <Button
+                type="primary"
+                onClick={() => fetchSchemes({ search: searchText })}
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </div>
         </div>
 

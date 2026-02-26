@@ -1,15 +1,74 @@
-/* Payments Page Styles */
-.page-container {
-    height: 100%;
+/* ==========================================================================
+   Premium Light Glossy Payments Styles
+   ========================================================================== */
+
+.page-header-row {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 32px;
+  box-shadow: var(--glass-shadow);
 }
 
+/* Glassy Payment Form (Light) */
 .payment-form-card {
-    max-width: 800px;
-    margin: 0 auto;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+  border-radius: 28px !important;
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.08) !important;
+  padding: 16px !important;
 }
 
-@media (max-width: 768px) {
-    .payment-stats-row {
-        flex-direction: column;
-    }
+.payment-form-card .ant-card-head {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.05) !important;
+  color: var(--text-main) !important;
+  font-weight: 700 !important;
+}
+
+/* Vibrant Summary Boxes (Light) */
+.summary-box {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  transition: var(--trans-smooth);
+}
+
+.summary-box:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-4px);
+  border-color: var(--primary-vibrant);
+  box-shadow: 0 8px 20px rgba(31, 38, 135, 0.05);
+}
+
+.summary-label {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.summary-value {
+  color: var(--text-main);
+  font-size: 24px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+/* Transaction List Polish */
+.transaction-table {
+  background: transparent !important;
+}
+
+.transaction-table .ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.02) !important;
+  color: var(--text-secondary) !important;
+}
+
+.transaction-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(59, 130, 246, 0.03) !important;
 }

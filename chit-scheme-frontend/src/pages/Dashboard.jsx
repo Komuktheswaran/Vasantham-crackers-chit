@@ -4,7 +4,6 @@ import {
   Col,
   Card,
   Statistic,
-  Select,
   Modal,
   Descriptions,
   Input,
@@ -31,6 +30,9 @@ const Dashboard = () => {
   const [detailData, setDetailData] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [detailType, setDetailType] = useState(null); // 'customer'
+  const [searchCustId, setSearchCustId] = useState("");
+  const [searchPhone, setSearchPhone] = useState("");
+  const [searchFundNo, setSearchFundNo] = useState("");
 
   useEffect(() => {
     fetchDashboardData();
@@ -246,62 +248,92 @@ const Dashboard = () => {
       <h2 className="page-title mb-24">Dashboard</h2>
 
       {/* Search Section */}
-      <Card className="mb-24" title="Quick Search">
+      <Card className="mb-24 search-section-card" title="Quick Search">
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
             <h4>Search by Customer Code / ID</h4>
-            <Input.Search
-              placeholder="Enter Customer Code or ID"
-              enterButton="Search"
-              onSearch={(val) => handleSearch("custId", val)}
-            />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Input
+                placeholder="Enter Customer Code or ID"
+                value={searchCustId}
+                onChange={(e) => setSearchCustId(e.target.value)}
+                onPressEnter={() => handleSearch("custId", searchCustId)}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleSearch("custId", searchCustId)}
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </Col>
           <Col xs={24} md={8}>
             <h4>Search by Phone Number</h4>
-            <Input.Search
-              placeholder="Enter Phone Number"
-              enterButton="Search"
-              onSearch={(val) => handleSearch("phone", val)}
-            />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Input
+                placeholder="Enter Phone Number"
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value)}
+                onPressEnter={() => handleSearch("phone", searchPhone)}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleSearch("phone", searchPhone)}
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </Col>
           <Col xs={24} md={8}>
             <h4>Search by Fund Number</h4>
-            <Input.Search
-              placeholder="Enter Fund Number"
-              enterButton="Search"
-              onSearch={(val) => handleSearch("fundNo", val)}
-            />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Input
+                placeholder="Enter Fund Number"
+                value={searchFundNo}
+                onChange={(e) => setSearchFundNo(e.target.value)}
+                onPressEnter={() => handleSearch("fundNo", searchFundNo)}
+              />
+              <Button
+                type="primary"
+                onClick={() => handleSearch("fundNo", searchFundNo)}
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </Col>
         </Row>
       </Card>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={8}>
-          <Card>
+          <Card className="glossy-stat-card">
             <Statistic
               title="Total Customers"
               value={stats.totalCustomers}
-              className="stat-dark-green"
+              className="stat-vibrant-emerald"
               prefix={<UserOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={8}>
-          <Card>
+          <Card className="glossy-stat-card">
             <Statistic
               title="Total Fund Members"
               value={stats.totalFundMembers}
-              className="stat-primary"
+              className="stat-vibrant-blue"
               prefix={<UsergroupAddOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={8}>
-          <Card>
+          <Card className="glossy-stat-card">
             <Statistic
               title="Active Schemes"
               value={stats.activeSchemes}
-              className="stat-success"
+              className="stat-vibrant-amber"
               prefix={<BarChartOutlined />}
             />
           </Card>

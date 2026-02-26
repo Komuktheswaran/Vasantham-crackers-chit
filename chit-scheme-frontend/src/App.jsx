@@ -204,7 +204,7 @@ const App = () => {
             onBreakpoint={(broken) => {
               setCollapsed(broken);
             }}
-            width={220}
+            width={260}
             trigger={null}
           >
             <div className="app-logo-container">
@@ -267,8 +267,11 @@ const App = () => {
             </Dropdown>
           </Header>
         )}
-        <Content className={authenticated ? "app-content-wrapper" : ""}>
-          <Routes>
+        <Content
+          className={authenticated ? "app-content-wrapper" : ""}
+          key={location.pathname}
+        >
+          <Routes location={location}>
             <Route path="/login" element={<Navigate to="/" replace />} />
             <Route
               path="/"

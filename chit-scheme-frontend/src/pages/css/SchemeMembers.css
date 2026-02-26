@@ -1,20 +1,44 @@
-/* Scheme Members Report Styles */
+/* ==========================================================================
+   Premium Light Glossy Scheme Members Styles
+   ========================================================================== */
+
 .scheme-members-container {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+  height: 100%;
 }
 
 .filter-section {
-    margin-bottom: 24px;
-    background: var(--bg-card);
-    padding: 16px;
-    border-radius: var(--border-radius-base);
-    border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--glass-shadow);
 }
 
-@media (max-width: 768px) {
-    .filter-section {
-        padding: 12px;
-    }
+.page-title {
+  font-size: 28px !important;
+  font-weight: 800 !important;
+  background: var(--grad-main);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 24px !important;
+  letter-spacing: -0.5px;
+}
+
+/* Table Polish */
+.ant-table-wrapper {
+  background: rgba(255, 255, 255, 0.4) !important;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(59, 130, 246, 0.05);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+}
+
+.ant-table-thead > tr > th {
+  background: rgba(59, 130, 246, 0.02) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 700 !important;
 }

@@ -29,6 +29,7 @@ import {
 import { schemesAPI, dashboardAPI } from "../services/api";
 import dayjs from "dayjs";
 import * as XLSX from "xlsx";
+import "./css/Reports.css";
 
 const { Option } = Select;
 const { Title } = Typography;
@@ -457,7 +458,7 @@ const Reports = () => {
                 <Legend wrapperStyle={{ color: "var(--text-main)" }} />
                 <Bar
                   dataKey="payments"
-                  fill="var(--secondary-color)"
+                  fill="#3b82f6"
                   name="Payments Received"
                   radius={[4, 4, 0, 0]}
                   onClick={(data) => handleBarClick(data, "paid")}
@@ -465,7 +466,7 @@ const Reports = () => {
                 />
                 <Bar
                   dataKey="due"
-                  fill="var(--warning-color)"
+                  fill="#f59e0b"
                   name="Pending Dues"
                   radius={[4, 4, 0, 0]}
                   onClick={(data) => handleBarClick(data, "unpaid")}
@@ -502,8 +503,8 @@ const Reports = () => {
                     onClick={handlePieClick}
                     style={{ cursor: "pointer" }}
                   >
-                    <Cell key="active" fill="var(--secondary-color)" />
-                    <Cell key="inactive" fill="var(--danger-color)" />
+                    <Cell key="active" fill="#10b981" />
+                    <Cell key="inactive" fill="#f43f5e" />
                   </Pie>
                   <Tooltip
                     contentStyle={{

@@ -1,20 +1,18 @@
 /* ==========================================================================
-   Premium Light Glossy Transporter Master Styles
+   Premium Light Glossy Tracking Order Styles
    ========================================================================== */
 
-.transport-master-container {
-  padding: 0;
-  background: transparent !important;
-  min-height: auto !important;
-}
-
-.page-header-container {
+.page-header-row {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: var(--glass-blur);
   border: 1px solid rgba(59, 130, 246, 0.1);
   border-radius: 20px;
   padding: 24px;
   margin-bottom: 24px;
+  display: flex !important;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 24px;
   box-shadow: var(--glass-shadow);
 }
 
@@ -29,33 +27,14 @@
   letter-spacing: -0.5px;
 }
 
-.table-container {
+/* Table Polish (Frosted) */
+.ant-table-wrapper {
   background: rgba(255, 255, 255, 0.4) !important;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(59, 130, 246, 0.05);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: var(--glass-shadow);
-  padding: 0 !important; /* Managed by Table internal padding */
-}
-
-.dp-tag {
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  color: var(--primary-vibrant);
-  font-weight: 600;
-  margin-right: 6px;
-  display: inline-block;
-  margin-bottom: 6px;
-  transition: var(--trans-smooth);
-}
-
-.dp-tag:hover {
-  background: rgba(59, 130, 246, 0.15);
-  transform: translateY(-2px);
 }
 
 .ant-table-thead > tr > th {
@@ -64,11 +43,21 @@
   font-weight: 700 !important;
 }
 
-/* Glassy Modal Adjustments */
+/* Status Tags Polish */
+.ant-tag {
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  padding: 2px 10px !important;
+}
+
+/* Search Bar Polish */
+.ant-input-search .ant-input-affix-wrapper {
+  border-radius: 12px !important;
+}
+
+/* Modal Polish */
 .ant-modal-content {
   background: rgba(255, 255, 255, 0.9) !important;
   backdrop-filter: blur(25px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  box-shadow: 0 16px 48px rgba(31, 38, 135, 0.1) !important;
   border-radius: 24px !important;
 }

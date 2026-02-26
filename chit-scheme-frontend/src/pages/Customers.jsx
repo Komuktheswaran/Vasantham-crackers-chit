@@ -11,7 +11,6 @@ import {
   Select,
   message,
   Upload,
-  Card,
   Tag,
 } from "antd";
 import {
@@ -104,7 +103,7 @@ const Customers = () => {
       key: "Name",
       render: (text) => (
         <Highlighter
-          highlightStyle={{ backgroundColor: "#fffb00", padding: 0 }}
+          highlightClassName="customer-search-highlight"
           searchWords={[searchText]}
           autoEscape
           textToHighlight={text}
@@ -626,8 +625,13 @@ const Customers = () => {
           </Col>
         </Row>
 
-        <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
-          <Col xs={24} sm={12} md={6} lg={5}>
+        <Row
+          gutter={[32, 16]}
+          style={{ marginBottom: 16 }}
+          align="middle"
+          justify="start"
+        >
+          <Col xs={24} sm={12} md={6} lg={4}>
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -637,36 +641,49 @@ const Customers = () => {
               Add Customer
             </Button>
           </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-            <Input.Search
-              placeholder="Search by Name, Phone, Code, ID, or Fund Number"
-              allowClear
-              enterButton="Search"
-              onSearch={(value) => {
-                setSearchText(value);
-                // Updated to search by Code as well if supported by getAll
-                fetchCustomers({ search: value });
-              }}
-              className="search-input"
-            />
+          <Col xs={24} sm={12} md={9} lg={9}>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <Input
+                placeholder="Search by Name, etc."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                onPressEnter={() => fetchCustomers({ search: searchText })}
+                style={{ width: "220px" }}
+              />
+              <Button
+                type="primary"
+                onClick={() => fetchCustomers({ search: searchText })}
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </Col>
-          <Col xs={24} sm={12} md={6} lg={6}>
-            <Input.Search
-              placeholder="Search Fund Number"
-              allowClear
-              enterButton="Search"
-              onSearch={(value) => {
-                setFundNumberSearch(value);
-                fetchCustomers({ fund_number: value, page: 1 });
-              }}
-              onChange={(e) => {
-                if (!e.target.value) {
-                  setFundNumberSearch("");
-                  fetchCustomers({ fund_number: "", page: 1 });
+          <Col xs={12} sm={12} md={9} lg={9}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <Input
+                placeholder="Fund Number"
+                value={fundNumberSearch}
+                onChange={(e) => {
+                  setFundNumberSearch(e.target.value);
+                  if (!e.target.value)
+                    fetchCustomers({ fund_number: "", page: 1 });
+                }}
+                onPressEnter={() =>
+                  fetchCustomers({ fund_number: fundNumberSearch, page: 1 })
                 }
-              }}
-              className="search-input"
-            />
+                style={{ width: "180px" }}
+              />
+              <Button
+                type="primary"
+                onClick={() =>
+                  fetchCustomers({ fund_number: fundNumberSearch, page: 1 })
+                }
+                className="ant-input-search-button"
+              >
+                Search
+              </Button>
+            </div>
           </Col>
         </Row>
       </div>

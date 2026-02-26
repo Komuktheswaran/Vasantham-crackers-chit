@@ -35,6 +35,7 @@ const Payments = () => {
   const [paymentMode, setPaymentMode] = useState("UPI");
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const [pendingPaymentValues, setPendingPaymentValues] = useState(null);
+  const [fundSearchValue, setFundSearchValue] = useState("");
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -468,63 +469,124 @@ const Payments = () => {
   ];
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="page-container">
       <Title level={2}>Payment Management</Title>
 
       <Row gutter={24}>
         <Col xs={24} md={8}>
-          <Card title="Select Customer & Scheme">
+          <Card title="Select Customer & Scheme" className="payment-form-card">
             <Form form={form} layout="vertical">
               {/* NEW: Search by Fund Number */}
               <Form.Item label="Search by Fund Number">
-                <Input.Search
-                  placeholder="Enter Fund Number (e.g. 2024_12_1234)"
-                  enterButton="Search"
-                  onSearch={async (value) => {
-                    if (!value) return;
-                    try {
-                      const response =
-                        await customersAPI.getByFundNumber(value);
-                      const customer = response.data.data || response.data;
+                <div
+                  style={{ display: "flex", gap: "8px", alignItems: "center" }}
+                >
+                  <Input
+                    placeholder="e.g. 2024_12_1234"
+                    value={fundSearchValue}
+                    onChange={(e) => setFundSearchValue(e.target.value)}
+                    onPressEnter={async () => {
+                      const value = fundSearchValue;
+                      if (!value) return;
+                      try {
+                        const response =
+                          await customersAPI.getByFundNumber(value);
+                        const customer = response.data.data || response.data;
 
-                      if (!customer) {
+                        if (!customer) {
+                          message.error("Fund Number not found.");
+                          return;
+                        }
+
+                        const resolvedFundNumber = customer.Fund_Number;
+
+                        // 1. Set Customer
+                        await handleCustomerSelect(customer.Customer_ID);
+
+                        // 2. Get schemes for this customer to find the matching fund number
+                        const schemesResponse = await customersAPI.getSchemes(
+                          customer.Customer_ID,
+                        );
+                        const schemesList =
+                          schemesResponse.data.data ||
+                          schemesResponse.data ||
+                          [];
+                        const matchingScheme = schemesList.find(
+                          (s) => s.Fund_Number === resolvedFundNumber,
+                        );
+
+                        if (matchingScheme) {
+                          // Small timeout to allow state updates from handleCustomerSelect
+                          setTimeout(() => {
+                            setSelectedScheme(matchingScheme.Scheme_ID);
+                            setSelectedFundNumber(matchingScheme.Fund_Number);
+                            fetchDues(matchingScheme.Fund_Number);
+                            form.setFieldsValue({
+                              schemeId: matchingScheme.Scheme_ID,
+                            });
+                            message.success(`Found: ${resolvedFundNumber}`);
+                          }, 500);
+                        }
+                      } catch (error) {
+                        console.error("Fund Search Error:", error);
                         message.error("Fund Number not found.");
-                        return;
                       }
+                    }}
+                  />
+                  <Button
+                    type="primary"
+                    className="ant-input-search-button"
+                    onClick={async () => {
+                      const value = fundSearchValue;
+                      if (!value) return;
+                      try {
+                        const response =
+                          await customersAPI.getByFundNumber(value);
+                        const customer = response.data.data || response.data;
 
-                      const resolvedFundNumber = customer.Fund_Number;
+                        if (!customer) {
+                          message.error("Fund Number not found.");
+                          return;
+                        }
 
-                      // 1. Set Customer
-                      await handleCustomerSelect(customer.Customer_ID);
+                        const resolvedFundNumber = customer.Fund_Number;
 
-                      // 2. Get schemes for this customer to find the matching fund number
-                      const schemesResponse = await customersAPI.getSchemes(
-                        customer.Customer_ID,
-                      );
-                      const schemesList =
-                        schemesResponse.data.data || schemesResponse.data || [];
-                      const matchingScheme = schemesList.find(
-                        (s) => s.Fund_Number === resolvedFundNumber,
-                      );
+                        // 1. Set Customer
+                        await handleCustomerSelect(customer.Customer_ID);
 
-                      if (matchingScheme) {
-                        // Small timeout to allow state updates from handleCustomerSelect
-                        setTimeout(() => {
-                          setSelectedScheme(matchingScheme.Scheme_ID);
-                          setSelectedFundNumber(matchingScheme.Fund_Number);
-                          fetchDues(matchingScheme.Fund_Number);
-                          form.setFieldsValue({
-                            schemeId: matchingScheme.Scheme_ID,
-                          });
-                          message.success(`Found: ${resolvedFundNumber}`);
-                        }, 500);
+                        // 2. Get schemes for this customer to find the matching fund number
+                        const schemesResponse = await customersAPI.getSchemes(
+                          customer.Customer_ID,
+                        );
+                        const schemesList =
+                          schemesResponse.data.data ||
+                          schemesResponse.data ||
+                          [];
+                        const matchingScheme = schemesList.find(
+                          (s) => s.Fund_Number === resolvedFundNumber,
+                        );
+
+                        if (matchingScheme) {
+                          // Small timeout to allow state updates from handleCustomerSelect
+                          setTimeout(() => {
+                            setSelectedScheme(matchingScheme.Scheme_ID);
+                            setSelectedFundNumber(matchingScheme.Fund_Number);
+                            fetchDues(matchingScheme.Fund_Number);
+                            form.setFieldsValue({
+                              schemeId: matchingScheme.Scheme_ID,
+                            });
+                            message.success(`Found: ${resolvedFundNumber}`);
+                          }, 500);
+                        }
+                      } catch (error) {
+                        console.error("Fund Search Error:", error);
+                        message.error("Fund Number not found.");
                       }
-                    } catch (error) {
-                      console.error("Fund Search Error:", error);
-                      message.error("Fund Number not found.");
-                    }
-                  }}
-                />
+                    }}
+                  >
+                    Search
+                  </Button>
+                </div>
               </Form.Item>
 
               <Form.Item label="Search Customer">
@@ -605,6 +667,7 @@ const Payments = () => {
 
         <Col xs={24} md={16}>
           <Card
+            className="payment-form-card"
             title={
               <div
                 style={{
