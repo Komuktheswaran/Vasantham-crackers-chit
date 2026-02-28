@@ -259,8 +259,7 @@ body {
 .ant-select-selector,
 .ant-picker,
 .ant-input-number,
-.ant-input-affix-wrapper,
-.ant-select-selection-search-input {
+.ant-input-affix-wrapper {
   background: rgba(255, 255, 255, 0.5) !important;
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 12px !important;
@@ -270,6 +269,28 @@ body {
   padding: 4px 20px !important;
   display: flex !important;
   align-items: center !important;
+}
+
+/* Ensure the outer .ant-select wrapper has NO independent box/border */
+.ant-select {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 12px !important;
+}
+
+/* Prevent card hover transform on select popups */
+.ant-select-dropdown.ant-card:hover,
+.ant-select-dropdown:hover {
+  transform: none !important;
+}
+
+/* Ensure the inner search input inside select doesn't create a double box */
+.ant-select-selection-search-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  height: 100% !important;
 }
 
 .ant-input-affix-wrapper {
@@ -407,12 +428,28 @@ body {
 /* Popover / Dropdown Glass */
 .ant-dropdown-menu,
 .ant-select-dropdown {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.5) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+  border: 1px solid rgba(59, 130, 246, 0.2) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.12) !important;
   z-index: 1050 !important;
+  overflow: hidden !important;
+  padding: 4px 0 !important;
+}
+
+/* Remove inner virtual list's own border/shadow so only one box shows */
+.ant-select-dropdown .rc-virtual-list {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+
+.ant-select-dropdown .rc-virtual-list-holder-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* Global Custom Highlighting for Selected Select Options */

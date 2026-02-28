@@ -48,11 +48,20 @@ const PaymentDownload = () => {
   const fetchInitialData = async () => {
     try {
       const [customersRes, schemesRes] = await Promise.all([
-        customersAPI.getAll({}),
+        customersAPI.getAll({ has_scheme: "true", limit: 1000 }),
         schemesAPI.getAll(),
       ]);
-      setCustomers(customersRes.data.customers || []);
-      setSchemes(schemesRes.data.schemes || schemesRes.data || []);
+      // Backend wraps response in .data wrapper: response.data.data.customers
+      const customersData = customersRes.data.data || customersRes.data || {};
+      const customersList =
+        customersData.customers ||
+        (Array.isArray(customersData) ? customersData : []);
+      setCustomers(customersList);
+
+      const schemesData = schemesRes.data.data || schemesRes.data || {};
+      const schemesList =
+        schemesData.schemes || (Array.isArray(schemesData) ? schemesData : []);
+      setSchemes(schemesList);
     } catch (error) {
       message.error("Failed to load filter options");
     }
@@ -214,7 +223,7 @@ const PaymentDownload = () => {
             >
               {customers.map((c) => (
                 <Option key={c.Customer_ID} value={c.Customer_ID}>
-                  {c.First_Name} {c.Last_Name} ({c.Customer_ID})
+                  {c.Customer_Code ? `[${c.Customer_Code}] ` : ""}{c.Name || `${c.First_Name || ""} ${c.Last_Name || ""}`} ({c.Customer_ID})
                 </Option>
               ))}
             </Select>

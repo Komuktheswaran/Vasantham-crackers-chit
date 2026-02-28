@@ -458,7 +458,7 @@ const Reports = () => {
                 <Legend wrapperStyle={{ color: "var(--text-main)" }} />
                 <Bar
                   dataKey="payments"
-                  fill="#3b82f6"
+                  fill="#22c55e"
                   name="Payments Received"
                   radius={[4, 4, 0, 0]}
                   onClick={(data) => handleBarClick(data, "paid")}

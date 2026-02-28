@@ -93,6 +93,7 @@ export const paymentsAPI = {
   create: (data) => api.post('/payments', data),
   payAll: (data) => api.post('/payments/pay-all', data),
   update: (id, data) => api.put(`/payments/${id}`, data),
+  getNextReferenceId: () => api.get('/payments/next-reference-id'),
 };
 
 export const auctionsAPI = {

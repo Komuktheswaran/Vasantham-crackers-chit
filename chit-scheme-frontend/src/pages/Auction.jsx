@@ -156,8 +156,8 @@ const Auction = () => {
         <h2 className="page-title">Auction & Bulk Payment</h2>
       </div>
 
-      <div className="search-section auction-search-card">
-        <Text type="secondary" style={{ display: "block", marginBottom: 8 }}>
+      <Card className="auction-search-card" style={{ marginBottom: 24 }}>
+        <Text type="secondary" style={{ display: "block", marginBottom: 12, fontSize: 14 }}>
           Enter Fund Number to begin
         </Text>
         <div
@@ -165,7 +165,6 @@ const Auction = () => {
             display: "flex",
             gap: "12px",
             alignItems: "center",
-            maxWidth: "400px",
           }}
         >
           <Input
@@ -174,6 +173,7 @@ const Auction = () => {
             value={fundNumber}
             onChange={(e) => setFundNumber(e.target.value)}
             onPressEnter={handleSearch}
+            style={{ flex: 1 }}
           />
           <Button
             type="primary"
@@ -182,11 +182,12 @@ const Auction = () => {
             onClick={handleSearch}
             loading={loading}
             className="ant-input-search-button"
+            style={{ flexShrink: 0 }}
           >
             Search
           </Button>
         </div>
-      </div>
+      </Card>
 
       {customerData && (
         <Card

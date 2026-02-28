@@ -496,38 +496,54 @@ const Customers = () => {
                   .toLowerCase()
                   .replace(/_/g, "")
                   .replace(/\s/g, "");
-                if (
-                  cleanKey.includes("customerid") ||
-                  cleanKey.includes("custid")
-                )
-                  record.Customer_ID = row[key];
-                if (
-                  cleanKey.includes("phonenumber") ||
-                  cleanKey.includes("phone")
-                )
-                  record.Phone_Number = row[key];
-                // Optional: Name? "in the excel i need only customer id and phone number only"
-                // If Name is mandatory in backend, we might have an issue.
-                // Current Form rules: Name required.
-                // I'll assume for bulk upload we might need to dummy it or user provides it.
-                // Wait, "in the excel i need only customer id and phone number only".
-                // Use "Unknown" or Customer ID as name if missing?
-                if (cleanKey.includes("name")) record.Name = row[key];
+                
+                if (cleanKey.includes("customerid") || cleanKey.includes("custid")) record.Customer_ID = row[key];
+                else if (cleanKey.includes("customercode") || cleanKey === "code") record.Customer_Code = row[key];
+                else if (cleanKey.includes("name")) record.Name = row[key];
+                else if (cleanKey === "phonenumber" || cleanKey === "phone") record.Phone_Number = row[key];
+                else if (cleanKey.includes("secondaryphone") || cleanKey === "phone2") record.PhoneNumber2 = row[key];
+                else if (cleanKey.includes("type") || cleanKey.includes("customertype")) record.Customer_Type = row[key];
+                else if (cleanKey.includes("address1") || cleanKey.includes("addressline1")) record.Address1 = row[key];
+                else if (cleanKey.includes("address2") || cleanKey.includes("addressline2")) record.Address2 = row[key];
+                else if (cleanKey === "state") record.State = row[key];
+                else if (cleanKey === "district") record.District = row[key];
+                else if (cleanKey.includes("pincode") || cleanKey.includes("pin")) record.Pincode = row[key];
+                else if (cleanKey.includes("referencecode") || cleanKey.includes("refcode")) record.Reference_Code = row[key];
               }
 
-              if (!record.Customer_ID || !record.Phone_Number) {
-                // Skipping invalid row
-                console.warn("Skipping row, missing ID or Phone", row);
+              if (!record.Phone_Number || !record.Name) {
+                // Skipping invalid row where mandatory fields are missing
+                console.warn("Skipping row: missing Name or Phone", row);
                 failCount++;
                 continue;
               }
 
+              // Map text State/District back to ID
+              let mappedStateId = null;
+              if (record.State) {
+                  const s = states.find(x => x.State_Name.toLowerCase() === String(record.State).toLowerCase().trim());
+                  if (s) mappedStateId = s.State_ID;
+              }
+
+              let mappedDistrictId = null;
+              if (record.District) {
+                  const d = districts.find(x => x.District_Name.toLowerCase() === String(record.District).toLowerCase().trim());
+                  if (d) mappedDistrictId = d.District_ID;
+              }
+
               const payload = {
-                Customer_ID: String(record.Customer_ID),
-                Phone_Number: String(record.Phone_Number),
-                Name: record.Name || `Customer ${record.Customer_ID}`, // Fallback Name
-                Customer_Type: "", // Blank as requested
-                sendWhatsapp: false, // No WA for bulk likely
+                Customer_Code: record.Customer_Code ? String(record.Customer_Code) : "",
+                Name: String(record.Name),
+                PhoneNumber: String(record.Phone_Number),
+                PhoneNumber2: record.PhoneNumber2 ? String(record.PhoneNumber2) : null,
+                Customer_Type: record.Customer_Type || "New",
+                Address1: record.Address1 || "",
+                Address2: record.Address2 || "",
+                State_ID: mappedStateId,
+                District_ID: mappedDistrictId,
+                Pincode: record.Pincode || null,
+                Reference_Code: record.Reference_Code || null,
+                sendWhatsapp: false, // No WA for bulk upload
               };
 
               try {
@@ -555,15 +571,37 @@ const Customers = () => {
   };
 
   const downloadSampleFile = () => {
+    // Main formatting sheet
     const ws = XLSX.utils.json_to_sheet([
       {
-        "Customer ID": "CUST_123456",
+        "Customer Code": "CODE_A1",
         "Phone Number": "9876543210",
-        Name: "Optional Name",
+        "Name": "John Doe",
+        "Secondary Phone": "9876543211",
+        "Customer Type": "New",
+        "Address Line 1": "123 Main St",
+        "Address Line 2": "Apt 4B",
+        "State": "Tamil Nadu",
+        "District": "Chennai",
+        "Pincode": "600001",
+        "Reference Code": "REF123",
       },
     ]);
+
+    // Reference data sheet for States and Districts
+    const referenceData = [];
+    const maxLen = Math.max(states.length, districts.length);
+    for (let i = 0; i < maxLen; i++) {
+        referenceData.push({
+            "Available States": states[i] ? states[i].State_Name : "",
+            "Available Districts": districts[i] ? districts[i].District_Name : ""
+        });
+    }
+    const wsRef = XLSX.utils.json_to_sheet(referenceData);
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Customers");
+    XLSX.utils.book_append_sheet(wb, wsRef, "Reference Data");
     XLSX.writeFile(wb, "customer_upload_sample.xlsx");
   };
 

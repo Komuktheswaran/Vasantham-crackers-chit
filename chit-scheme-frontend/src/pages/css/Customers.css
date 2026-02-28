@@ -53,8 +53,10 @@
   color: #fff !important;
 }
 
-/* Table Polish */
-.ant-table-wrapper {
+/* Table Polish — scoped to page containers only to avoid bleeding into select components */
+.page-header-container ~ .ant-table-wrapper,
+.ant-card .ant-table-wrapper,
+.payment-form-card .ant-table-wrapper {
   background: rgba(255, 255, 255, 0.4) !important;
   backdrop-filter: blur(5px);
   border: 1px solid rgba(59, 130, 246, 0.05);
@@ -86,4 +88,36 @@
   background: rgba(59, 130, 246, 0.1) !important;
   border-color: var(--primary-vibrant) !important;
   color: var(--primary-vibrant) !important;
+}
+
+/* ============================================================
+   Global Fix: Ant Design Select Dropdown Double-Box
+   Eliminates the double border/shadow caused by both the
+   outer dropdown container and inner virtual list having
+   independent backgrounds and borders.
+   ============================================================ */
+.ant-select-dropdown {
+  padding: 4px 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.12) !important;
+  border: 1px solid rgba(59, 130, 246, 0.15) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.ant-select-dropdown .rc-virtual-list-holder-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.ant-select-dropdown .ant-select-item {
+  border-radius: 6px !important;
+  margin: 0 4px !important;
+}
+
+.ant-select-dropdown
+  .ant-select-item-option-active:not(.ant-select-item-option-selected) {
+  background: rgba(59, 130, 246, 0.08) !important;
 }
