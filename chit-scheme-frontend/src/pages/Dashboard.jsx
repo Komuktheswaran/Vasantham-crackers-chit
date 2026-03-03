@@ -83,7 +83,7 @@ const Dashboard = () => {
       if (type === "fundNo") {
         const res = await customersAPI.getByFundNumber(value);
         const data = res.data.data || res.data || {};
-        const customers = data.customers || (Array.isArray(data) ? data : []);
+        const customers = data.customers || (Array.isArray(data) ? data : (data.Customer_ID ? [data] : []));
 
         if (customers && customers.length > 0) {
           const detailRes = await dashboardAPI.getCustomerDetails(
@@ -245,13 +245,18 @@ const Dashboard = () => {
 
   return (
     <>
-      <h2 className="page-title mb-24">Dashboard</h2>
+      <h2 className="page-title mb-24" style={{ marginBottom: "16px" }}>Dashboard</h2>
+
+      <div style={{ height: "16px" }} />
 
       {/* Search Section */}
-      <Card className="mb-24 search-section-card" title="Quick Search">
+      <Card
+        className="mb-24 search-section-card"
+        title="Quick Search"
+      >
         <Row gutter={[16, 16]}>
           <Col xs={24} md={8}>
-            <h4>Search by Customer Code / ID</h4>
+            <h4 style={{ marginBottom: 12 }}>Search by Customer Code / ID</h4>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <Input
                 placeholder="Enter Customer Code or ID"
@@ -269,7 +274,7 @@ const Dashboard = () => {
             </div>
           </Col>
           <Col xs={24} md={8}>
-            <h4>Search by Phone Number</h4>
+            <h4 style={{ marginBottom: 12 }}>Search by Phone Number</h4>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <Input
                 placeholder="Enter Phone Number"
@@ -287,7 +292,7 @@ const Dashboard = () => {
             </div>
           </Col>
           <Col xs={24} md={8}>
-            <h4>Search by Fund Number</h4>
+            <h4 style={{ marginBottom: 12 }}>Search by Fund Number</h4>
             <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
               <Input
                 placeholder="Enter Fund Number"

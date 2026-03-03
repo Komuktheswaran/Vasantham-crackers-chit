@@ -109,7 +109,7 @@ const CustomerDownload = () => {
   const handlePreview = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = { sort_order: "asc" };
       if (filters.state) params.state = filters.state;
       if (filters.district) params.district = filters.district;
       if (filters.area) params.area = filters.area;
@@ -164,13 +164,16 @@ const CustomerDownload = () => {
 
   const columns = [
     { title: "Customer ID", dataIndex: "Customer_ID", key: "id" },
+    { title: "Customer Code", dataIndex: "Customer_Code", key: "code" },
     {
       title: "Name",
+      dataIndex: "Name",
       key: "name",
-      render: (_, r) => `${r.First_Name} ${r.Last_Name}`,
+      render: (_, r) => r.Name || `${r.First_Name || ''} ${r.Last_Name || ''}`.trim(),
     },
     { title: "Phone", dataIndex: "Phone_Number", key: "phone" },
     { title: "Area", dataIndex: "Area", key: "area" },
+    { title: "Fund Number", dataIndex: "Assigned_Fund_Numbers", key: "fundNo", render: (val) => val || '-' },
   ];
 
   return (

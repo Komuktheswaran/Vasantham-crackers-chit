@@ -108,7 +108,7 @@ const App = () => {
     return (
       <div className="app-loading">
         <Spin size="large" />
-        <p style={{ marginTop: 16, color: "#1890ff", fontWeight: "bold" }}>
+        <p style={{ marginTop: 16, color: "#ff181cff", fontWeight: "bold" }}>
           Loading App...
         </p>
       </div>
@@ -246,8 +246,16 @@ const App = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="app-header-title"
+                style={{ 
+                  color: "#e11d48", 
+                  background: "transparent",
+                  WebkitTextFillColor: "unset", // Disables transparent background clip
+                  WebkitBackgroundClip: "unset"
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#3b82f6")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#e11d48")}
               >
-                Vasantham Crackers Worlds
+                Vasantham Crackers World
               </Button>
             </div>
 

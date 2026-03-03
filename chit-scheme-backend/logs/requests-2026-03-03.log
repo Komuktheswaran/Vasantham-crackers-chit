@@ -1,0 +1,10 @@
+[2026-03-03T13:05:11.920Z] 🔍 404 Not Found — GET /api/exports
+[2026-03-03T13:05:11.942Z] GET /api/exports | IP: ::1 | Status: 404 | 15.723 ms | Body: -
+[2026-03-03T13:05:12.090Z] 🔍 404 Not Found — GET /favicon.ico
+[2026-03-03T13:05:12.098Z] GET /favicon.ico | IP: ::1 | Status: 404 | 2.396 ms | Body: -
+[2026-03-03T13:07:10.202Z] GET /api/schemes/members?page=1&limit=20 | IP: ::1 | Status: 500 | 15021.963 ms | Body: -
+[2026-03-03T13:09:12.802Z] GET /api/schemes/members?page=1&limit=20 | IP: ::1 | Status: 500 | 15036.730 ms | Body: -
+[2026-03-03T13:13:19.862Z] GET /api/schemes/members?page=1&limit=20 | IP: ::1 | Status: 200 | 3669.485 ms | Body: -
+[2026-03-03T13:15:48.488Z] GET /api/customers/fund/001 | IP: ::1 | Status: 200 | 50.921 ms | Body: -
+[2026-03-03T13:40:26.233Z] GET /api/customers/fund/001 | IP: ::1 | Status: 200 | 60.929 ms | Body: -
+[2026-03-03T13:53:56.653Z] GET /api/customers?limit=1 | IP: ::1 | Status: 200 | 149.677 ms | Body: -

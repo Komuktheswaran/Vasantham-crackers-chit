@@ -162,7 +162,7 @@ const getAllCustomers = async (req, res) => {
           WHERE pm.Customer_ID = c.Customer_ID
       ) pm_counts
       ${whereClause}
-      ORDER BY c.Customer_ID DESC
+      ORDER BY c.Customer_ID ASC
     `;
 
     // Only add pagination if limit is provided

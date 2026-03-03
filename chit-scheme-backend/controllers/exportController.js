@@ -100,6 +100,7 @@ const exportCustomers = async (req, res) => {
     // Define CSV columns
     const columns = [
       { key: 'Customer_ID', header: 'Customer ID' },
+      { key: 'Customer_Code', header: 'Customer Code' },
       { key: 'Name', header: 'Customer Name' },
       { key: 'Phone_Number', header: 'Phone Number' },
       { key: 'Phone_Number2', header: 'Alternate Number' },
@@ -207,7 +208,7 @@ const exportPayments = async (req, res) => {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
     }
 
-    query += ` ORDER BY pm.Amount_Received_date DESC`;
+    query += ` ORDER BY pm.Fund_Number ASC, pm.Due_number ASC`;
     
     const payments = await executeQuery(query, params);
     
@@ -231,26 +232,18 @@ const exportPayments = async (req, res) => {
       };
     });
 
-    // Define CSV columns
+    // Define CSV columns for new requested order
     const columns = [
-      { key: 'Pay_ID', header: 'Payment ID' },
+      { key: 'Customer_ID', header: 'Customer ID' },
+      { key: 'Customer_Code', header: 'Customer Code' },
+      { key: 'Customer_Name', header: 'Customer Name' },
+      { key: 'Fund_Number', header: 'Fund Number' },
+      { key: 'Scheme_Name', header: 'Scheme' },
       { key: 'Due_number', header: 'Due Number' },
       { key: 'Amount_Received', header: 'Amount Received' },
-      { key: 'Payment_Mode', header: 'Payment Mode' },
-      { key: 'UPI_Phone_Number', header: 'UPI Number' },
-      { key: 'Transaction_Display', header: 'Transaction Number' },
       { key: 'Amount_Received_date', header: 'Payment Date' },
-      { key: 'Assigned_Schemes', header: 'Assigned Schemes' },
-      { key: 'Fund_Number', header: 'Fund Number' },
-      { key: 'Customer_ID', header: 'Customer ID' },
-      { key: 'Customer_Name', header: 'Customer Name' },
-      { key: 'Phone_Number', header: 'Phone Number' },
-      { key: 'Combined_Address', header: 'Address' },
-      { key: 'Area', header: 'Area' },
-      { key: 'Pincode', header: 'Pincode' },
-      { key: 'State', header: 'State' },
-      { key: 'Customer_Type', header: 'Customer Type' },
-      { key: 'Reference_Code', header: 'Reference Code' }
+      { key: 'UPI_Phone_Number', header: 'UPI Number' },
+      { key: 'Transaction_Display', header: 'Transaction Number' }
     ];
 
     const csv = convertToCSV(formattedPayments, columns);

@@ -1,24 +1,85 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-// const rateLimit = require('express-rate-limit');
 const dotenv = require('dotenv');
-
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 
 dotenv.config();
 const app = express();
 
-// Enable trust proxy for rate limiting behind proxies (e.g., Heroku, Nginx, or local dev)
+// ====================================================================
+// LOGGING SETUP: Write to both console and logs/requests.log
+// ====================================================================
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
+// Rolling log file — new file each day: logs/requests-2026-03-03.log
+function getDailyLogStream() {
+  const today = new Date().toISOString().slice(0, 10); // "2026-03-03"
+  const logFile = path.join(logsDir, `requests-${today}.log`);
+  return fs.createWriteStream(logFile, { flags: 'a' });
+}
+
+// Custom morgan token: request body (truncated to 200 chars for safety)
+morgan.token('body', (req) => {
+  if (!req.body || Object.keys(req.body).length === 0) return '-';
+  try {
+    const bodyStr = JSON.stringify(req.body);
+    // Mask password fields
+    const masked = bodyStr.replace(/"password"\s*:\s*"[^"]*"/gi, '"password":"****"');
+    return masked.length > 200 ? masked.slice(0, 200) + '...' : masked;
+  } catch {
+    return '-';
+  }
+});
+
+// Custom morgan token: client real IP (works behind proxy)
+morgan.token('client-ip', (req) => {
+  return req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+    || req.headers['x-real-ip']
+    || req.socket.remoteAddress
+    || '-';
+});
+
+// Log format:
+// [2026-03-03T10:22:01.123Z] POST /api/auth/login | IP: 192.168.1.5 | Status: 200 | 34ms | Body: {"username":"admin"}
+const LOG_FORMAT = '[:date[iso]] :method :url | IP: :client-ip | Status: :status | :response-time ms | Body: :body';
+
+// 1. Console logger (colorized via morgan dev for readability)
+app.use(morgan('dev'));
+
+// 2. File logger (detailed format, appends to daily log file)
+app.use(morgan(LOG_FORMAT, {
+  stream: {
+    write: (message) => {
+      const stream = getDailyLogStream();
+      stream.write(message);
+      stream.end();
+    }
+  }
+}));
+
+// Enable trust proxy
 app.set("trust proxy", 1);
 
-// DEBUG LOGGING for 400 Errors
+// ====================================================================
+// DEBUG LOGGING: Extra detail for non-standard requests
+// ====================================================================
 app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  // Check User-Agent for modern Chrome rejection issues
+  // Log full headers for debugging when needed (uncomment below)
+  // console.log('Headers:', req.headers);
+
   if (req.headers['user-agent']?.includes('Chrome/144')) {
-    console.log('Detected Chromium 144 Request');
+    const msg = `[${new Date().toISOString()}] ⚠ Detected Chromium 144 Request — ${req.method} ${req.url}`;
+    console.log(msg);
+    const stream = getDailyLogStream();
+    stream.write(msg + '\n');
+    stream.end();
   }
   next();
 });
@@ -28,9 +89,7 @@ app.use((req, res, next) => {
 // ====================================================================
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, curl, etc.)
     if (!origin) return callback(null, true);
-    
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
       'http://localhost:3000',
       'https://103.38.50.149:5005',
@@ -38,10 +97,15 @@ const corsOptions = {
       'http://0.0.0.0:0000',
       'https://0.0.0.0:0000'
     ];
-    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      // Log blocked CORS attempts
+      const msg = `[${new Date().toISOString()}] 🚫 CORS BLOCKED — Origin: ${origin}`;
+      console.warn(msg);
+      const stream = getDailyLogStream();
+      stream.write(msg + '\n');
+      stream.end();
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -84,44 +148,26 @@ app.use(helmet({
       frameSrc: ["'none'"],
     },
   },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  },
-  frameguard: {
-    action: 'deny'
-  },
+  hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+  frameguard: { action: 'deny' },
   noSniff: true,
   xssFilter: true
 }));
 
-app.use(morgan('combined')); // Log HTTP requests
-app.use(require('./middleware/auditLogger')); // Audit Log for operations
+app.use(require('./middleware/auditLogger'));
 
 // ====================================================================
-// SECURITY FIX: Effective Rate Limiting
-// ====================================================================
-
-
-// Stricter rate limiting for authentication endpoints
-// Auth rate limiting removed by user request
-
 // Health check
+// ====================================================================
 app.get('/api/health', async (req, res) => {
   try {
     const { executeQuery } = require('./models/db');
     const { dbConfig } = require('./config/database');
-    
-    // Log the configuration to the console for debugging
     console.log('🔍 Database Configuration:', {
       ...dbConfig,
       password: dbConfig.password ? '****' : 'NOT_SET'
     });
-
     await executeQuery('SELECT 1');
-    
-    // Return safe config in response
     const safeConfig = {
       server: dbConfig.server,
       database: dbConfig.database,
@@ -129,79 +175,79 @@ app.get('/api/health', async (req, res) => {
       port: dbConfig.port,
       options: dbConfig.options
     };
-
-    res.json({ 
-      status: 'OK', 
-      db: 'Connected', 
-      config: safeConfig,
-      timestamp: new Date() 
-    });
+    res.json({ status: 'OK', db: 'Connected', config: safeConfig, timestamp: new Date() });
   } catch (error) {
     console.error('Health Check Error:', error);
     const { dbConfig } = require('./config/database');
-    res.status(500).json({ 
-      status: 'Error', 
-      db: 'Disconnected', 
-      error: error.message,
-      configUsed: {
-        server: dbConfig?.server,
-        user: dbConfig?.user,
-        port: dbConfig?.port
-      } 
+    res.status(500).json({
+      status: 'Error', db: 'Disconnected', error: error.message,
+      configUsed: { server: dbConfig?.server, user: dbConfig?.user, port: dbConfig?.port }
     });
   }
 });
 
-// API Routes - IMPORTANT: Order matters!
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-app.use('/api/customers', require('./routes/customers'));
-app.use('/api/schemes', require('./routes/schemes'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/exports', require('./routes/exports'));
-app.use('/api/states', require('./routes/states'));
-app.use('/api/districts', require('./routes/districts'));
-app.use('/api/order-tracking', require('./routes/orderTracking'));
-app.use('/api/transporters', require('./routes/transporters'));
+// ====================================================================
+// API Routes
+// ====================================================================
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/users',         require('./routes/users'));
+app.use('/api/dashboard',     require('./routes/dashboard'));
+app.use('/api/customers',     require('./routes/customers'));
+app.use('/api/schemes',       require('./routes/schemes'));
+app.use('/api/payments',      require('./routes/payments'));
+app.use('/api/exports',       require('./routes/exports'));
+app.use('/api/states',        require('./routes/states'));
+app.use('/api/districts',     require('./routes/districts'));
+app.use('/api/order-tracking',require('./routes/orderTracking'));
+app.use('/api/transporters',  require('./routes/transporters'));
 
-// JSON Parsing Error Handler (Captures 400 errors from bodyParser)
+// ====================================================================
+// Error Handlers
+// ====================================================================
+// JSON Parsing Error (400)
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-    console.error('JSON Parsing Error (400):', err.message);
-    console.error('Malformed Body Snippet:', req.body || 'Unavailable');
-    return res.status(400).json({ 
-      error: 'Malformed JSON payload', 
+    const msg = `[${new Date().toISOString()}] ❌ JSON Parse Error — ${req.method} ${req.url} — ${err.message}`;
+    console.error(msg);
+    const stream = getDailyLogStream();
+    stream.write(msg + '\n');
+    stream.end();
+    return res.status(400).json({
+      error: 'Malformed JSON payload',
       details: err.message,
-      tip: 'Check for trailing commas or unescaped characters' 
+      tip: 'Check for trailing commas or unescaped characters'
     });
   }
   next(err);
 });
 
-// 404 handler - FIXED (no wildcard parameter issue)
+// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    path: req.originalUrl 
-  });
+  const msg = `[${new Date().toISOString()}] 🔍 404 Not Found — ${req.method} ${req.originalUrl}`;
+  console.warn(msg);
+  const stream = getDailyLogStream();
+  stream.write(msg + '\n');
+  stream.end();
+  res.status(404).json({ error: 'Route not found', path: req.originalUrl });
 });
 
+// ====================================================================
+// START SERVER
+// ====================================================================
 const PORT = process.env.PORT || 5000;
-// if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`\n🚀 Server: http://localhost:${PORT}`);
-    console.log(`✅ Health: http://localhost:${PORT}/api/health`);
-    console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
-    console.log(`👤 Users: http://localhost:${PORT}/api/users`);
-    console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
-    console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
-    console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
-    console.log(`🌍 States: http://localhost:${PORT}/api/states`);
-    console.log(`🏘️ Districts: http://localhost:${PORT}/api/districts`);
-    console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
-    console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
-  });
-// }
+app.listen(PORT, () => {
+  console.log(`\n🚀 Server: http://localhost:${PORT}`);
+  console.log(`✅ Health: http://localhost:${PORT}/api/health`);
+  console.log(`🔐 Login: POST http://localhost:${PORT}/api/auth/login`);
+  console.log(`👤 Users: http://localhost:${PORT}/api/users`);
+  console.log(`👥 Customers: http://localhost:${PORT}/api/customers`);
+  console.log(`📋 Schemes: http://localhost:${PORT}/api/schemes`);
+  console.log(`💰 Payments: http://localhost:${PORT}/api/payments`);
+  console.log(`🌍 States: http://localhost:${PORT}/api/states`);
+  console.log(`🏘️  Districts: http://localhost:${PORT}/api/districts`);
+  console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
+  console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
+  console.log(`📝 Logs: ${logsDir}`);
+});
 
 module.exports = app;

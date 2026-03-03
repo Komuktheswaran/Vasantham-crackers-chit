@@ -105,7 +105,7 @@ const PaymentDownload = () => {
   const handlePreview = async () => {
     setLoading(true);
     try {
-      const params = { limit: 10 };
+      const params = { limit: 10, sort_order: "asc" };
       if (filters.date_from) params.date_from = filters.date_from;
       if (filters.date_to) params.date_to = filters.date_to;
       if (filters.customer_id) params.customer_id = filters.customer_id;
@@ -118,7 +118,13 @@ const PaymentDownload = () => {
       const payments = data.payments || (Array.isArray(data) ? data : []);
       const count = data.pagination?.totalRecords || payments.length || 0;
 
-      setPreviewData(payments);
+      // Enrich with Customer_Code from the already-loaded customers list
+      const enriched = payments.map((p) => {
+        const cust = customers.find((c) => c.Customer_ID === p.Customer_ID);
+        return { ...p, Customer_Code: cust?.Customer_Code || p.Customer_Code || "-" };
+      });
+
+      setPreviewData(enriched);
       setRecordCount(count);
 
       if (payments.length === 0) {
@@ -165,9 +171,12 @@ const PaymentDownload = () => {
   };
 
   const columns = [
-    { title: "Payment ID", dataIndex: "Pay_ID", key: "id" },
-    { title: "Customer", dataIndex: "Customer_Name", key: "customer" },
+    { title: "Customer ID", dataIndex: "Customer_ID", key: "customer_id" },
+    { title: "Customer Code", dataIndex: "Customer_Code", key: "customer_code", render: (v) => v || "-" },
+    { title: "Customer Name", dataIndex: "Customer_Name", key: "customer" },
+    { title: "Fund No.", dataIndex: "Fund_Number", key: "fund_number", render: (v) => v || "-" },
     { title: "Scheme", dataIndex: "Scheme_Name", key: "scheme" },
+    { title: "Due No.", dataIndex: "Due_number", key: "due_number" },
     {
       title: "Amount",
       dataIndex: "Amount_Received",
@@ -180,6 +189,7 @@ const PaymentDownload = () => {
       key: "date",
       render: (val) => dayjs(val).format("DD-MM-YYYY"),
     },
+    { title: "UPI Number", dataIndex: "UPI_Phone_Number", key: "upi", render: (v) => v || "-" },
     {
       title: "Transaction ID",
       dataIndex: "Transaction_ID",

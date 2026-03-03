@@ -208,7 +208,7 @@ const getAllPayments = async (req, res) => {
                         JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
                         ${whereClauses.length > 0 ? 'WHERE ' + whereClauses.join(' AND ') : ''}`;
 
-    query += ` ORDER BY pm.Amount_Received_date DESC`;
+    query += ` ORDER BY pm.Fund_Number ASC, pm.Due_number ASC`;
     
     // Only add pagination if limit is provided
     if (limit) {
@@ -394,11 +394,38 @@ const updatePayment = async (req, res) => {
   }
 };
 
+const getNextReferenceId = async (req, res) => {
+  try {
+    const year = new Date().getFullYear();
+    const prefix = `${year}/`;
+
+    // Find the max sequential number used this year from Payment_Transaction_ID
+    const result = await executeQuery(`
+      SELECT MAX(CAST(SUBSTRING(Payment_Transaction_ID, LEN(@prefix) + 1, 10) AS INT)) AS MaxSeq
+      FROM Payment_Master
+      WHERE Payment_Transaction_ID LIKE @prefixPattern
+        AND ISNUMERIC(SUBSTRING(Payment_Transaction_ID, LEN(@prefix) + 1, 10)) = 1
+    `, [
+      { value: prefix, type: sql.VarChar(20), name: 'prefix' },
+      { value: `${prefix}%`, type: sql.VarChar(30), name: 'prefixPattern' }
+    ]);
+
+    const maxSeq = result[0]?.MaxSeq || 0;
+    const nextSeq = String(maxSeq + 1).padStart(5, '0');
+    const nextRefId = `${year}/${nextSeq}`;
+
+    return sendSuccess(res, 'Next reference ID generated', { referenceId: nextRefId });
+  } catch (error) {
+    return sendError(res, 'Failed to generate reference ID', error);
+  }
+};
+
 module.exports = { 
   getPaymentsByCustomer, 
   recordPayment, 
   getDuesByFundNumber, 
   getAllPayments, 
   payAllDues, 
-  updatePayment 
+  updatePayment,
+  getNextReferenceId
 };

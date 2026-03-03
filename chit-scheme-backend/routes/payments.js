@@ -1,9 +1,10 @@
-const { getPaymentsByCustomer, recordPayment, getDuesByScheme, getDuesByFundNumber, getAllPayments, payAllDues, updatePayment } = require('../controllers/paymentController');
+const { getPaymentsByCustomer, recordPayment, getDuesByScheme, getDuesByFundNumber, getAllPayments, payAllDues, updatePayment, getNextReferenceId } = require('../controllers/paymentController');
 const express = require('express');
 const { paymentValidation } = require('../middleware/validators');
 const router = express.Router();
 
 router.get('/', getAllPayments);
+router.get('/next-reference-id', getNextReferenceId);
 router.get('/customer/:customerId', getPaymentsByCustomer);
 // Kept legacy route for safety if needed, or we can replace it. 
 // Given instructions "use fund number... for all operation", I will replace the main usage route.
