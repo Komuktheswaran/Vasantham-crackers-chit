@@ -6,7 +6,17 @@ const path = require('path');
 
 const getAllCustomers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '', state, district, area, scheme_id } = req.query;
+    const { 
+      page = 1, 
+      limit = 20, 
+      search = '', 
+      state, 
+      district, 
+      area, 
+      scheme_id,
+      sort_field = 'Customer_ID',
+      sort_order = 'DESC'
+    } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     // Build base query
@@ -84,7 +94,7 @@ const getAllCustomers = async (req, res) => {
       ISNULL((SELECT COUNT(*) FROM Payment_Master WHERE Customer_ID = c.Customer_ID), 0) as total_payments
       ${fromQuery}
       ${whereClause}
-      ORDER BY c.Customer_ID DESC
+      ORDER BY ${sort_field} ${sort_order}
       OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY
     `;
 

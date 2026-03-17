@@ -61,6 +61,10 @@ const Customers = () => {
   const [selectedSchemeForCreate, setSelectedSchemeForCreate] = useState(null);
   // Filter States
   const [fundNumberSearch, setFundNumberSearch] = useState("");
+  const [sortParams, setSortParams] = useState({
+    field: "Customer_ID",
+    order: "descend",
+  });
 
   // Function to check if Customer_ID exists
   const checkId = async (rule, value) => {
@@ -95,7 +99,9 @@ const Customers = () => {
       title: "Cust ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
-      sorter: (a, b) => a.Customer_ID.localeCompare(b.Customer_ID),
+      defaultSortOrder: "descend",
+      sorter: true,
+      sortOrder: sortParams.field === "Customer_ID" ? sortParams.order : null,
     },
     {
       title: "Name",
@@ -181,6 +187,8 @@ const Customers = () => {
         limit: data.pagination?.pageSize || 20,
         search: searchText,
         fund_number: fundNumberSearch,
+        sort_field: sortParams.field,
+        sort_order: sortParams.order === "ascend" ? "ASC" : "DESC",
         ...params,
       };
 
@@ -249,10 +257,18 @@ const Customers = () => {
     fetchDeliveryPoints();
   }, []);
 
-  const handleTableChange = (pagination) => {
+  const handleTableChange = (pagination, filters, sorter) => {
+    const newSortParams = {
+      field: sorter.field || "Customer_ID",
+      order: sorter.order || "descend",
+    };
+    setSortParams(newSortParams);
+
     fetchCustomers({
       page: pagination.current,
       limit: pagination.pageSize,
+      sort_field: newSortParams.field,
+      sort_order: newSortParams.order === "ascend" ? "ASC" : "DESC",
     });
   };
 
@@ -276,7 +292,7 @@ const Customers = () => {
     setModalVisible(true);
   };
 
-  const onFinishForm = (values) => {
+  const onFinishForm = (values, isNext = false) => {
     if (editingCustomer) {
       submitCustomerData(values, false);
     } else {
@@ -292,13 +308,13 @@ const Customers = () => {
         cancelText: "No, Create Only",
         maskClosable: false,
         closable: false, // Force choice
-        onOk: () => submitCustomerData(values, true),
-        onCancel: () => submitCustomerData(values, false),
+        onOk: () => submitCustomerData(values, true, isNext),
+        onCancel: () => submitCustomerData(values, false, isNext),
       });
     }
   };
 
-  const submitCustomerData = async (values, sendWhatsapp) => {
+  const submitCustomerData = async (values, sendWhatsapp, isNext = false) => {
     try {
       const payload = {
         ...values,
@@ -324,10 +340,32 @@ const Customers = () => {
         await customersAPI.create(payload);
         message.success("Customer created successfully");
       }
-      setModalVisible(false);
-      form.resetFields();
-      setEditingCustomer(null);
-      setSelectedSchemeForCreate(null);
+
+      if (isNext) {
+        form.resetFields();
+        setEditingCustomer(null);
+        setSelectedSchemeForCreate(null);
+        setSelectedState(null);
+        
+        // Fetch next IDs for the next customer
+        try {
+          const response = await customersAPI.getNextIds();
+          if (response.data.success) {
+            form.setFieldsValue({
+              Customer_ID: response.data.data.customerId,
+              Fund_Number: response.data.data.fundNumber,
+            });
+          }
+        } catch (err) {
+          console.error("Failed to fetch next IDs:", err);
+        }
+      } else {
+        setModalVisible(false);
+        form.resetFields();
+        setEditingCustomer(null);
+        setSelectedSchemeForCreate(null);
+      }
+      
       fetchCustomers({ page: 1, limit: 20 });
     } catch (error) {
       console.error("Save error:", error);
@@ -754,6 +792,36 @@ const Customers = () => {
           setSelectedState(null); // Clear selected state on modal close
         }}
         onOk={() => form.submit()}
+        footer={[
+          <Button key="cancel" onClick={() => {
+            setModalVisible(false);
+            form.resetFields();
+            setEditingCustomer(null);
+            setSelectedSchemeForCreate(null);
+            setSelectedState(null);
+          }}>
+            Cancel
+          </Button>,
+          !editingCustomer && (
+            <Button 
+              key="next" 
+              type="primary" 
+              ghost 
+              onClick={() => {
+                form.validateFields().then(values => {
+                  onFinishForm(values, true);
+                }).catch(info => {
+                  console.log('Validate Failed:', info);
+                });
+              }}
+            >
+              Save & Next
+            </Button>
+          ),
+          <Button key="submit" type="primary" onClick={() => form.submit()}>
+            {editingCustomer ? "Update" : "Save & Close"}
+          </Button>,
+        ]}
         width="90%"
         style={{ top: 30 }}
         styles={{ body: { minHeight: 500 } }}

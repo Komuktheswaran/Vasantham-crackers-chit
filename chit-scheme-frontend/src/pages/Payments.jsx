@@ -15,9 +15,11 @@ import {
   Modal,
   Tooltip,
 } from "antd";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined, DownloadOutlined } from "@ant-design/icons";
 import { customersAPI, paymentsAPI, schemesAPI } from "../services/api";
 import dayjs from "dayjs";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import "./css/Payments.css";
 
 const { Title, Text } = Typography;
@@ -302,6 +304,98 @@ const Payments = () => {
     } finally {
       setHistoryLoading(false);
     }
+  };
+
+  const downloadHistoryPDF = () => {
+    if (!paymentHistory || paymentHistory.length === 0) {
+      message.warning("No payment history to download.");
+      return;
+    }
+
+    const cust = allCustomers.find((c) => c.Customer_ID === selectedCustomer);
+    const scheme = schemes.find((s) => s.Scheme_ID === selectedScheme);
+
+    const doc = new jsPDF();
+
+    // Set header
+    doc.setFontSize(18);
+    doc.setTextColor(180, 0, 0); // Reddish color for header
+    doc.text("VASANTHAM CRACKERS FUND SCHEME", 105, 15, { align: "center" });
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("SATHUR ROAD, Sivakasi - 626 189.", 105, 22, { align: "center" });
+    doc.text("Cell: 95855 93485, 98439 82100, 97897 80866, 90927 80866", 105, 27, {
+      align: "center",
+    });
+
+    // Draw lines
+    doc.setDrawColor(180, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(10, 32, 200, 32);
+
+    // Customer Info Section
+    doc.setFontSize(12);
+    doc.text(`Fund No: ${selectedFundNumber}`, 15, 42);
+    doc.text(`Date: ${dayjs().format("DD/MM/YYYY")}`, 150, 42);
+
+    doc.text(`Customer Name: ${cust?.Name || "-"}`, 15, 52);
+    doc.text(`Customer ID: ${cust?.Customer_ID || "-"}`, 15, 62);
+    doc.text(`Phone: ${cust?.Phone_Number || "-"}`, 15, 72);
+
+    if (scheme) {
+      doc.text(`Scheme: ${scheme.Scheme_Name || "-"}`, 15, 82);
+    }
+
+    // Table Header
+    const tableColumn = ["Month/Due", "Date", "Paid Amount", "Ref No"];
+    const tableRows = [];
+
+    paymentHistory.forEach((p) => {
+      const rowData = [
+        p.Due_number,
+        dayjs(p.Amount_Received_date).format("DD/MM/YYYY"),
+        `INR ${p.Amount_Received}`,
+        p.Payment_Transaction_ID || p.Transaction_ID || "-",
+      ];
+      tableRows.push(rowData);
+    });
+
+    doc.autoTable({
+      startY: 92,
+      head: [tableColumn],
+      body: tableRows,
+      theme: "grid",
+      headStyles: { fillColor: [180, 0, 0], textColor: [255, 255, 255] },
+      styles: { fontSize: 10, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 40 },
+        3: { cellWidth: "auto" },
+      },
+    });
+
+    // Total
+    const totalPaid = paymentHistory.reduce(
+      (sum, p) => sum + parseFloat(p.Amount_Received || 0),
+      0,
+    );
+    const finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.setFont(undefined, "bold");
+    doc.text(`Total Amount Paid: INR ${totalPaid.toFixed(2)}`, 15, finalY);
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setFont(undefined, "normal");
+    doc.text(
+      "Note: Please pay the monthly subscription before the 10th of every month.",
+      15,
+      finalY + 10,
+    );
+
+    doc.save(`Passbook_${selectedFundNumber}.pdf`);
   };
 
   const handleEditPayment = (record) => {
@@ -982,7 +1076,26 @@ const Payments = () => {
 
       {/* Payment History Modal */}
       <Modal
-        title={`Payment History - ${selectedFundNumber}${selectedCustomer ? ` · ${allCustomers.find((c) => c.Customer_ID === selectedCustomer)?.Name || ""}` : ""}`}
+        title={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginRight: 24,
+            }}
+          >
+            <span>{`Payment History - ${selectedFundNumber}${selectedCustomer ? ` · ${allCustomers.find((c) => c.Customer_ID === selectedCustomer)?.Name || ""}` : ""}`}</span>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              onClick={downloadHistoryPDF}
+              size="small"
+            >
+              Download PDF
+            </Button>
+          </div>
+        }
         open={historyModalVisible}
         onCancel={() => setHistoryModalVisible(false)}
         footer={null}
