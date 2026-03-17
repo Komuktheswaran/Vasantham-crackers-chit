@@ -306,7 +306,25 @@ const Payments = () => {
     }
   };
 
-  const downloadHistoryPDF = () => {
+  const getBase64ImageFromURL = (url) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.setAttribute("crossOrigin", "anonymous");
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL("image/jpeg");
+        resolve(dataURL);
+      };
+      img.onerror = (error) => reject(error);
+      img.src = url;
+    });
+  };
+
+  const downloadHistoryPDF = async () => {
     if (!paymentHistory || paymentHistory.length === 0) {
       message.warning("No payment history to download.");
       return;
@@ -317,10 +335,18 @@ const Payments = () => {
 
     const doc = new jsPDF();
 
+    // Add Logo
+    try {
+      const logoData = await getBase64ImageFromURL("/logo.jpeg");
+      doc.addImage(logoData, "JPEG", 15, 10, 25, 25);
+    } catch (err) {
+      console.error("Failed to load logo for PDF:", err);
+    }
+
     // Set header
     doc.setFontSize(18);
     doc.setTextColor(180, 0, 0); // Reddish color for header
-    doc.text("VASANTHAM CRACKERS FUND SCHEME", 105, 15, { align: "center" });
+    doc.text("VASANTHAM CRACKERS FUND SCHEME", 105, 18, { align: "center" });
 
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
