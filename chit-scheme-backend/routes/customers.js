@@ -20,7 +20,11 @@ const {
   removeScheme
 } = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
+const { authenticateToken } = require('../middleware/adminAuth');
 const router = express.Router();
+
+// Apply auth to every customer route
+router.use(authenticateToken);
 
 // ====================================================================
 // SECURITY FIX: Secure File Upload Configuration

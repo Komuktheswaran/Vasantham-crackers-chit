@@ -10,11 +10,11 @@ const validate = (req, res, next) => {
 };
 
 const customerValidation = [
-  body('Customer_ID').trim().notEmpty().withMessage('Customer ID is required'),
+  body('Customer_ID').optional({ checkFalsy: true }).trim(),
   body('Name').optional({ checkFalsy: true }).trim().isLength({ min: 3 }).withMessage('Name must be at least 3 characters').escape(),
   body('Reference_Code').optional({ checkFalsy: true }).trim().escape(),
   body('Customer_Type').optional({ checkFalsy: true }).trim(),
-  body('PhoneNumber').trim().notEmpty().withMessage('Phone number is required').isMobilePhone().withMessage('Invalid phone number'),
+  body('PhoneNumber').trim().notEmpty().withMessage('Phone number is required').isMobilePhone('en-IN', { strictMode: false }).withMessage('Invalid phone number'),
   body('Address1').optional({ checkFalsy: true }).trim().escape(),
   body('Address2').optional({ checkFalsy: true }).trim().escape(),
   body('StreetAddress1').optional({ checkFalsy: true }).trim().escape(), 
@@ -22,7 +22,7 @@ const customerValidation = [
   body('Area').optional({ checkFalsy: true }).trim().escape(),
   body('State_ID').customSanitizer(val => val === "" ? null : val).optional({ nullable: true }).isInt().withMessage('State ID must be an integer'),
   body('District_ID').customSanitizer(val => val === "" ? null : val).optional({ nullable: true }).isInt().withMessage('District ID must be an integer'),
-  body('Pincode').customSanitizer(val => val === "" ? null : val).optional({ nullable: true }).trim().isPostalCode('IN').withMessage('Invalid Pincode'),
+  body('Pincode').customSanitizer(val => (val === "" || val === null || val === undefined) ? null : String(val)).optional({ nullable: true }).trim().isPostalCode('IN').withMessage('Invalid Pincode'),
   body('Scheme_ID').customSanitizer(val => val === "" ? null : val).optional({ nullable: true }).isInt().withMessage('Scheme ID must be an integer'),
   body('Fund_Number').if(body('Scheme_ID').exists({ checkFalsy: true })).notEmpty().withMessage('Fund Number is required when assigning a scheme'),
   validate

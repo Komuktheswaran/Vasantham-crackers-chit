@@ -38,8 +38,11 @@
   --header-height: 72px;
   --border-radius: 20px;
 
-  /* Transitions */
-  --trans-smooth: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  /* Transitions - Targeted for better performance */
+  --trans-smooth: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+                  opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                  background-color 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                  box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 
   /* New Tokens for Light Theme */
   --text-main: #0f172a; /* Slate 900 */
@@ -53,10 +56,10 @@ body {
   padding: 0;
   font-family: "Plus Jakarta Sans", sans-serif;
   background-color: var(--bg-deep);
+  /* Simplified gradients for better scroll performance */
   background-image:
-    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(45, 212, 191, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(59, 130, 246, 0.03) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(45, 212, 191, 0.04) 0px, transparent 50%);
   color: var(--text-main);
   min-height: 100vh;
   overflow-x: hidden;
@@ -71,10 +74,11 @@ body {
 }
 
 .app-sider {
-  background: rgba(255, 255, 255, 0.7) !important;
-  backdrop-filter: var(--glass-blur);
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px); /* Reduced from 16px */
   border-right: 1px solid var(--glass-border);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+  will-change: transform;
 }
 
 .app-logo-container {
@@ -100,11 +104,12 @@ body {
   background: linear-gradient(
     45deg,
     transparent,
-    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.3),
     transparent
   );
   transform: rotate(45deg);
-  animation: glossy-sweep 3s infinite;
+  /* Slower animation to reduce main thread load */
+  animation: glossy-sweep 4s infinite linear;
 }
 
 @keyframes glossy-sweep {
@@ -142,26 +147,27 @@ body {
   transition: var(--trans-smooth) !important;
   font-weight: 500;
   color: var(--text-secondary) !important;
+  will-change: transform, background-color;
 }
 
 .ant-menu-item-selected {
   background: var(--grad-main) !important;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.15); /* Reduced shadow spread */
   color: white !important;
 }
 
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
   background: rgba(59, 130, 246, 0.05) !important;
   color: var(--primary-vibrant) !important;
-  transform: translateX(5px);
+  transform: translateX(4px); /* Slightly reduced for subtlety */
 }
 
 /* ==========================================================================
    Header & User Menu (Light Glass)
    ========================================================================== */
 .app-header {
-  background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: var(--glass-blur);
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(8px); /* Reduced blur */
   border-bottom: 1px solid var(--glass-border);
   height: var(--header-height) !important;
   padding: 0 32px !important;
@@ -181,7 +187,7 @@ body {
 }
 
 .app-user-menu {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 50px !important;
   padding: 4px 16px !important;
@@ -189,8 +195,8 @@ body {
 }
 
 .app-user-menu:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 0 15px rgba(79, 172, 254, 0.2);
+  background: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 0 15px rgba(79, 172, 254, 0.1);
 }
 
 /* ==========================================================================
@@ -198,19 +204,20 @@ body {
    ========================================================================== */
 .app-content-wrapper {
   background: var(--glass-bg) !important;
-  backdrop-filter: var(--glass-blur);
+  backdrop-filter: blur(8px); /* Reduced blur from 16px */
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius) !important;
   margin: 32px !important;
   padding: 32px !important;
   box-shadow: var(--glass-shadow);
-  animation: page-enter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  /* Optimization: will-change for heavy hardware acceleration if needed, but use sparingly */
+  animation: page-enter 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateY(20px) scale(0.98);
+    transform: translateY(10px) scale(0.99); /* Reduced movement */
   }
   to {
     opacity: 1;
@@ -219,8 +226,8 @@ body {
 }
 
 .ant-card {
-  background: rgba(255, 255, 255, 0.5) !important;
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(4px); /* Very light blur for cards */
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 20px !important;
   overflow: hidden;
@@ -228,10 +235,10 @@ body {
 }
 
 .ant-card:hover {
-  transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.8) !important;
+  transform: translateY(-6px);
+  background: rgba(255, 255, 255, 0.9) !important;
   border-color: rgba(59, 130, 246, 0.3) !important;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
 }
 
 /* Glassy Buttons */
@@ -245,13 +252,13 @@ body {
 .ant-btn-primary {
   background: var(--grad-main) !important;
   border: none !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.15) !important;
   color: white !important;
 }
 
 .ant-btn-primary:hover {
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3) !important;
-  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.25) !important;
+  transform: translateY(-1px);
 }
 
 /* Glassy Inputs & Selects */
@@ -260,7 +267,7 @@ body {
 .ant-picker,
 .ant-input-number,
 .ant-input-affix-wrapper {
-  background: rgba(255, 255, 255, 0.5) !important;
+  background: rgba(255, 255, 255, 0.6) !important;
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 12px !important;
   color: var(--text-main) !important;
@@ -269,6 +276,7 @@ body {
   padding: 4px 20px !important;
   display: flex !important;
   align-items: center !important;
+  transition: var(--trans-smooth) !important;
 }
 
 /* Ensure the outer .ant-select wrapper has NO independent box/border */
@@ -314,7 +322,7 @@ body {
   min-width: 100px;
   font-weight: 700 !important;
   font-size: 16px !important;
-  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
 }
 
 .ant-input-affix-wrapper-focused,
@@ -339,7 +347,7 @@ body {
 .ant-picker:hover,
 .ant-input-affix-wrapper:hover {
   border-color: var(--primary-vibrant) !important;
-  background: rgba(255, 255, 255, 0.8) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* End of duplicated button block removal */
@@ -374,18 +382,18 @@ body {
 }
 
 .ant-table-thead > tr > th {
-  background: rgba(59, 130, 246, 0.03) !important;
+  background: rgba(59, 130, 246, 0.02) !important;
   color: var(--text-secondary) !important;
   border-bottom: 1px solid rgba(59, 130, 246, 0.05) !important;
   font-weight: 700 !important;
 }
 
 .ant-table-tbody > tr > td {
-  border-bottom: 1px solid rgba(59, 130, 246, 0.02) !important;
+  border-bottom: 1px solid rgba(59, 130, 246, 0.01) !important;
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: rgba(59, 130, 246, 0.05) !important;
+  background: rgba(59, 130, 246, 0.03) !important;
 }
 
 /* Glassy Tags */
@@ -400,7 +408,7 @@ body {
 
 /* Highlighter Polish */
 .customer-search-highlight {
-  background: rgba(59, 130, 246, 0.15) !important;
+  background: rgba(59, 130, 246, 0.1) !important;
   color: var(--primary-vibrant) !important;
   padding: 0 4px !important;
   border-radius: 4px;
@@ -415,27 +423,26 @@ body {
 .ant-tag-green {
   background: rgba(16, 185, 129, 0.1) !important;
   color: #059669 !important;
-  border-color: rgba(16, 185, 129, 0.2) !important;
+  border-color: rgba(16, 185, 129, 0.1) !important;
 }
 
 .ant-tag-error,
 .ant-tag-red {
-  background: rgba(244, 63, 94, 0.1) !important;
+  background: rgba(244, 63, 94, 0.08) !important;
   color: #e11d48 !important;
-  border-color: rgba(244, 63, 94, 0.2) !important;
+  border-color: rgba(244, 63, 94, 0.1) !important;
 }
 
 /* Popover / Dropdown Glass */
 .ant-dropdown-menu,
 .ant-select-dropdown {
-  background: rgba(255, 255, 255, 0.97) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 1px solid rgba(59, 130, 246, 0.2) !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(12px) saturate(180%) !important; /* Reduced from 20px */
+  border: 1px solid rgba(59, 130, 246, 0.15) !important;
   border-radius: 12px !important;
-  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.12) !important;
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.08) !important;
   z-index: 1050 !important;
   overflow: hidden !important;
-  padding: 4px 0 !important;
 }
 
 /* Remove inner virtual list's own border/shadow so only one box shows */
@@ -454,68 +461,31 @@ body {
 
 /* Global Custom Highlighting for Selected Select Options */
 .ant-select-item-option-selected {
-  background-color: #e6f4ff !important;
+  background-color: #f0f7ff !important;
   color: var(--text-main) !important;
   font-weight: 500 !important;
-  position: relative;
 }
 
 .ant-select-item-option-selected::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 10%;
-  height: 80%;
-  width: 4px;
+  top: 20%;
+  height: 60%;
+  width: 3px;
   background-color: #1677ff;
   border-radius: 0 4px 4px 0;
-}
-
-/* Dropdown navigation highlighting via arrow keys */
-.ant-select-item-option-active:not(.ant-select-item-option-selected) {
-  background-color: #e6f4ff !important;
-  color: var(--text-main) !important;
-  font-weight: 500 !important;
-  position: relative;
-}
-
-.ant-select-item-option-active:not(.ant-select-item-option-selected)::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 10%;
-  height: 80%;
-  width: 4px;
-  background-color: #1677ff;
-  border-radius: 0 4px 4px 0;
-}
-
-/* Color Tokens for Stats */
-.stat-vibrant-blue .ant-statistic-content-value {
-  color: #3b82f6 !important;
-}
-.stat-vibrant-emerald .ant-statistic-content-value {
-  color: #10b981 !important;
-}
-.stat-vibrant-amber .ant-statistic-content-value {
-  color: #f59e0b !important;
-}
-.stat-vibrant-rose .ant-statistic-content-value {
-  color: #f43f5e !important;
-}
-.stat-vibrant-violet .ant-statistic-content-value {
-  color: #8b5cf6 !important;
 }
 
 /* Scrollbars (Light) */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-deep);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.15);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -535,7 +505,7 @@ body {
 
 .app-footer {
   text-align: center;
-  padding: 24px !important;
+  padding: 16px !important; /* Reduced padding */
   background: transparent !important;
   color: var(--text-light) !important;
   font-weight: 500;
@@ -549,15 +519,9 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(2px); /* Reduced */
     z-index: 999;
-  }
-}
-
-@media (min-width: 992px) {
-  .sidebar-overlay {
-    display: none !important;
   }
 }
 
@@ -569,10 +533,8 @@ body {
 @keyframes fade-in {
   from {
     opacity: 0;
-    filter: blur(10px);
   }
   to {
     opacity: 1;
-    filter: blur(0);
   }
 }

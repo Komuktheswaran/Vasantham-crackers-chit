@@ -7,65 +7,89 @@ const { sendWhatsappMessage } = require('../services/whatsappService');
 const { sendSuccess, sendError } = require('../utils/responseHandler');
 
 // Helper to generate Customer ID in format: CD2026/001
-const generateCustomerId = async () => {
+// When called with a transaction, uses UPDLOCK+HOLDLOCK to prevent duplicate IDs under concurrency.
+const generateCustomerId = async (txn = null) => {
   const year = new Date().getFullYear();
   const prefix = `CD${year}/`;
-  
-  // Query for latest customer ID with this year's prefix
-  const result = await executeQuery(`
-    SELECT TOP 1 Customer_ID 
-    FROM Customer_Master 
-    WHERE Customer_ID LIKE @param0
-    ORDER BY Customer_ID DESC
-  `, [{ value: `${prefix}%`, type: sql.VarChar }]);
-  
+
+  let result;
+  if (txn) {
+    const req = new sql.Request(txn);
+    const r = await req
+      .input('prefix', sql.VarChar(20), `${prefix}%`)
+      .query(`SELECT TOP 1 Customer_ID FROM Customer_Master WITH (UPDLOCK, HOLDLOCK) WHERE Customer_ID LIKE @prefix ORDER BY Customer_ID DESC`);
+    result = r.recordset;
+  } else {
+    result = await executeQuery(
+      `SELECT TOP 1 Customer_ID FROM Customer_Master WHERE Customer_ID LIKE @param0 ORDER BY Customer_ID DESC`,
+      [{ value: `${prefix}%`, type: sql.VarChar }]
+    );
+  }
+
   let nextNumber = 1;
   if (result.length > 0) {
-    const lastId = result[0].Customer_ID;
-    const match = lastId.match(/\/(\d+)$/);
-    if (match) {
-      nextNumber = parseInt(match[1]) + 1;
-    }
+    const match = result[0].Customer_ID.match(/\/(\d+)$/);
+    if (match) nextNumber = parseInt(match[1]) + 1;
   }
-  
   return `${prefix}${String(nextNumber).padStart(3, '0')}`;
 };
 
 // Helper to generate Fund Number in format: F2026/001
-const generateFundNumber = async () => {
+// When called with a transaction, uses UPDLOCK+HOLDLOCK to prevent duplicate Fund Numbers under concurrency.
+const generateFundNumber = async (txn = null) => {
   const year = new Date().getFullYear();
   const prefix = `F${year}/`;
-  
-  // Query for latest fund number with this year's prefix
-  const result = await executeQuery(`
-    SELECT TOP 1 Fund_Number 
-    FROM Scheme_Members
-    WHERE Fund_Number LIKE @param0
-    ORDER BY Fund_Number DESC
-  `, [{ value: `${prefix}%`, type: sql.VarChar }]);
-  
+
+  let result;
+  if (txn) {
+    const req = new sql.Request(txn);
+    const r = await req
+      .input('prefix', sql.VarChar(20), `${prefix}%`)
+      .query(`SELECT TOP 1 Fund_Number FROM Scheme_Members WITH (UPDLOCK, HOLDLOCK) WHERE Fund_Number LIKE @prefix ORDER BY Fund_Number DESC`);
+    result = r.recordset;
+  } else {
+    result = await executeQuery(
+      `SELECT TOP 1 Fund_Number FROM Scheme_Members WHERE Fund_Number LIKE @param0 ORDER BY Fund_Number DESC`,
+      [{ value: `${prefix}%`, type: sql.VarChar }]
+    );
+  }
+
   let nextNumber = 1;
   if (result.length > 0) {
-    const lastFund = result[0].Fund_Number;
-    const match = lastFund.match(/\/(\d+)$/);
-    if (match) {
-      nextNumber = parseInt(match[1]) + 1;
-    }
+    const match = result[0].Fund_Number.match(/\/(\d+)$/);
+    if (match) nextNumber = parseInt(match[1]) + 1;
   }
-  
   return `${prefix}${String(nextNumber).padStart(3, '0')}`;
 };
 
 const getAllCustomers = async (req, res) => {
   try {
     const { page = 1, limit, search = '', state, district, area, scheme_id, customer_type, Customer_Type, fund_number } = req.query;
+    let { sort_field = 'Created_At', sort_order = 'DESC' } = req.query;
+
+    // Validate sort order against a fixed set — never interpolate raw user input
+    sort_order = ['ASC', 'DESC'].includes((sort_order || '').toUpperCase()) ? sort_order.toUpperCase() : 'DESC';
+
+    // Map allowed sort fields to safe qualified column expressions
+    const sortFieldMap = {
+      'Customer_ID':   'c.Customer_ID',
+      'Customer_Code': 'c.Customer_Code',
+      'Name':          'c.Name',
+      'Phone_Number':  'c.Phone_Number',
+      'Customer_Type': 'c.Customer_Type',
+      'Address1':      'c.Address1',
+      'District_Name': 'd.District_Name',
+      'State_Name':    's.State_Name',
+      'Created_At':    'c.Created_At',
+    };
+    const safeSortField = sortFieldMap[sort_field] || 'c.Created_At';
 
     // Build base query
     let baseQuery = `
-      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Code, c.Delivery_Point_ID, c.Customer_Type, 
+      SELECT c.Customer_ID, c.Customer_Code, c.Name, c.Reference_Code, c.Delivery_Point_ID, c.Customer_Type,
              c.Phone_Number, c.Phone_Number2, c.Area, c.State_ID, c.District_ID, c.Pincode,
-             c.Address1, c.Address2,
-             ISNULL(d.District_Name, 'N/A') as District_Name, 
+             c.Address1, c.Address2, c.Created_At,
+             ISNULL(d.District_Name, 'N/A') as District_Name,
              ISNULL(s.State_Name, 'N/A') as State_Name
     `;
     
@@ -139,30 +163,35 @@ const getAllCustomers = async (req, res) => {
         whereClause += ` AND EXISTS (SELECT 1 FROM Scheme_Members sm WHERE sm.Customer_ID = c.Customer_ID)`;
     }
 
+    // Pre-aggregated JOINs — computed once per table scan instead of once per row
+    const aggregateJoins = `
+      LEFT JOIN (
+        SELECT Customer_ID, COUNT(*) AS total_schemes
+        FROM Scheme_Members
+        GROUP BY Customer_ID
+      ) sm_counts ON c.Customer_ID = sm_counts.Customer_ID
+      LEFT JOIN (
+        SELECT sm2.Customer_ID, STRING_AGG(cm.Name, ', ') AS Assigned_Schemes
+        FROM Scheme_Members sm2
+        JOIN Chit_Master cm ON sm2.Scheme_ID = cm.Scheme_ID
+        GROUP BY sm2.Customer_ID
+      ) sm_agg ON c.Customer_ID = sm_agg.Customer_ID
+      LEFT JOIN (
+        SELECT Customer_ID, COUNT(*) AS total_payments
+        FROM Payment_Master
+        GROUP BY Customer_ID
+      ) pm_counts ON c.Customer_ID = pm_counts.Customer_ID
+    `;
+
     let customersQuery = `
       ${baseQuery},
        ISNULL(sm_counts.total_schemes, 0) as total_schemes,
        ISNULL(sm_agg.Assigned_Schemes, '') as Assigned_Schemes,
        ISNULL(pm_counts.total_payments, 0) as total_payments
       ${fromQuery}
-      OUTER APPLY (
-          SELECT COUNT(*) as total_schemes 
-          FROM Scheme_Members sm 
-          WHERE sm.Customer_ID = c.Customer_ID
-      ) sm_counts
-      OUTER APPLY (
-          SELECT STRING_AGG(cm.Name, ', ') as Assigned_Schemes 
-          FROM Scheme_Members sm 
-          JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
-          WHERE sm.Customer_ID = c.Customer_ID
-      ) sm_agg
-      OUTER APPLY (
-          SELECT COUNT(*) as total_payments 
-          FROM Payment_Master pm 
-          WHERE pm.Customer_ID = c.Customer_ID
-      ) pm_counts
+      ${aggregateJoins}
       ${whereClause}
-      ORDER BY c.Customer_ID ASC
+      ORDER BY ${safeSortField} ${sort_order}
     `;
 
     // Only add pagination if limit is provided
@@ -171,14 +200,17 @@ const getAllCustomers = async (req, res) => {
       customersQuery += ` OFFSET ${offset} ROWS FETCH NEXT ${parseInt(limit)} ROWS ONLY`;
     }
 
-    const customers = await executeQuery(customersQuery, params);
-
     const totalQuery = `
-      SELECT COUNT(DISTINCT c.Customer_ID) as total 
+      SELECT COUNT(DISTINCT c.Customer_ID) as total
       ${fromQuery}
       ${whereClause}
     `;
-    const totalResult = await executeQuery(totalQuery, params);
+
+    // Run data and count queries in parallel — independent queries, no reason to await sequentially
+    const [customers, totalResult] = await Promise.all([
+      executeQuery(customersQuery, params),
+      executeQuery(totalQuery, params),
+    ]);
 
     return sendSuccess(res, 'Customers fetched successfully', {
       customers,
@@ -218,8 +250,9 @@ const getCustomerById = async (req, res) => {
 };
 
 const createCustomer = async (req, res) => {
-  const connection = await sql.connect(require('../config/database').dbConfig);
-  const transaction = new sql.Transaction(connection);
+  const { getPool } = require('../models/db');
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
 
   try {
     let {
@@ -232,7 +265,7 @@ const createCustomer = async (req, res) => {
       PhoneNumber2,
       Address1,
       Address2,
-      StreetAddress1, 
+      StreetAddress1,
       StreetAddress2,
       Area,
       District_ID,
@@ -241,28 +274,28 @@ const createCustomer = async (req, res) => {
       Scheme_ID,
       Fund_Number,
       Delivery_Point_ID,
-      sendWhatsapp 
+      sendWhatsapp
     } = req.body;
-
-    // Auto-generate Customer_ID if not provided
-    if (!Customer_ID) {
-      Customer_ID = await generateCustomerId();
-    }
 
     const finalAddress1 = Address1 || StreetAddress1;
     const finalAddress2 = Address2 || StreetAddress2;
 
     await transaction.begin();
-    
-    // 1. Insert Customer using parameterized inputs
+
+    // Auto-generate Customer_ID inside the transaction — UPDLOCK prevents duplicate IDs
+    if (!Customer_ID) {
+      Customer_ID = await generateCustomerId(transaction);
+    }
+
+    // 1. Insert Customer
     const insertReq = new sql.Request(transaction);
     insertReq.input('Customer_ID', sql.VarChar(50), Customer_ID);
     insertReq.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
     insertReq.input('Name', sql.VarChar(255), Name);
     insertReq.input('Reference_Code', sql.VarChar(100), Reference_Code || '');
     insertReq.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
-    insertReq.input('Phone_Number', sql.BigInt, PhoneNumber);
-    insertReq.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
+    insertReq.input('Phone_Number', sql.VarChar(20), PhoneNumber ? String(PhoneNumber) : null);
+    insertReq.input('Phone_Number2', sql.VarChar(20), PhoneNumber2 ? String(PhoneNumber2) : null);
     insertReq.input('Address1', sql.VarChar(500), finalAddress1 || '');
     insertReq.input('Address2', sql.VarChar(500), finalAddress2 || '');
     insertReq.input('Area', sql.VarChar(255), Area || '');
@@ -273,88 +306,93 @@ const createCustomer = async (req, res) => {
 
     await insertReq.query(`
       INSERT INTO Customer_Master (
-        Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type, 
-        Phone_Number, Phone_Number2, Address1, Address2, 
-        Area, District_ID, State_ID, Pincode, Delivery_Point_ID
+        Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type,
+        Phone_Number, Phone_Number2, Address1, Address2,
+        Area, District_ID, State_ID, Pincode, Delivery_Point_ID, Created_At
       )
       VALUES (
-        @Customer_ID, @Customer_Code, @Name, @Reference_Code, @Customer_Type, 
-        @Phone_Number, @Phone_Number2, @Address1, @Address2, 
-        @Area, @District_ID, @State_ID, @Pincode,  @Delivery_Point_ID
+        @Customer_ID, @Customer_Code, @Name, @Reference_Code, @Customer_Type,
+        @Phone_Number, @Phone_Number2, @Address1, @Address2,
+        @Area, @District_ID, @State_ID, @Pincode, @Delivery_Point_ID, GETDATE()
       )
     `);
 
-    // ... rest of the logic remains the same (already parameterized)
     // 2. Assign Schemes (Single or Multiple)
     let schemesToAssign = [];
     if (req.body.Schemes && Array.isArray(req.body.Schemes)) {
-        schemesToAssign = req.body.Schemes;
+      schemesToAssign = req.body.Schemes;
     } else if (Scheme_ID) {
-        schemesToAssign.push({ schemeId: Scheme_ID, fundNumber: Fund_Number });
+      schemesToAssign.push({ schemeId: Scheme_ID, fundNumber: Fund_Number });
     }
 
     if (schemesToAssign.length > 0) {
-        for (const schemeItem of schemesToAssign) {
-            const schemeId = schemeItem.schemeId;
-            const fundNum = schemeItem.fundNumber || await generateFundNumber();
+      // Build a single bulk table for all dues across all schemes
+      const duesTable = new sql.Table('Scheme_Due');
+      duesTable.create = false;
+      duesTable.columns.add('Scheme_ID', sql.Int, { nullable: false });
+      duesTable.columns.add('Due_number', sql.Int, { nullable: false });
+      duesTable.columns.add('Due_date', sql.Date, { nullable: true });
+      duesTable.columns.add('Due_amount', sql.Decimal(15, 2), { nullable: true });
+      duesTable.columns.add('Recd_amount', sql.Decimal(15, 2), { nullable: true });
+      duesTable.columns.add('amt_received_date', sql.Date, { nullable: true });
+      duesTable.columns.add('Customer_ID', sql.VarChar(50), { nullable: false });
+      duesTable.columns.add('Fund_Number', sql.VarChar(50), { nullable: true });
 
-            // Insert Member
-            const assignReq = new sql.Request(transaction);
-            await assignReq.input('customerId', sql.VarChar(50), Customer_ID)
-                           .input('schemeId', sql.Int, schemeId)
-                           .input('fundNum', sql.VarChar(50), fundNum)
-                           .query(`
-                               INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at) 
-                               VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())
-                           `);
+      for (const schemeItem of schemesToAssign) {
+        const schemeId = schemeItem.schemeId;
+        // Fund number generation inside transaction — UPDLOCK prevents duplicates
+        const fundNum = schemeItem.fundNumber || await generateFundNumber(transaction);
 
-            // Generate Dues Logic
-            const schemeDetailsReq = new sql.Request(transaction);
-            const schemeResult = await schemeDetailsReq.input('schemeId', sql.Int, schemeId)
-                  .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
-              
-            const scheme = schemeResult.recordset[0];
-            if (scheme) {
-                for (let i = 1; i <= scheme.Number_of_due; i++) {
-                    const dueDate = new Date(scheme.Month_from);
-                    dueDate.setMonth(dueDate.getMonth() + (i - 1));
-                    dueDate.setDate(10); // Set due date to 10th of the month
+        // Insert Scheme Member
+        const assignReq = new sql.Request(transaction);
+        await assignReq
+          .input('customerId', sql.VarChar(50), Customer_ID)
+          .input('schemeId', sql.Int, schemeId)
+          .input('fundNum', sql.VarChar(50), fundNum)
+          .query(`INSERT INTO Scheme_Members (Customer_ID, Scheme_ID, Fund_Number, Status, Join_date, Created_at, Updated_at)
+                  VALUES (@customerId, @schemeId, @fundNum, 'Active', GETDATE(), GETDATE(), GETDATE())`);
 
-                    const insertDueReq = new sql.Request(transaction);
-                    await insertDueReq.input('schemeId', sql.Int, schemeId)
-                                      .input('customerId', sql.VarChar(50), Customer_ID)
-                                      .input('fundNum', sql.VarChar(50), fundNum)
-                                      .input('dueNumber', sql.Int, i)
-                                      .input('dueDate', sql.Date, dueDate)
-                                      .input('dueAmount', sql.Decimal(15, 2), scheme.Amount_per_month)
-                                      .query(`
-                                          INSERT INTO Scheme_Due (Scheme_ID, Customer_ID, Fund_Number, Due_number, Due_date, Due_amount)
-                                          VALUES (@schemeId, @customerId, @fundNum, @dueNumber, @dueDate, @dueAmount)
-                                      `);
-                }
-            }
+        // Fetch scheme details
+        const schemeDetailsReq = new sql.Request(transaction);
+        const schemeResult = await schemeDetailsReq
+          .input('schemeId', sql.Int, schemeId)
+          .query('SELECT Amount_per_month, Number_of_due, Month_from FROM Chit_Master WHERE Scheme_ID = @schemeId');
+
+        const scheme = schemeResult.recordset[0];
+        if (scheme) {
+          for (let i = 1; i <= scheme.Number_of_due; i++) {
+            const dueDate = new Date(scheme.Month_from);
+            dueDate.setMonth(dueDate.getMonth() + (i - 1));
+            dueDate.setDate(10);
+            duesTable.rows.add(schemeId, i, dueDate, scheme.Amount_per_month, null, null, Customer_ID, fundNum);
+          }
         }
+      }
+
+      // Bulk insert all dues in one trip instead of one INSERT per due
+      if (duesTable.rows.length > 0) {
+        const bulkReq = new sql.Request(transaction);
+        await bulkReq.bulk(duesTable);
+      }
     }
 
     await transaction.commit();
 
-    // 📱 Send WhatsApp Notification (User Created) - Async, don't block response
-    if (PhoneNumber && sendWhatsapp !== false) {
-        sendWhatsappMessage(String(PhoneNumber), "welcomecccc", [String(Customer_ID), Name], Name)
-            .catch(err => console.error("WA Send Failed (Create Customer):", err.message));
+    // Send WhatsApp only when explicitly requested (opt-in, not opt-out)
+    if (PhoneNumber && sendWhatsapp === true) {
+      sendWhatsappMessage(String(PhoneNumber), 'welcomecccc', [String(Customer_ID), Name], Name)
+        .catch(err => console.error('WA Send Failed (Create Customer):', err.message));
     }
 
     return sendSuccess(res, 'Customer created successfully', { customerId: Customer_ID }, 201);
   } catch (error) {
-    if (transaction.active) await transaction.rollback();
+    if (transaction.active) await transaction.rollback().catch(() => {});
     return sendError(res, 'Failed to create customer', error);
-  } finally {
-    await connection.close();
   }
 };
 
 const updateCustomer = async (req, res) => {
-  const connection = await sql.connect(require('../config/database').dbConfig);
+  const { getPool } = require('../models/db');
   try {
     const { id } = req.params;
     const {
@@ -378,14 +416,15 @@ const updateCustomer = async (req, res) => {
     const finalAddress1 = Address1 || StreetAddress1;
     const finalAddress2 = Address2 || StreetAddress2;
 
-    const request = new sql.Request(connection);
+    const pool = await getPool();
+    const request = pool.request();
     request.input('id', sql.VarChar(50), id);
     request.input('Customer_Code', sql.VarChar(100), Customer_Code || '');
     request.input('Name', sql.VarChar(255), Name);
     request.input('Reference_Code', sql.VarChar(100), Reference_Code || '');
     request.input('Customer_Type', sql.VarChar(100), Customer_Type || '');
-    request.input('Phone_Number', sql.BigInt, PhoneNumber);
-    request.input('Phone_Number2', sql.BigInt, PhoneNumber2 || null);
+    request.input('Phone_Number', sql.VarChar(20), PhoneNumber ? String(PhoneNumber) : null);
+    request.input('Phone_Number2', sql.VarChar(20), PhoneNumber2 ? String(PhoneNumber2) : null);
     request.input('Address1', sql.VarChar(500), finalAddress1 || '');
     request.input('Address2', sql.VarChar(500), finalAddress2 || '');
     request.input('Area', sql.VarChar(255), Area || '');
@@ -408,14 +447,13 @@ const updateCustomer = async (req, res) => {
     return sendSuccess(res, 'Customer updated successfully');
   } catch (error) {
     return sendError(res, 'Failed to update customer', error);
-  } finally {
-    await connection.close();
   }
 };
 
 const deleteCustomer = async (req, res) => {
-  const connection = await sql.connect(require('../config/database').dbConfig);
-  const transaction = new sql.Transaction(connection);
+  const { getPool } = require('../models/db');
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
 
   try {
     const { id } = req.params;
@@ -457,7 +495,7 @@ const deleteCustomer = async (req, res) => {
     await transaction.commit();
     return sendSuccess(res, 'Customer and all related data deleted successfully');
   } catch (error) {
-    if (transaction.active) await transaction.rollback();
+    if (transaction.active) await transaction.rollback().catch(() => {});
     return sendError(res, 'Failed to delete customer', error);
   }
 };
@@ -538,123 +576,114 @@ const downloadCustomers = async (req, res) => {
 };
 
 const uploadCustomers = async (req, res) => {
-    if (!req.file) {
-        return sendError(res, 'No file uploaded', null, 400);
+  if (!req.file) {
+    return sendError(res, 'No file uploaded', null, 400);
+  }
+
+  try {
+    // Parse Excel using the same named-column format as the sample download
+    const wb = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rawRows = xlsx.utils.sheet_to_json(ws);
+
+    if (rawRows.length === 0) {
+      return sendError(res, 'Excel file is empty', null, 400);
+    }
+    if (rawRows.length > 500) {
+      return sendError(res, 'Upload limit exceeded. Maximum 500 rows per upload.', null, 400);
     }
 
-    // Determine file type (CSV or Excel) and parse accordingly
-    const ext = path.extname(req.file.originalname).toLowerCase();
-    let rows = [];
-    if (ext === '.xlsx' || ext === '.xls') {
-        // Use Excel parser utility
-        rows = await parseExcel(req.file.buffer);
-    } else {
-        // Assume CSV
-        const csvData = req.file.buffer.toString('utf-8');
-        rows = csvData.split('\n').slice(1);
+    // Normalise column names with the same flexible mapping used by the sample file
+    const processed = [];
+    for (const row of rawRows) {
+      const record = {};
+      for (const key in row) {
+        const k = key.trim().toLowerCase().replace(/[_\s]/g, '');
+        if (k.includes('customercode') || k === 'code')          record.Customer_Code = String(row[key]);
+        else if (k.includes('name'))                              record.Name = String(row[key]);
+        else if (k.includes('phonenumber') || k.includes('phone') || k.includes('mobile')) record.Phone_Number = String(parseInt(row[key], 10));
+        else if (k.includes('secondaryphone') || k === 'phone2') record.Phone_Number2 = row[key] ? String(parseInt(row[key], 10)) : null;
+        else if (k.includes('type'))                              record.Customer_Type = String(row[key]);
+        else if (k.includes('address1') || k.includes('addressline1')) record.Address1 = String(row[key]);
+        else if (k.includes('address2') || k.includes('addressline2')) record.Address2 = String(row[key]);
+        else if (k === 'state')                                   record.State = String(row[key]);
+        else if (k === 'district')                                record.District = String(row[key]);
+        else if (k.includes('pincode') || k.includes('pin'))     record.Pincode = row[key] ? parseInt(row[key], 10) : null;
+        else if (k.includes('referencecode') || k.includes('refcode')) record.Reference_Code = String(row[key]);
+      }
+      if (record.Name && record.Phone_Number) processed.push(record);
     }
 
-    const connection = await sql.connect(require('../config/database').dbConfig);
-    const transaction = new sql.Transaction(connection);
-    
+    if (processed.length === 0) {
+      return sendError(res, 'No valid rows found. Name and Phone Number are required.', null, 400);
+    }
+
+    // Pre-fetch state/district lookup tables once — not inside the per-row loop
+    const [states, districts] = await Promise.all([
+      executeQuery('SELECT State_ID, State_Name FROM State_Master', []),
+      executeQuery('SELECT District_ID, District_Name FROM District_Master', []),
+    ]);
+
+    const { getPool } = require('../models/db');
+    const pool = await getPool();
+    const transaction = new sql.Transaction(pool);
+    let successCount = 0;
+    let failCount = 0;
+
     try {
-        await transaction.begin();
+      await transaction.begin();
 
-        const table = new sql.Table('Customer_Master');
-        table.create = false;
-        
-        // Define columns strictly matching DB schema
-        table.columns.add('Customer_ID', sql.VarChar(50), { nullable: false });
-        table.columns.add('Customer_Code', sql.VarChar(50), { nullable: true }); // Make sure this exists in DB
-        table.columns.add('Name', sql.VarChar(100), { nullable: true }); // Split into First/Last or receive full name? 
-        // CSV headers: Customer_ID, First_Name, Last_Name...
-        // DB columns: Name (merged), or does it have First/Last? 
-        // The previous code did: Name = `${FirstName} ${LastName}`
-        
-        table.columns.add('Customer_Type', sql.VarChar(50), { nullable: true });
-        table.columns.add('Phone_Number', sql.BigInt, { nullable: true });
-        table.columns.add('Phone_Number2', sql.BigInt, { nullable: true });
-        table.columns.add('Address1', sql.VarChar(sql.MAX), { nullable: true });
-        table.columns.add('Address2', sql.VarChar(sql.MAX), { nullable: true });
-        table.columns.add('Area', sql.VarChar(100), { nullable: true });
-        table.columns.add('District_ID', sql.Int, { nullable: true });
-        table.columns.add('State_ID', sql.Int, { nullable: true });
-        table.columns.add('Pincode', sql.Int, { nullable: true });
-        table.columns.add('Nationality', sql.VarChar(50), { nullable: true });
+      for (const record of processed) {
+        try {
+          // Generate ID within the transaction — UPDLOCK prevents race duplicates
+          const customerId = await generateCustomerId(transaction);
 
+          const stateRow = record.State
+            ? states.find(x => x.State_Name.toLowerCase() === record.State.toLowerCase().trim())
+            : null;
+          const districtRow = record.District
+            ? districts.find(x => x.District_Name.toLowerCase() === record.District.toLowerCase().trim())
+            : null;
 
-        let successCount = 0;
+          const ir = new sql.Request(transaction);
+          await ir
+            .input('Customer_ID',    sql.VarChar(50),  customerId)
+            .input('Customer_Code',  sql.VarChar(100), record.Customer_Code || '')
+            .input('Name',           sql.VarChar(255), record.Name)
+            .input('Reference_Code', sql.VarChar(100), record.Reference_Code || '')
+            .input('Customer_Type',  sql.VarChar(100), record.Customer_Type || 'New')
+            .input('Phone_Number',   sql.VarChar(20),  record.Phone_Number)
+            .input('Phone_Number2',  sql.VarChar(20),  record.Phone_Number2 || null)
+            .input('Address1',       sql.VarChar(500), record.Address1 || '')
+            .input('Address2',       sql.VarChar(500), record.Address2 || '')
+            .input('District_ID',    sql.Int,          districtRow ? districtRow.District_ID : null)
+            .input('State_ID',       sql.Int,          stateRow    ? stateRow.State_ID       : null)
+            .input('Pincode',        sql.Int,          record.Pincode || null)
+            .query(`INSERT INTO Customer_Master
+              (Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type,
+               Phone_Number, Phone_Number2, Address1, Address2,
+               District_ID, State_ID, Pincode, Created_At)
+              VALUES
+              (@Customer_ID, @Customer_Code, @Name, @Reference_Code, @Customer_Type,
+               @Phone_Number, @Phone_Number2, @Address1, @Address2,
+               @District_ID, @State_ID, @Pincode, GETDATE())`);
 
-        for (const row of rows) {
-            if (!row) continue;
-            // Support both CSV (comma-separated string) and Excel (object/array) formats?
-            // csvData.split('\n') gives strings. parseExcel gives objects? 
-            // Previous code handled: values = Array.isArray(row) ? row : row.split(',');
-            // Wait, parseExcel in schemeController returns array of objects. 
-            // But here raw csv split gives strings.
-            
-            let values;
-            if (typeof row === 'string') {
-                 values = row.split(',');
-            } else if (Array.isArray(row)) {
-                 values = row;
-            } else {
-                // If Object (from optimized excel parser?), map to values
-                // For now assuming the previous logic regarding array/string holds
-                values = Object.values(row);
-            }
-            
-            if (values.length < 4) continue; // Basic skip empty rows
-
-            // CAREFULLY MAP COLUMNS based on previous INSERT:
-            // Customer_ID, First_Name, Last_Name, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
-            
-            const Customer_ID = values[0];
-            const FirstName = values[1];
-            const LastName = values[2];
-            const PhoneNumber = values[3] ? parseInt(values[3]) : null;
-            const PhoneNumber2 = values[4] ? parseInt(values[4]) : null;
-            const StreetAddress1 = values[5];
-            const StreetAddress2 = values[6];
-            const Area = values[7];
-            const District_ID = values[8] ? parseInt(values[8]) : null;
-            const State_ID = values[9] ? parseInt(values[9]) : null;
-            const Pincode = values[10] ? parseInt(values[10]) : null;
-            const Nationality = values[11];
-            
-            const Name = `${FirstName || ''} ${LastName || ''}`.trim();
-            
-            // Add Row to Table
-            // Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type, Phone_Number, Phone_Number2, Address1, Address2, Area, District_ID, State_ID, Pincode, Nationality
-            table.rows.add(
-                Customer_ID,
-                null, // Customer_Code (not in CSV?)
-                Name,
-                null, // Reference_Code
-                null, // Customer_Type
-                PhoneNumber,
-                PhoneNumber2,
-                StreetAddress1,
-                StreetAddress2,
-                Area,
-                District_ID,
-                State_ID,
-                Pincode,
-                Nationality
-            );
-            
-            successCount++;
+          successCount++;
+        } catch (rowErr) {
+          console.error('[BulkUpload] Row failed:', rowErr.message);
+          failCount++;
         }
+      }
 
-        const request = new sql.Request(transaction);
-        await request.bulk(table);
-
-        await transaction.commit();
-        return sendSuccess(res, `${successCount} customers uploaded successfully.`);
+      await transaction.commit();
+      return sendSuccess(res, `Upload complete. Success: ${successCount}, Failed: ${failCount}`, { successCount, failCount });
     } catch (error) {
-        if (transaction.active) await transaction.rollback();
-        return sendError(res, 'Bulk upload failed', error);
+      if (transaction.active) await transaction.rollback().catch(() => {});
+      return sendError(res, 'Bulk upload failed', error);
     }
+  } catch (error) {
+    return sendError(res, 'Failed to parse uploaded file', error);
+  }
 };
 
 const getCustomerByCode = async (req, res) => {
@@ -719,54 +748,47 @@ const getCustomerSchemes = async (req, res) => {
 };
 
 const removeScheme = async (req, res) => {
+  const { getPool } = require('../models/db');
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
   try {
     const { id, schemeId } = req.params;
-    
-    const connection = await sql.connect(require('../config/database').dbConfig);
-    const transaction = new sql.Transaction(connection);
-    
-    try {
-        await transaction.begin();
+    await transaction.begin();
 
-        // 1. Delete associated Dues
-        const reqDue = new sql.Request(transaction);
-        const dueResult = await reqDue.input('customerId', sql.VarChar(50), id)
-                    .input('schemeId', sql.Int, parseInt(schemeId))
-                    .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
-        console.log(`[RemoveScheme] Deleted ${dueResult.rowsAffected[0]} dues for Cust: ${id}, Scheme: ${schemeId}`);
+    const reqDue = new sql.Request(transaction);
+    await reqDue
+      .input('customerId', sql.VarChar(50), id)
+      .input('schemeId', sql.Int, parseInt(schemeId))
+      .query('DELETE FROM Scheme_Due WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
 
-        // 2. Delete Scheme Member record
-        const reqMember = new sql.Request(transaction);
-        const memberResult = await reqMember.input('customerId', sql.VarChar(50), id)
-                       .input('schemeId', sql.Int, parseInt(schemeId))
-                       .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
-        console.log(`[RemoveScheme] Deleted ${memberResult.rowsAffected[0]} members for Cust: ${id}, Scheme: ${schemeId}`);
+    const reqMember = new sql.Request(transaction);
+    const memberResult = await reqMember
+      .input('customerId', sql.VarChar(50), id)
+      .input('schemeId', sql.Int, parseInt(schemeId))
+      .query('DELETE FROM Scheme_Members WHERE Customer_ID = @customerId AND Scheme_ID = @schemeId');
 
-        if (memberResult.rowsAffected[0] === 0) {
-            console.warn(`[RemoveScheme] Limit warning: No member record found to delete for Cust: ${id}, Scheme: ${schemeId}`);
-        }
-
-        await transaction.commit();
-        return sendSuccess(res, 'Scheme removed successfully');
-    } catch (err) {
-        if (transaction.active) await transaction.rollback();
-        throw err;
+    if (memberResult.rowsAffected[0] === 0) {
+      console.warn(`[RemoveScheme] No member record found for Cust: ${id}, Scheme: ${schemeId}`);
     }
+
+    await transaction.commit();
+    return sendSuccess(res, 'Scheme removed successfully');
   } catch (error) {
+    if (transaction.active) await transaction.rollback().catch(() => {});
     return sendError(res, 'Failed to remove scheme', error);
   }
 };
 
 const assignSchemes = async (req, res) => {
-  const connection = await sql.connect(require('../config/database').dbConfig);
-  const transaction = new sql.Transaction(connection);
-  
+  const { getPool } = require('../models/db');
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
   try {
     const { id } = req.params;
-    const { schemeIds, fundNumber, sendWhatsapp } = req.body; // Array of Scheme_IDs, Optional single fundNumber, sendWhatsapp flag
+    const { schemeIds, fundNumber, sendWhatsapp } = req.body;
 
-    // INCREASE TIMEOUT TO 10 MINUTES (600000ms)
-    await transaction.begin(null, { timeout: 600000 });
+    await transaction.begin();
     const request = new sql.Request(transaction);
 
     // Fetch Customer Details for WA
@@ -822,7 +844,7 @@ const assignSchemes = async (req, res) => {
     
     // 3a. Prepare Scheme Members Data
     for (const schemeId of uniqueSchemesToAssign) {
-      const fundNum = fundNumber || await generateFundNumber(); // Use provided or generate
+      const fundNum = fundNumber || await generateFundNumber(transaction);
       assignedSchemesList.push(fundNum);
       
       // Insert Member - Keeping individual insert for members as volume is low (usually 1)
@@ -900,19 +922,12 @@ const assignSchemes = async (req, res) => {
       }
 
     await transaction.commit();
-    console.log('Transaction committed.');
-    
-    // Send success response
     return sendSuccess(res, `Assigned ${uniqueSchemesToAssign.length} new schemes successfully.`);
-    
+
   } catch (error) {
-    if (transaction.active) await transaction.rollback();
+    if (transaction.active) await transaction.rollback().catch(() => {});
     console.error('Assign schemes error:', error);
     return sendError(res, 'Failed to assign schemes', error);
-  } finally {
-    // Check if connection is healthy before closing? Pool handles it.
-    // await connection.close(); // Don't close pool connection manually if using globbal pool, but here we did sql.connect
-    await connection.close(); 
   }
 };
 
@@ -936,8 +951,10 @@ const getNextFundNumber = async (req, res) => {
 
 const getNextIds = async (req, res) => {
   try {
-    const customerId = await generateCustomerId();
-    const fundNumber = await generateFundNumber();
+    const [customerId, fundNumber] = await Promise.all([
+      generateCustomerId(),
+      generateFundNumber(),
+    ]);
     return sendSuccess(res, 'Next IDs fetched successfully', { customerId, fundNumber });
   } catch (error) {
     return sendError(res, 'Failed to fetch next IDs', error);

@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
+const { processMonthlyReminders } = require('./controllers/reminderController');
 
 dotenv.config();
 const app = express();
@@ -200,6 +202,7 @@ app.use('/api/states',        require('./routes/states'));
 app.use('/api/districts',     require('./routes/districts'));
 app.use('/api/order-tracking',require('./routes/orderTracking'));
 app.use('/api/transporters',  require('./routes/transporters'));
+app.use('/api/reminders',     require('./routes/reminders'));
 
 // ====================================================================
 // Error Handlers
@@ -248,6 +251,24 @@ app.listen(PORT, () => {
   console.log(`🚚 Transporters: http://localhost:${PORT}/api/transporters`);
   console.log(`📥 Exports: http://localhost:${PORT}/api/exports`);
   console.log(`📝 Logs: ${logsDir}`);
+
+  // ====================================================================
+  // CRON JOB: Automated Payment Reminders (1st of every month at 00:00 IST)
+  // IST is UTC +5:30. 00:00 IST is 18:30 UTC (previous day).
+  // node-cron supports timezone option.
+  // ====================================================================
+  cron.schedule('0 0 1 * *', async () => {
+    console.log('[Cron] ⏰ Running automated monthly reminders...');
+    try {
+      const result = await processMonthlyReminders();
+      console.log(`[Cron] ✅ Reminders complete. Success: ${result.success}, Failed: ${result.failed}`);
+    } catch (err) {
+      console.error('[Cron] ❌ Automated Reminders Error:', err.message);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata"
+  });
 });
 
 module.exports = app;

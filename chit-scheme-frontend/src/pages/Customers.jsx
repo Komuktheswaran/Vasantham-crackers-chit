@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   Table,
   Button,
@@ -34,8 +34,16 @@ import "./css/Customers.css";
 
 const { Option } = Select;
 
-// Helper to generate unique ID
-// Helpers removed - using backend sequential IDs
+// Module-level reference data cache — survives re-renders and re-mounts within the same browser session.
+// States, districts, schemes and delivery points rarely change; re-fetching them on every mount is wasteful.
+const _refCache = {};
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const getCached = (key) => {
+  const entry = _refCache[key];
+  if (!entry || Date.now() - entry.ts > CACHE_TTL) return null;
+  return entry.data;
+};
+const setCached = (key, data) => { _refCache[key] = { data, ts: Date.now() }; };
 
 const Customers = () => {
   const [data, setData] = useState({ customers: [], pagination: {} });
@@ -65,6 +73,21 @@ const Customers = () => {
     field: "Customer_ID",
     order: "descend",
   });
+  const searchDebounceRef = useRef(null);
+
+  // Latest-values ref — updated synchronously each render so stable useCallback closures always read fresh state
+  const latestRef = useRef({});
+  latestRef.current = { data, searchText, fundNumberSearch, sortParams };
+
+  // Debounced search — waits 400 ms after the user stops typing before hitting the API
+  const handleSearchChange = useCallback((e) => {
+    const value = e.target.value;
+    setSearchText(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      fetchCustomers({ search: value, page: 1 });
+    }, 400);
+  }, []); // fetchCustomers is a stable useCallback — safe to omit from deps
 
   // Function to check if Customer_ID exists
   const checkId = async (rule, value) => {
@@ -87,7 +110,10 @@ const Customers = () => {
     }
   };
 
-  const columns = [
+  // useMemo prevents the columns array from being recreated on every render.
+  // Without this, AntD Table sees a new `columns` prop each render and re-renders every row.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const columns = useMemo(() => [
     {
       title: "Cust Code",
       dataIndex: "Customer_Code",
@@ -99,7 +125,6 @@ const Customers = () => {
       title: "Cust ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
-      defaultSortOrder: "descend",
       sorter: true,
       sortOrder: sortParams.field === "Customer_ID" ? sortParams.order : null,
     },
@@ -107,14 +132,17 @@ const Customers = () => {
       title: "Name",
       dataIndex: "Name",
       key: "Name",
-      render: (text) => (
-        <Highlighter
-          highlightClassName="customer-search-highlight"
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text}
-        />
-      ),
+      render: (text) =>
+        searchText ? (
+          <Highlighter
+            highlightClassName="customer-search-highlight"
+            searchWords={[searchText]}
+            autoEscape
+            textToHighlight={text || ""}
+          />
+        ) : (
+          text || ""
+        ),
     },
     {
       title: "Phone",
@@ -176,12 +204,14 @@ const Customers = () => {
         </Space>
       ),
     },
-  ];
+  // action handlers (editCustomer, deleteCustomer, openAssignSchemeModal) are stable useCallbacks
+  ], [searchText, sortParams]);
 
-  const fetchCustomers = async (params = {}) => {
+  const fetchCustomers = useCallback(async (params = {}) => {
+    // Read from latestRef so this callback never captures stale state
+    const { data, searchText, fundNumberSearch, sortParams } = latestRef.current;
     setLoading(true);
     try {
-      // Merge current state with params overrides
       const queryParams = {
         page: data.pagination?.currentPage || 1,
         limit: data.pagination?.pageSize || 20,
@@ -200,49 +230,61 @@ const Customers = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // stable — reads latest values from latestRef on each call
 
   const fetchStates = async () => {
+    const cached = getCached("states");
+    if (cached) { setStates(cached); return; }
     try {
       const response = await statesAPI.getAll();
-      setStates(response.data.data || response.data || []);
+      const d = response.data.data || response.data || [];
+      setCached("states", d);
+      setStates(d);
     } catch (error) {
       console.error("Fetch states error:", error);
     }
   };
 
   const fetchDistricts = async () => {
+    const cached = getCached("districts");
+    if (cached) { setDistricts(cached); return; }
     try {
       const response = await districtsAPI.getAll();
-      setDistricts(response.data.data || response.data || []);
+      const d = response.data.data || response.data || [];
+      setCached("districts", d);
+      setDistricts(d);
     } catch (error) {
       console.error("Fetch districts error:", error);
     }
   };
 
   const fetchAvailableSchemes = async () => {
+    const cached = getCached("schemes");
+    if (cached) { setAvailableSchemes(cached); return; }
     try {
       const schemesResponse = await schemesAPI.getAll();
-      const data = schemesResponse.data.data || schemesResponse.data || {};
-      setAvailableSchemes(
-        data.schemes || (Array.isArray(data) ? data : []) || [],
-      );
+      const raw = schemesResponse.data.data || schemesResponse.data || {};
+      const d = raw.schemes || (Array.isArray(raw) ? raw : []);
+      setCached("schemes", d);
+      setAvailableSchemes(d);
     } catch (error) {
       console.error("Fetch schemes error", error);
     }
   };
 
   const fetchDeliveryPoints = async () => {
+    const cached = getCached("deliveryPoints");
+    if (cached) { setDeliveryPoints(cached); return; }
     try {
       const response = await transportersAPI.getAll();
       const transporters = response.data.data || response.data || [];
-      // Flatten delivery points
       const points = transporters.flatMap((t) =>
         (t.delivery_points || []).map((dp) => ({
           ...dp,
           Transporter_Name: t.Transporter_Name,
         })),
       );
+      setCached("deliveryPoints", points);
       setDeliveryPoints(points);
     } catch (error) {
       console.error("Fetch delivery points error", error);
@@ -259,7 +301,7 @@ const Customers = () => {
 
   const handleTableChange = (pagination, filters, sorter) => {
     const newSortParams = {
-      field: sorter.field || "Customer_ID",
+      field: sorter.field || "Created_At",
       order: sorter.order || "descend",
     };
     setSortParams(newSortParams);
@@ -272,7 +314,7 @@ const Customers = () => {
     });
   };
 
-  const editCustomer = (record) => {
+  const editCustomer = useCallback((record) => {
     setEditingCustomer(record);
     form.setFieldsValue({
       Customer_ID: record.Customer_ID,
@@ -290,7 +332,7 @@ const Customers = () => {
     });
     setSelectedState(record.State_ID);
     setModalVisible(true);
-  };
+  }, [form]);
 
   const onFinishForm = (values, isNext = false) => {
     if (editingCustomer) {
@@ -376,7 +418,7 @@ const Customers = () => {
     }
   };
 
-  const openAssignSchemeModal = async (customerId) => {
+  const openAssignSchemeModal = useCallback(async (customerId) => {
     setCurrentCustomerId(customerId);
     setAssignSchemeModalVisible(true);
     try {
@@ -390,7 +432,7 @@ const Customers = () => {
       console.error("Error fetching schemes:", error);
       message.error("Failed to load schemes.");
     }
-  };
+  }, []);
 
   const handleAssignSchemes = async () => {
     // Check if customer already has a scheme
@@ -473,7 +515,7 @@ const Customers = () => {
     });
   };
 
-  const deleteCustomer = (id) => {
+  const deleteCustomer = useCallback((id) => {
     Modal.confirm({
       title: "Are you sure you want to delete this customer?",
       content:
@@ -491,120 +533,45 @@ const Customers = () => {
         }
       },
     });
-  };
+  }, [fetchCustomers]);
 
-  const filteredDistricts = selectedState
-    ? districts
-        .filter((d) => d.State_ID === selectedState)
-        .sort((a, b) => a.District_Name.localeCompare(b.District_Name))
-    : [];
+  const filteredDistricts = useMemo(
+    () =>
+      selectedState
+        ? districts
+            .filter((d) => d.State_ID === selectedState)
+            .sort((a, b) => a.District_Name.localeCompare(b.District_Name))
+        : [],
+    [selectedState, districts]
+  );
+
+  const sortedStates = useMemo(
+    () => [...states].sort((a, b) => a.State_Name.localeCompare(b.State_Name)),
+    [states]
+  );
 
   const handleFileUpload = (file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const bstr = e.target.result;
-        const wb = XLSX.read(bstr, { type: "binary" });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
-
-        if (data.length === 0) {
-          message.error("Excel file is empty");
-          return;
+    Modal.confirm({
+      title: "Confirm Bulk Upload",
+      content: `Upload "${file.name}" to import customers?`,
+      onOk: async () => {
+        const hide = message.loading("Uploading...", 0);
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          const response = await customersAPI.bulkUpload(formData);
+          hide();
+          const { successCount, failCount } = response.data?.data || {};
+          message.success(
+            `Upload Complete. Success: ${successCount ?? "N/A"}, Failed: ${failCount ?? 0}`,
+          );
+          fetchCustomers({ page: 1 });
+        } catch (err) {
+          hide();
+          console.error("Bulk upload failed", err);
         }
-
-        // Process uploaded data
-        let successCount = 0;
-        let failCount = 0;
-
-        Modal.confirm({
-          title: "Confirm Bulk Upload",
-          content: `Found ${data.length} records. Proceed to upload?`,
-          onOk: async () => {
-            const hide = message.loading("Uploading records...", 0);
-            for (const row of data) {
-              // Allow mapping flexible column names if needed, but per request strict "Customer ID" and "Phone Number"?
-              // Let's check keys. user said "customer id" and "phone number" only.
-              // We'll normalize keys to be safe.
-              const record = {};
-              for (let key in row) {
-                const cleanKey = key
-                  .trim()
-                  .toLowerCase()
-                  .replace(/_/g, "")
-                  .replace(/\s/g, "");
-                
-                if (cleanKey.includes("customerid") || cleanKey.includes("custid")) record.Customer_ID = row[key];
-                else if (cleanKey.includes("customercode") || cleanKey === "code") record.Customer_Code = row[key];
-                else if (cleanKey.includes("name")) record.Name = row[key];
-                else if (cleanKey === "phonenumber" || cleanKey === "phone") record.Phone_Number = row[key];
-                else if (cleanKey.includes("secondaryphone") || cleanKey === "phone2") record.PhoneNumber2 = row[key];
-                else if (cleanKey.includes("type") || cleanKey.includes("customertype")) record.Customer_Type = row[key];
-                else if (cleanKey.includes("address1") || cleanKey.includes("addressline1")) record.Address1 = row[key];
-                else if (cleanKey.includes("address2") || cleanKey.includes("addressline2")) record.Address2 = row[key];
-                else if (cleanKey === "state") record.State = row[key];
-                else if (cleanKey === "district") record.District = row[key];
-                else if (cleanKey.includes("pincode") || cleanKey.includes("pin")) record.Pincode = row[key];
-                else if (cleanKey.includes("referencecode") || cleanKey.includes("refcode")) record.Reference_Code = row[key];
-              }
-
-              if (!record.Phone_Number || !record.Name) {
-                // Skipping invalid row where mandatory fields are missing
-                console.warn("Skipping row: missing Name or Phone", row);
-                failCount++;
-                continue;
-              }
-
-              // Map text State/District back to ID
-              let mappedStateId = null;
-              if (record.State) {
-                  const s = states.find(x => x.State_Name.toLowerCase() === String(record.State).toLowerCase().trim());
-                  if (s) mappedStateId = s.State_ID;
-              }
-
-              let mappedDistrictId = null;
-              if (record.District) {
-                  const d = districts.find(x => x.District_Name.toLowerCase() === String(record.District).toLowerCase().trim());
-                  if (d) mappedDistrictId = d.District_ID;
-              }
-
-              const payload = {
-                Customer_Code: record.Customer_Code ? String(record.Customer_Code) : "",
-                Name: String(record.Name),
-                PhoneNumber: String(record.Phone_Number),
-                PhoneNumber2: record.PhoneNumber2 ? String(record.PhoneNumber2) : null,
-                Customer_Type: record.Customer_Type || "New",
-                Address1: record.Address1 || "",
-                Address2: record.Address2 || "",
-                State_ID: mappedStateId,
-                District_ID: mappedDistrictId,
-                Pincode: record.Pincode || null,
-                Reference_Code: record.Reference_Code || null,
-                sendWhatsapp: false, // No WA for bulk upload
-              };
-
-              try {
-                await customersAPI.create(payload);
-                successCount++;
-              } catch (err) {
-                console.error("Failed to upload", payload, err);
-                failCount++;
-              }
-            }
-            hide();
-            message.success(
-              `Upload Complete. Success: ${successCount}, Failed: ${failCount}`,
-            );
-            fetchCustomers({ page: 1 });
-          },
-        });
-      } catch (error) {
-        console.error("Excel parse error", error);
-        message.error("Failed to parse Excel file");
-      }
-    };
-    reader.readAsBinaryString(file);
+      },
+    });
     return false; // Prevent auto upload
   };
 
@@ -722,8 +689,8 @@ const Customers = () => {
               <Input
                 placeholder="Search by Name, etc."
                 value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                onPressEnter={() => fetchCustomers({ search: searchText })}
+                onChange={handleSearchChange}
+                onPressEnter={() => fetchCustomers({ search: searchText, page: 1 })}
                 style={{ width: "220px" }}
               />
               <Button
@@ -972,13 +939,11 @@ const Customers = () => {
                   }}
                   allowClear
                 >
-                  {states
-                    .sort((a, b) => a.State_Name.localeCompare(b.State_Name))
-                    .map((state) => (
-                      <Option key={state.State_ID} value={state.State_ID}>
-                        {state.State_Name}
-                      </Option>
-                    ))}
+                  {sortedStates.map((state) => (
+                    <Option key={state.State_ID} value={state.State_ID}>
+                      {state.State_Name}
+                    </Option>
+                  ))}
                 </Select>
               </Form.Item>
             </Col>

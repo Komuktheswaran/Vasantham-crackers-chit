@@ -37,7 +37,7 @@ const Login = ({ onLogin }) => {
       <Card className="login-card" variant="borderless">
         <div className="login-header">
           <div className="company-logo">
-            🎆
+            <img src="/logo.jpeg" alt="Vasantham Logo" className="logo-image" />
           </div>
           <h1 className="login-title">
             Vasantham Crackers<br />World

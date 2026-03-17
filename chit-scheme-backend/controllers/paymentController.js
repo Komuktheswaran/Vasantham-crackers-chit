@@ -65,9 +65,10 @@ const recordPayment = async (req, res) => {
     const lookupReq = new sql.Request(connection);
     const memberCheck = await lookupReq.input('fundNum', sql.VarChar(50), Fund_Number)
         .query(`
-            SELECT sm.Customer_ID, sm.Scheme_ID, c.Phone_Number, c.Name 
+            SELECT sm.Customer_ID, sm.Scheme_ID, c.Phone_Number, c.Name, cm.Name as Scheme_Name 
             FROM Scheme_Members sm
             JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
+            JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
             WHERE sm.Fund_Number = @fundNum
         `);
 
@@ -75,7 +76,7 @@ const recordPayment = async (req, res) => {
         return sendError(res, 'Invalid Fund Number', null, 404);
     }
 
-    const { Customer_ID, Scheme_ID, Phone_Number, Name } = memberCheck.recordset[0];
+    const { Customer_ID, Scheme_ID, Phone_Number, Name, Scheme_Name } = memberCheck.recordset[0];
 
     await transaction.begin();
 
@@ -115,7 +116,7 @@ const recordPayment = async (req, res) => {
 
     // 📱 Send WhatsApp Notification (Payment Received) 
     if (Phone_Number && sendWhatsapp !== false) {
-        sendWhatsappMessage(String(Phone_Number), "welcomecccc", [Fund_Number, `Payment Received: Rs.${Amount_Received}`], Name)
+        sendWhatsappMessage(String(Phone_Number), "payment1", [Name, Amount_Received, Scheme_Name])
             .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }
 

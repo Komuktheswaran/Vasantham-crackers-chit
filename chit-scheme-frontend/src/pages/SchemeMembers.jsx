@@ -12,8 +12,8 @@ import {
   Space,
   Button,
 } from "antd";
-import { SearchOutlined, ReloadOutlined } from "@ant-design/icons";
-import { schemesAPI, customersAPI } from "../services/api";
+import { SearchOutlined, ReloadOutlined, WhatsAppOutlined } from "@ant-design/icons";
+import { schemesAPI, customersAPI, remindersAPI } from "../services/api";
 import "./css/SchemeMembers.css";
 
 const { Title } = Typography;
@@ -32,6 +32,7 @@ const SchemeMembers = () => {
   const [fundNumber, setFundNumber] = useState("");
   const [selectedScheme, setSelectedScheme] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [reminderLoading, setReminderLoading] = useState(false);
 
   // Options
   const [schemes, setSchemes] = useState([]);
@@ -130,6 +131,29 @@ const SchemeMembers = () => {
     }
   };
 
+  // Manual reminder trigger
+  const handleSendReminders = async () => {
+    Modal.confirm({
+      title: "Send Payment Reminders",
+      content: "This will send WhatsApp reminders for the CURRENT MONTH to all active members with pending dues. Do you want to proceed?",
+      okText: "Yes, Send",
+      cancelText: "Cancel",
+      onOk: async () => {
+        setReminderLoading(true);
+        try {
+          const response = await remindersAPI.sendManualReminders();
+          // API interceptor shows success message if available
+          console.log("Reminders result:", response.data);
+          fetchMembers(); // Refresh to see any updates if applicable
+        } catch (error) {
+          console.error("Failed to send reminders:", error);
+        } finally {
+          setReminderLoading(false);
+        }
+      },
+    });
+  };
+
   // Requested Order: Fund No, Customer Code, Customer Name, Phone, Scheme, Monthly Amt, Bonus, Total, Status
   // Removed: Maturity Amount
   const columns = [
@@ -192,8 +216,17 @@ const SchemeMembers = () => {
 
   return (
     <div className="page-container scheme-members-container">
-      <div className="page-header-row">
-        <h2 className="page-title">Fund Scheme Report</h2>
+      <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <h2 className="page-title" style={{ margin: 0 }}>Fund Scheme Report</h2>
+        <Button 
+          type="primary" 
+          icon={<WhatsAppOutlined />} 
+          onClick={handleSendReminders}
+          loading={reminderLoading}
+          style={{ background: '#25D366', borderColor: '#25D366' }}
+        >
+          Send WhatsApp Reminders
+        </Button>
       </div>
 
       <div className="filter-section">

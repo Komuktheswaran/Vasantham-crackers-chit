@@ -152,4 +152,8 @@ export const transportersAPI = {
   getAllDeliveryPoints: () => api.get('/transporters/delivery-points/all'),
 };
 
+export const remindersAPI = {
+  sendManualReminders: () => api.post('/reminders/send'),
+};
+
 export default api;

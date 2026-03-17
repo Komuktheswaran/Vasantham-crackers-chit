@@ -14,9 +14,9 @@ const dbConfig = {
     requestTimeout: 300000, // 5 minutes
   },
   pool: {
-    max: 1000,
-    min: 0,
-    idleTimeoutMillis: 3000000,
+    max: 20,   // 1000 was dangerously high — SQL Server default max is 32767 but node processes don't need more than ~20
+    min: 2,
+    idleTimeoutMillis: 30000,
   },
 };
 

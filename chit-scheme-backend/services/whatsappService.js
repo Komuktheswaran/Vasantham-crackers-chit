@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY1ZDJmZGE0YzllMGQyMzhlOGZjYzA4YyIsIm5hbWUiOiJDb21tZXJjaWFsIENvbW11bmljYXRpb24gQ29tcGFueS4iLCJhcHBOYW1lIjoiQWlTZW5zeSIsImNsaWVudElkIjoiNjVkMmZkYTRjOWUwZDIzOGU4ZmNjMDg1IiwiYWN0aXZlUGxhbiI6Ik5PTkUiLCJpYXQiOjE3MDgzMjYzMDh9.2cOar4lW4b3_z5tlgUhdgYkdCYdVOK4c0rhqpYeAC_0";
-const API_URL = "https://backend.api-wa.co/campaign/smartping/api";
+const API_KEY = "bde37d9b-1854-11f1-8191-02c8a5e042bd";
+const API_URL = "https://partnersv1.pinbot.ai/v3/973662325833527/messages";
 
 /**
  * Send WhatsApp message using SmartPing API
@@ -23,16 +23,32 @@ const sendWhatsappMessage = async (destination, campaignName, templateParams = [
     }
 
     const payload = {
-      apiKey: API_KEY,
-      campaignName: campaignName,
-      destination: formattedDestination,
-      userName: userName,
-      templateParams: templateParams
+      messaging_product: "whatsapp",
+      to: formattedDestination,
+      type: "template",
+      template: {
+        name: campaignName,
+        language: { code: "en" },
+        components: [
+          {
+            type: "body",
+            parameters: templateParams.map(val => ({
+              type: "text",
+              text: String(val)
+            }))
+          }
+        ]
+      }
     };
 
-    console.log(`📱 Sending WhatsApp to ${formattedDestination} (${userName}) [${campaignName}] Params:`, templateParams);
+    console.log(`📱 Sending WhatsApp Template [${campaignName}] to ${formattedDestination} Params:`, templateParams);
 
-    const response = await axios.post(API_URL, payload);
+    const response = await axios.post(API_URL, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'apiKey': API_KEY // Pinbot often expects apiKey in header
+      }
+    });
 
     console.log('✅ WhatsApp Sent:', response.data);
     return response.data;

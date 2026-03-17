@@ -11,7 +11,8 @@ const sendError = (res, message, error = null, statusCode = 500) => {
   return res.status(statusCode).json({
     success: false,
     message,
-    error: error ? error.message || error : null,
+    // Never expose internal error details in production — only log them server-side
+    error: process.env.NODE_ENV === 'production' ? null : (error ? error.message || error : null),
   });
 };
 
