@@ -30,12 +30,14 @@ const CustomerDownload = () => {
     district: null,
     area: "",
     scheme_id: null,
+    ref_codes: [], // Multiple selection
   });
 
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [allDistricts, setAllDistricts] = useState([]);
   const [schemes, setSchemes] = useState([]);
+  const [referenceCodes, setReferenceCodes] = useState([]); // New state
   const [previewData, setPreviewData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [recordCount, setRecordCount] = useState(0);
@@ -61,10 +63,11 @@ const CustomerDownload = () => {
 
   const fetchInitialData = async () => {
     try {
-      const [statesRes, districtsRes, schemesRes] = await Promise.all([
+      const [statesRes, districtsRes, schemesRes, refCodesRes] = await Promise.all([
         statesAPI.getAll(),
         districtsAPI.getAll(),
         schemesAPI.getAll(),
+        customersAPI.getReferenceCodes(), // New API
       ]);
 
       // Handle nested data structures for all resources
@@ -77,6 +80,7 @@ const CustomerDownload = () => {
           schemesRes.data ||
           [],
       );
+      setReferenceCodes(refCodesRes.data.data || refCodesRes.data || []);
     } catch (error) {
       console.error("Fetch filter data error:", error);
       message.error("Failed to load filter options");
@@ -101,6 +105,7 @@ const CustomerDownload = () => {
       district: null,
       area: "",
       scheme_id: null,
+      ref_codes: [],
     });
     setPreviewData([]);
     setRecordCount(0);
@@ -116,6 +121,7 @@ const CustomerDownload = () => {
       if (filters.scheme_id) params.scheme_id = filters.scheme_id;
       if (filters.customer_type) params.customer_type = filters.customer_type;
       if (filters.fund_number) params.fund_number = filters.fund_number;
+      if (filters.ref_codes && filters.ref_codes.length > 0) params.ref_codes = filters.ref_codes;
 
       const response = await customersAPI.getAll({ ...params, limit: 10 });
       const resultData = response.data.data || response.data || {};
@@ -139,6 +145,7 @@ const CustomerDownload = () => {
       if (filters.scheme_id) params.scheme_id = filters.scheme_id;
       if (filters.customer_type) params.customer_type = filters.customer_type;
       if (filters.fund_number) params.fund_number = filters.fund_number;
+      if (filters.ref_codes && filters.ref_codes.length > 0) params.ref_codes = filters.ref_codes;
 
       const response = await exportsAPI.exportCustomers(params);
 
@@ -270,6 +277,24 @@ const CustomerDownload = () => {
               }
               style={{ width: "100%" }}
             />
+
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              optionFilterProp="children"
+              popupClassName="bright-highlight"
+              placeholder="Filter by Ref Code"
+              value={filters.ref_codes}
+              onChange={(value) => handleFilterChange("ref_codes", value)}
+              style={{ width: "100%" }}
+            >
+              {referenceCodes.map((code) => (
+                <Option key={code} value={code}>
+                  {code}
+                </Option>
+              ))}
+            </Select>
           </div>
 
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>

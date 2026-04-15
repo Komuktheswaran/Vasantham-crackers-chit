@@ -109,25 +109,46 @@ const Payments = () => {
     fetchAllFunds();
   }, []);
 
-  // Filter customers by search value
+  // Filter customers by search value — exact/starts-with match only (no substring)
   const handleSearch = (value) => {
     if (!value) {
       setCustomers(allCustomers);
       return;
     }
 
-    const filtered = allCustomers.filter(
-      (c) =>
-        c.Customer_ID?.toLowerCase().includes(value.toLowerCase()) ||
-        c.Customer_Code?.toLowerCase().includes(value.toLowerCase()) ||
-        c.Name?.toLowerCase().includes(value.toLowerCase()) ||
-        c.Phone_Number?.toString().includes(value),
-    );
-    setCustomers(filtered);
+    const lower = value.toLowerCase();
+    const filtered = allCustomers.filter((c) => {
+      const id = (c.Customer_ID || '').toLowerCase();
+      const code = (c.Customer_Code || '').toLowerCase();
+      const name = (c.Name || '').toLowerCase();
+      const phone = (c.Phone_Number || '').toString();
+      // Exact match OR starts-with; avoids "002" matching "1002"
+      return (
+        id === lower ||
+        id.startsWith(lower) ||
+        code === lower ||
+        code.startsWith(lower) ||
+        name.startsWith(lower) ||
+        name.includes(' ' + lower) || // match first name OR any word
+        phone === value ||
+        phone.startsWith(value)
+      );
+    });
+    setCustomers(filtered.length ? filtered : []);
   };
 
   // Handle customer selection
   const handleCustomerSelect = async (customerId) => {
+    if (!customerId) {
+      setSelectedCustomer(null);
+      setSelectedScheme(null);
+      setSelectedFundNumber(null);
+      setSchemes([]);
+      setDues([]);
+      setFundSearchValue("");
+      form.resetFields(["schemeId", "dueNumber", "amount", "transactionId", "date"]);
+      return;
+    }
     setSelectedCustomer(customerId);
     setSelectedScheme(null);
     setDues([]);
@@ -143,20 +164,23 @@ const Payments = () => {
       const response = await customersAPI.getSchemes(customerId);
       const schemesList = response.data.data || response.data || [];
       setSchemes(schemesList);
-      setCurrentSchemeIndex(0); // Reset navigation index on customer change
+      setCurrentSchemeIndex(0);
 
-      // Auto-select active scheme if only one exists (or select the first one)
       if (schemesList.length > 0) {
-        const activeScheme = schemesList[0]; // Logic: Pick first
+        const activeScheme = schemesList[0];
         setSelectedScheme(activeScheme.Scheme_ID);
         setSelectedFundNumber(activeScheme.Fund_Number);
+        // Sync fund search field with the selected customer's fund number
+        setFundSearchValue(activeScheme.Fund_Number);
         fetchDues(activeScheme.Fund_Number);
         form.setFieldsValue({ schemeId: activeScheme.Scheme_ID });
-        // Sync global index
         const gi = allFundNumbers.findIndex(
           (f) => f.Fund_Number === activeScheme.Fund_Number,
         );
         setGlobalFundIndex(gi);
+      } else {
+        setSelectedFundNumber(null);
+        setFundSearchValue("");
       }
     } catch (error) {
       console.error("Error fetching customer schemes:", error);
@@ -165,15 +189,16 @@ const Payments = () => {
   };
 
   // Handle scheme selection
-  const handleSchemeSelect = async (schemeId, option) => {
+  const handleSchemeSelect = async (schemeId) => {
     setSelectedScheme(schemeId);
     const idx = schemes.findIndex((s) => s.Scheme_ID === schemeId);
     if (idx !== -1) setCurrentSchemeIndex(idx);
     const scheme = schemes.find((s) => s.Scheme_ID === schemeId);
     if (scheme) {
       setSelectedFundNumber(scheme.Fund_Number);
+      // Sync fund search field when scheme is changed manually
+      setFundSearchValue(scheme.Fund_Number);
       fetchDues(scheme.Fund_Number);
-      // Sync global index
       const gi = allFundNumbers.findIndex(
         (f) => f.Fund_Number === scheme.Fund_Number,
       );
@@ -228,6 +253,56 @@ const Payments = () => {
     } catch (err) {
       console.error("Navigation error:", err);
       message.error("Failed to navigate to fund number.");
+    }
+  };
+
+  // Shared handler: look up by fund number → populate customer + scheme
+  const handleFundSearch = async (value) => {
+    if (!value) return;
+    try {
+      const response = await customersAPI.getByFundNumber(value);
+      const customer = response.data.data || response.data;
+
+      if (!customer || !customer.Customer_ID) {
+        message.error("Fund Number not found.");
+        // Reset fields so stale data is not shown
+        setSelectedCustomer(null);
+        setSelectedScheme(null);
+        setSelectedFundNumber(null);
+        setSchemes([]);
+        setDues([]);
+        form.resetFields(["schemeId"]);
+        return;
+      }
+
+      const resolvedFundNumber = customer.Fund_Number || value;
+
+      // Load schemes for the customer
+      const schemesResponse = await customersAPI.getSchemes(customer.Customer_ID);
+      const schemesList = schemesResponse.data.data || schemesResponse.data || [];
+
+      const matchingScheme = schemesList.find((s) => s.Fund_Number === resolvedFundNumber);
+
+      // Update all state synchronously (no setTimeout needed)
+      setSchemes(schemesList);
+      setSelectedCustomer(customer.Customer_ID);
+      // Sync the customer dropdown value
+      form.setFieldsValue({ customer: customer.Customer_ID });
+
+      if (matchingScheme) {
+        setSelectedScheme(matchingScheme.Scheme_ID);
+        setSelectedFundNumber(matchingScheme.Fund_Number);
+        form.setFieldsValue({ schemeId: matchingScheme.Scheme_ID });
+        fetchDues(matchingScheme.Fund_Number);
+        const gi = allFundNumbers.findIndex((f) => f.Fund_Number === matchingScheme.Fund_Number);
+        setGlobalFundIndex(gi);
+        message.success(`Found: ${resolvedFundNumber}`);
+      } else {
+        message.warning("Customer found but no matching scheme for this fund number.");
+      }
+    } catch (error) {
+      console.error("Fund Search Error:", error);
+      message.error("Fund Number not found.");
     }
   };
 
@@ -426,13 +501,31 @@ const Payments = () => {
 
   const handleEditPayment = (record) => {
     setEditingPayment(record);
+
+    // Amount: try every possible field name the backend might use (use nullish coalescing to safely evaluate literal 0)
+    const amount =
+      record.Amount_Received ??
+      record.Recd_amount ??
+      record.amount_received ??
+      record.Amount_Paid ??
+      record.Paid_Amount ??
+      0;
+
+    // Date: try every possible field name
+    const rawDate =
+      record.Amount_Received_date ||
+      record.amt_received_date ||
+      record.Payment_Date ||
+      record.payment_date ||
+      null;
+
     editForm.setFieldsValue({
-      Amount_Received: record.Amount_Received,
-      Payment_Date: dayjs(record.Amount_Received_date),
-      Payment_Mode: record.Payment_Mode,
+      Amount_Received: amount,
+      Payment_Date: rawDate ? dayjs(rawDate) : null,
+      Payment_Mode: record.Payment_Mode || record.payment_mode || null,
       Payment_Transaction_ID:
-        record.Payment_Transaction_ID || record.Transaction_ID,
-      UPI_Phone_Number: record.UPI_Phone_Number,
+        record.Payment_Transaction_ID || record.Transaction_ID || "",
+      UPI_Phone_Number: record.UPI_Phone_Number || record.upi_phone_number || "",
     });
     setEditModalVisible(true);
   };
@@ -440,14 +533,38 @@ const Payments = () => {
   const handleUpdatePayment = async (values) => {
     setPaymentLoading(true);
     try {
+      const formattedDate = values.Payment_Date.format("YYYY-MM-DD");
       await paymentsAPI.update(editingPayment.Pay_ID, {
         ...values,
-        Payment_Date: values.Payment_Date.format("YYYY-MM-DD"),
+        Payment_Date: formattedDate,
       });
       message.success("Payment updated successfully");
       setEditModalVisible(false);
-      fetchPaymentHistory();
+
+      // Optimistically patch the dues row immediately so the table reflects
+      // the new values without waiting for the server round-trip.
+      // We calculate the delta so multiple payments aggregations are respected.
+      const dueNum = parseInt(editingPayment.Due_number);
+      const newAmount = parseFloat(values.Amount_Received ?? 0);
+      const oldAmount = parseFloat(editingPayment.Amount_Received ?? editingPayment.Recd_amount ?? 0);
+      const delta = newAmount - oldAmount;
+
+      setDues((prev) =>
+        prev.map((due) =>
+          parseInt(due.Due_number) === dueNum
+            ? {
+                ...due,
+                Recd_amount: (parseFloat(due.Recd_amount || 0) + delta),
+                amt_received_date: formattedDate,
+                Amount_Received_date: formattedDate,
+              }
+            : due,
+        ),
+      );
+
+      // Also refresh from server in the background
       fetchDues(selectedFundNumber);
+      fetchPaymentHistory();
     } catch (error) {
       console.error("Update failed:", error);
     } finally {
@@ -608,10 +725,12 @@ const Payments = () => {
     },
     {
       title: "Recd Date",
-      dataIndex: "amt_received_date",
       key: "amt_received_date",
       width: "16%",
-      render: (text) => (text ? dayjs(text).format("DD-MM-YYYY") : "-"),
+      render: (_, record) => {
+        const date = record.amt_received_date || record.Amount_Received_date || record.Payment_Date;
+        return date ? dayjs(date).format("DD-MM-YYYY") : "-";
+      },
     },
     {
       title: "Status",
@@ -679,7 +798,15 @@ const Payments = () => {
                     );
 
                     if (paymentToEdit) {
-                      handleEditPayment(paymentToEdit);
+                      // Merge the known Recd_amount from the dues row as a
+                      // reliable fallback — the getAll endpoint may return
+                      // Amount_Received as 0 when the backend stores the value
+                      // under a different column name.
+                      handleEditPayment({
+                        ...paymentToEdit,
+                        Amount_Received:
+                          paymentToEdit.Amount_Received ?? record.Recd_amount,
+                      });
                     } else {
                       message.warning(
                         "No editable payment found for this due.",
@@ -741,113 +868,15 @@ const Payments = () => {
                   style={{ display: "flex", gap: "8px", alignItems: "center" }}
                 >
                   <Input
-                    placeholder="e.g. 2024_12_1234"
+                    placeholder="e.g. 001 or fund/2026/001"
                     value={fundSearchValue}
                     onChange={(e) => setFundSearchValue(e.target.value)}
-                    onPressEnter={async () => {
-                      const value = fundSearchValue;
-                      if (!value) return;
-                      try {
-                        const response =
-                          await customersAPI.getByFundNumber(value);
-                        const customer = response.data.data || response.data;
-
-                        if (!customer) {
-                          message.error("Fund Number not found.");
-                          return;
-                        }
-
-                        const resolvedFundNumber = customer.Fund_Number;
-
-                        // 1. Set Customer
-                        await handleCustomerSelect(customer.Customer_ID);
-
-                        // 2. Get schemes for this customer to find the matching fund number
-                        const schemesResponse = await customersAPI.getSchemes(
-                          customer.Customer_ID,
-                        );
-                        const schemesList =
-                          schemesResponse.data.data ||
-                          schemesResponse.data ||
-                          [];
-                        const matchingScheme = schemesList.find(
-                          (s) => s.Fund_Number === resolvedFundNumber,
-                        );
-
-                        if (matchingScheme) {
-                          // Small timeout to allow state updates from handleCustomerSelect
-                          setTimeout(() => {
-                            setSelectedScheme(matchingScheme.Scheme_ID);
-                            setSelectedFundNumber(matchingScheme.Fund_Number);
-                            fetchDues(matchingScheme.Fund_Number);
-                            form.setFieldsValue({
-                              schemeId: matchingScheme.Scheme_ID,
-                            });
-                            // Sync global nav index
-                            const gi = allFundNumbers.findIndex(
-                              (f) =>
-                                f.Fund_Number === matchingScheme.Fund_Number,
-                            );
-                            setGlobalFundIndex(gi);
-                            message.success(`Found: ${resolvedFundNumber}`);
-                          }, 500);
-                        }
-                      } catch (error) {
-                        console.error("Fund Search Error:", error);
-                        message.error("Fund Number not found.");
-                      }
-                    }}
+                    onPressEnter={() => handleFundSearch(fundSearchValue)}
                   />
                   <Button
                     type="primary"
                     className="ant-input-search-button"
-                    onClick={async () => {
-                      const value = fundSearchValue;
-                      if (!value) return;
-                      try {
-                        const response =
-                          await customersAPI.getByFundNumber(value);
-                        const customer = response.data.data || response.data;
-
-                        if (!customer) {
-                          message.error("Fund Number not found.");
-                          return;
-                        }
-
-                        const resolvedFundNumber = customer.Fund_Number;
-
-                        // 1. Set Customer
-                        await handleCustomerSelect(customer.Customer_ID);
-
-                        // 2. Get schemes for this customer to find the matching fund number
-                        const schemesResponse = await customersAPI.getSchemes(
-                          customer.Customer_ID,
-                        );
-                        const schemesList =
-                          schemesResponse.data.data ||
-                          schemesResponse.data ||
-                          [];
-                        const matchingScheme = schemesList.find(
-                          (s) => s.Fund_Number === resolvedFundNumber,
-                        );
-
-                        if (matchingScheme) {
-                          // Small timeout to allow state updates from handleCustomerSelect
-                          setTimeout(() => {
-                            setSelectedScheme(matchingScheme.Scheme_ID);
-                            setSelectedFundNumber(matchingScheme.Fund_Number);
-                            fetchDues(matchingScheme.Fund_Number);
-                            form.setFieldsValue({
-                              schemeId: matchingScheme.Scheme_ID,
-                            });
-                            message.success(`Found: ${resolvedFundNumber}`);
-                          }, 500);
-                        }
-                      } catch (error) {
-                        console.error("Fund Search Error:", error);
-                        message.error("Fund Number not found.");
-                      }
-                    }}
+                    onClick={() => handleFundSearch(fundSearchValue)}
                   >
                     Search
                   </Button>
@@ -858,13 +887,14 @@ const Payments = () => {
                 <Select
                   showSearch
                   placeholder="Search by Customer Code, ID, Name or Phone"
-                  defaultActiveFirstOption={true}
+                  defaultActiveFirstOption={false}
                   filterOption={false}
                   onSearch={handleSearch}
                   onChange={handleCustomerSelect}
+                  value={selectedCustomer}
                   dropdownStyle={{ zIndex: 1050 }}
                   classNames={{ popup: { root: "bright-highlight" } }}
-                  notFoundContent={null}
+                  notFoundContent="No customer found"
                   allowClear
                 >
                   {(customers || []).map((d) => (
@@ -934,95 +964,42 @@ const Payments = () => {
           <Card
             className="payment-form-card"
             title={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "nowrap",
-                  overflow: "hidden",
-                }}
-              >
-                <span style={{ whiteSpace: "nowrap", flexShrink: 0 }}>
-                  Scheme Dues
-                </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+                {/* Customer info on the LEFT */}
+                {selectedCustomer && (() => {
+                  const cust = allCustomers.find((c) => c.Customer_ID === selectedCustomer);
+                  return cust ? (
+                    <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
+                      <Text strong style={{ fontSize: 13, whiteSpace: "nowrap" }}>{cust.Name}</Text>
+                      <Text style={{ fontSize: 12, color: "#666", whiteSpace: "nowrap" }}>{cust.Customer_Code || cust.Customer_ID}</Text>
+                      <Text style={{ fontSize: 12, color: "#666", whiteSpace: "nowrap" }}>{cust.Phone_Number}</Text>
+                    </div>
+                  ) : <span style={{ flex: 1 }}>Scheme Dues</span>;
+                })()}
+                {!selectedCustomer && <span style={{ flex: 1 }}>Scheme Dues</span>}
+
+                {/* Fund nav on the RIGHT */}
                 {selectedFundNumber && (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 4,
-                      flexWrap: "nowrap",
-                      overflowX: "hidden",
-                    }}
-                  >
+                  <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                     <Tooltip title="Previous Fund">
                       <Button
                         icon={<LeftOutlined />}
                         size="small"
                         disabled={globalFundIndex <= 0}
                         onClick={() => handleNavigateFund(-1)}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          padding: 0,
-                        }}
+                        style={{ border: "none", background: "transparent", padding: 0 }}
                       />
                     </Tooltip>
-                    <Tag
-                      color="blue"
-                      style={{
-                        margin: 0,
-                        fontWeight: 600,
-                        whiteSpace: "nowrap",
-                        padding: "0 4px",
-                      }}
-                    >
+                    <Tag color="blue" style={{ margin: 0, fontWeight: 600, whiteSpace: "nowrap" }}>
                       {selectedFundNumber}
-                      {allFundNumbers.length > 1 && globalFundIndex >= 0 && (
-                        <span
-                          style={{
-                            fontWeight: 400,
-                            marginLeft: 4,
-                            opacity: 0.7,
-                          }}
-                        >
-                          ({globalFundIndex + 1}/{allFundNumbers.length})
-                        </span>
-                      )}
                     </Tag>
-                    {selectedCustomer &&
-                      (() => {
-                        const cust = allCustomers.find(
-                          (c) => c.Customer_ID === selectedCustomer,
-                        );
-                        return cust ? (
-                          <Text
-                            strong
-                            style={{
-                              fontSize: 12,
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              maxWidth: "100px",
-                              margin: "0 2px",
-                            }}
-                          >
-                            {cust.Name}
-                          </Text>
-                        ) : null;
-                      })()}
                     <Tooltip title="Next Fund">
                       <Button
                         icon={<RightOutlined />}
                         size="small"
                         disabled={globalFundIndex >= allFundNumbers.length - 1}
                         onClick={() => handleNavigateFund(1)}
-                        style={{
-                          border: "none",
-                          background: "transparent",
-                          padding: 0,
-                        }}
+                        style={{ border: "none", background: "transparent", padding: 0 }}
                       />
                     </Tooltip>
                     <Button
@@ -1049,6 +1026,7 @@ const Payments = () => {
               pagination={false}
               scroll={{ y: 500 }}
               style={{ width: "100%" }}
+              locale={{ emptyText: selectedCustomer ? "No dues found" : "Select a customer to view dues" }}
             />
           </Card>
         </Col>

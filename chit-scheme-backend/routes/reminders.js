@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { sendManualReminders } = require('../controllers/reminderController');
-const { isAdmin } = require('../middleware/auth');
+const auth = require('../middleware/auth');
 
-// Allow admin to trigger reminders manually
-router.post('/send', isAdmin, sendManualReminders);
+// Allow authenticated users to trigger reminders manually
+router.post('/send', auth, sendManualReminders);
 
 module.exports = router;

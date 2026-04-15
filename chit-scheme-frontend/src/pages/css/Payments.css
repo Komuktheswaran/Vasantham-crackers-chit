@@ -3,8 +3,7 @@
    ========================================================================== */
 
 .page-header-row {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: var(--glass-blur);
+  background: #ffffff;
   border: 1px solid rgba(59, 130, 246, 0.1);
   border-radius: 20px;
   padding: 24px;
@@ -12,13 +11,12 @@
   box-shadow: var(--glass-shadow);
 }
 
-/* Glassy Payment Form (Light) */
+/* Payment Form Card */
 .payment-form-card {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(20px) saturate(180%) !important;
+  background: #ffffff !important;
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 28px !important;
-  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(31, 38, 135, 0.05) !important;
   padding: 16px !important;
 }
 

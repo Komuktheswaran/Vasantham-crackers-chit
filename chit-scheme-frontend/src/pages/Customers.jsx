@@ -74,6 +74,8 @@ const Customers = () => {
     order: "descend",
   });
   const searchDebounceRef = useRef(null);
+  // Map of Customer_ID → Fund_Number (loaded separately from scheme members)
+  const fundNumberMapRef = useRef({});
 
   // Latest-values ref — updated synchronously each render so stable useCallback closures always read fresh state
   const latestRef = useRef({});
@@ -114,6 +116,14 @@ const Customers = () => {
   // Without this, AntD Table sees a new `columns` prop each render and re-renders every row.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const columns = useMemo(() => [
+    {
+      title: "Fund No",
+      key: "Fund_Number",
+      render: (_, record) => {
+        const fn = record.Fund_Number || fundNumberMapRef.current[record.Customer_ID];
+        return fn ? <Tag color="blue">{fn}</Tag> : "-";
+      },
+    },
     {
       title: "Cust Code",
       dataIndex: "Customer_Code",
@@ -291,12 +301,33 @@ const Customers = () => {
     }
   };
 
+  // Load Customer_ID → Fund_Number map from scheme members once on mount
+  const fetchFundNumberMap = async () => {
+    try {
+      const res = await schemesAPI.getMembers({ limit: 5000 });
+      const members = res.data.data?.members || res.data?.members || [];
+      const map = {};
+      members.forEach((m) => {
+        if (m.Customer_ID && m.Fund_Number) {
+          // Keep first (lowest) fund number per customer
+          if (!map[m.Customer_ID]) map[m.Customer_ID] = m.Fund_Number;
+        }
+      });
+      fundNumberMapRef.current = map;
+      // Force re-render so column picks up new map values
+      setData((prev) => ({ ...prev }));
+    } catch (err) {
+      console.error("Failed to load fund number map", err);
+    }
+  };
+
   useEffect(() => {
     fetchCustomers({ page: 1, limit: 20 });
     fetchStates();
     fetchDistricts();
     fetchAvailableSchemes();
     fetchDeliveryPoints();
+    fetchFundNumberMap();
   }, []);
 
   const handleTableChange = (pagination, filters, sorter) => {
@@ -456,6 +487,7 @@ const Customers = () => {
           page: data.pagination.currentPage || 1,
           limit: data.pagination.pageSize || 20,
         });
+        fetchFundNumberMap();
       } catch (error) {
         console.error("Assign schemes error:", error);
         message.error("Failed to assign scheme.");
@@ -507,6 +539,7 @@ const Customers = () => {
             page: data.pagination.currentPage || 1,
             limit: data.pagination.pageSize || 20,
           });
+          fetchFundNumberMap();
         } catch (error) {
           console.error("Remove scheme error:", error);
           message.error("Failed to remove scheme");
@@ -746,6 +779,7 @@ const Customers = () => {
         }}
         onChange={handleTableChange}
         scroll={{ x: 1200 }}
+        locale={{ emptyText: "No customers found" }}
       />
 
       <Modal

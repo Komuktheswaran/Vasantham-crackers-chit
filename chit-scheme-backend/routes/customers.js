@@ -17,7 +17,8 @@ const {
   getNextIds,
   getCustomerByFundNumber,
   getCustomerByCode,
-  removeScheme
+  removeScheme,
+  getReferenceCodes
 } = require('../controllers/customerController_v2');
 const { customerValidation } = require('../middleware/validators');
 const { authenticateToken } = require('../middleware/adminAuth');
@@ -59,6 +60,7 @@ router.get('/next-fund-number', getNextFundNumber);
 router.get('/next-customer-id', getNextCustomerId);
 router.get('/next-ids', getNextIds);
 router.get('/check-id', checkCustomerId);
+router.get('/reference-codes', getReferenceCodes);
 router.get('/export', exportCustomers);
 router.get('/fund/:fundNumber(*)', getCustomerByFundNumber);
 router.get('/code/:code(*)', getCustomerByCode);

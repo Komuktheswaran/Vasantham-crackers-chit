@@ -146,9 +146,10 @@ const getAllCustomers = async (req, res) => {
       paramIndex++;
     }
     if (fund_number) {
-      whereClause += ` AND sm.Fund_Number LIKE @param${paramIndex}`;
-      params.push({ value: `%${fund_number}%`, type: sql.VarChar });
-      paramIndex++;
+      whereClause += ` AND (sm.Fund_Number = @param${paramIndex} OR sm.Fund_Number LIKE @param${paramIndex + 1})`;
+      params.push({ value: fund_number, type: sql.VarChar });
+      params.push({ value: `%/${fund_number}`, type: sql.VarChar });
+      paramIndex += 2;
     }
     const cType = Customer_Type || customer_type;
     if (cType) {
@@ -161,6 +162,19 @@ const getAllCustomers = async (req, res) => {
 
     if (req.query.has_scheme === 'true') {
         whereClause += ` AND EXISTS (SELECT 1 FROM Scheme_Members sm WHERE sm.Customer_ID = c.Customer_ID)`;
+    }
+
+    // Reference Code filter (supports single value or multiple)
+    const { ref_codes } = req.query;
+    if (ref_codes) {
+        const codes = Array.isArray(ref_codes) ? ref_codes : ref_codes.split(',');
+        if (codes.length > 0) {
+            const codeParams = codes.map((_, i) => `@refCode${i}`).join(',');
+            whereClause += ` AND c.Reference_Code IN (${codeParams})`;
+            codes.forEach((code, i) => {
+                params.push({ name: `refCode${i}`, value: code, type: sql.VarChar });
+            });
+        }
     }
 
     // Pre-aggregated JOINs — computed once per table scan instead of once per row
@@ -717,8 +731,12 @@ const getCustomerByFundNumber = async (req, res) => {
             FROM Scheme_Members sm
             JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
             JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
-            WHERE sm.Fund_Number LIKE @param0
-        `, [{ value: `%${fundNumber}%`, type: sql.VarChar(50) }]);
+            WHERE sm.Fund_Number = @param0
+                 OR sm.Fund_Number LIKE @param1
+        `, [
+            { value: fundNumber, type: sql.VarChar(50) },
+            { value: `%/${fundNumber}`, type: sql.VarChar(50) }
+        ]);
 
         if (result.length === 0) {
             return sendError(res, 'Fund Number not found', null, 404);
@@ -727,6 +745,21 @@ const getCustomerByFundNumber = async (req, res) => {
         return sendSuccess(res, 'Customer fetched by fund number successfully', result[0]);
     } catch (error) {
         return sendError(res, 'Failed to fetch customer by fund number', error);
+    }
+};
+
+const getReferenceCodes = async (req, res) => {
+    try {
+        const result = await executeQuery(`
+            SELECT DISTINCT Reference_Code 
+            FROM Customer_Master 
+            WHERE Reference_Code IS NOT NULL AND Reference_Code != ''
+            ORDER BY Reference_Code ASC
+        `);
+        const codes = result.map(r => r.Reference_Code);
+        return sendSuccess(res, 'Reference codes fetched successfully', codes);
+    } catch (error) {
+        return sendError(res, 'Failed to fetch reference codes', error);
     }
 };
 
@@ -980,4 +1013,5 @@ module.exports = {
   getNextCustomerId,
   getNextFundNumber,
   getNextIds,
+  getReferenceCodes
 };

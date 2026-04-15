@@ -1,0 +1,131 @@
+{
+  "Payment_Master": [
+    {
+      "Pay_ID": 509,
+      "Scheme_ID": 175,
+      "Customer_ID": "CD2026/168",
+      "Due_Month": null,
+      "Received_Flag": 1,
+      "Transaction_ID": "2026/00508",
+      "Amount_Received": 500,
+      "Amount_Received_date": "2025-11-03T00:00:00.000Z",
+      "Due_number": 1,
+      "Payment_Mode": "UPI",
+      "UPI_Phone_Number": "9585593485",
+      "Fund_Number": "F2026/225",
+      "Payment_Transaction_ID": "2026/00508"
+    },
+    {
+      "Pay_ID": 510,
+      "Scheme_ID": 175,
+      "Customer_ID": "CD2026/168",
+      "Due_Month": null,
+      "Received_Flag": 1,
+      "Transaction_ID": "2026/00509",
+      "Amount_Received": 500,
+      "Amount_Received_date": "2025-12-15T00:00:00.000Z",
+      "Due_number": 2,
+      "Payment_Mode": "UPI",
+      "UPI_Phone_Number": "9585593485",
+      "Fund_Number": "F2026/225",
+      "Payment_Transaction_ID": "2026/00509"
+    },
+    {
+      "Pay_ID": 511,
+      "Scheme_ID": 175,
+      "Customer_ID": "CD2026/168",
+      "Due_Month": null,
+      "Received_Flag": 0,
+      "Transaction_ID": "2026/00510",
+      "Amount_Received": 0,
+      "Amount_Received_date": "2026-02-06T00:00:00.000Z",
+      "Due_number": 3,
+      "Payment_Mode": "UPI",
+      "UPI_Phone_Number": "9585593485",
+      "Fund_Number": "F2026/225",
+      "Payment_Transaction_ID": "2026/00510"
+    },
+    {
+      "Pay_ID": 512,
+      "Scheme_ID": 175,
+      "Customer_ID": "CD2026/168",
+      "Due_Month": null,
+      "Received_Flag": 1,
+      "Transaction_ID": "2026/00511",
+      "Amount_Received": 500,
+      "Amount_Received_date": "2026-03-02T00:00:00.000Z",
+      "Due_number": 4,
+      "Payment_Mode": "UPI",
+      "UPI_Phone_Number": "9585593485",
+      "Fund_Number": "F2026/225",
+      "Payment_Transaction_ID": "2026/00511"
+    },
+    {
+      "Pay_ID": 513,
+      "Scheme_ID": 175,
+      "Customer_ID": "CD2026/168",
+      "Due_Month": null,
+      "Received_Flag": 1,
+      "Transaction_ID": "2026/00512",
+      "Amount_Received": 500,
+      "Amount_Received_date": "2026-04-05T00:00:00.000Z",
+      "Due_number": 3,
+      "Payment_Mode": "UPI",
+      "UPI_Phone_Number": "9585593485",
+      "Fund_Number": "F2026/225",
+      "Payment_Transaction_ID": "2026/00512"
+    }
+  ],
+  "Scheme_Due": [
+    {
+      "Scheme_ID": 175,
+      "Due_number": 1,
+      "Due_date": "2025-11-10T00:00:00.000Z",
+      "Due_amount": 500,
+      "Recd_amount": 500,
+      "amt_received_date": "2025-11-03T00:00:00.000Z",
+      "Customer_ID": "CD2026/168",
+      "Fund_Number": "F2026/225"
+    },
+    {
+      "Scheme_ID": 175,
+      "Due_number": 2,
+      "Due_date": "2025-12-10T00:00:00.000Z",
+      "Due_amount": 500,
+      "Recd_amount": 500,
+      "amt_received_date": "2025-12-15T00:00:00.000Z",
+      "Customer_ID": "CD2026/168",
+      "Fund_Number": "F2026/225"
+    },
+    {
+      "Scheme_ID": 175,
+      "Due_number": 3,
+      "Due_date": "2026-01-10T00:00:00.000Z",
+      "Due_amount": 500,
+      "Recd_amount": 500,
+      "amt_received_date": "2026-02-06T00:00:00.000Z",
+      "Customer_ID": "CD2026/168",
+      "Fund_Number": "F2026/225"
+    },
+    {
+      "Scheme_ID": 175,
+      "Due_number": 4,
+      "Due_date": "2026-02-10T00:00:00.000Z",
+      "Due_amount": 500,
+      "Recd_amount": 500,
+      "amt_received_date": "2026-04-07T00:00:00.000Z",
+      "Customer_ID": "CD2026/168",
+      "Fund_Number": "F2026/225"
+    },
+    {
+      "Scheme_ID": 175,
+      "Due_number": 5,
+      "Due_date": "2026-03-10T00:00:00.000Z",
+      "Due_amount": 500,
+      "Recd_amount": 0,
+      "amt_received_date": null,
+      "Customer_ID": "CD2026/168",
+      "Fund_Number": "F2026/225"
+    }
+  ]
+}

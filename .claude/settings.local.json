@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Read(//mnt/**)",
+      "Read(//d//**)",
+      "Bash(cmd.exe /c 'dir D:\\\\ /b')",
+      "Bash(cmd.exe /c \"dir D:\\\\Vasantham-crackers-chit /b\")",
+      "Bash(cmd.exe /c \"dir D:\\\\Vasantham-crackers-chit /b 2>&1\")",
+      "Bash(cmd.exe /c \"dir \"\"D:\\\\Vasantham-crackers-chit\"\" /b\")",
+      "Bash(cmd.exe /c \"dir \"\"D:\"\" /b\")",
+      "Bash(cmd.exe /c \"where node\")",
+      "Bash(cmd.exe /c \"cd /d \"\"D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\"\" && npm install node-cron\")",
+      "Bash(cmd.exe /c \"cd /d \"\"D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\"\" && npm install node-cron 2>&1\")",
+      "Bash(powershell -Command \"Set-Location ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend''; npm install node-cron 2>&1\")",
+      "Bash(powershell -Command \"npm install --prefix ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend'' node-cron --no-workspaces 2>&1\")",
+      "Bash(powershell -Command \"Select-String -Path ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\\\\server.js'' -Pattern ''cron|reminders|isAdmin'' | Select-Object LineNumber, Line\")",
+      "Bash(cmd.exe /c \"%windir%\\\\system32\\\\inetsrv\\\\appcmd list module 2>&1\")",
+      "Bash(cmd.exe /c \"powershell -Command \"\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri ''https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi'' -OutFile ''C:\\\\Windows\\\\Temp\\\\urlrewrite.msi''\"\"\")",
+      "Bash(powershell -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri ''https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi'' -OutFile ''C:\\\\Windows\\\\Temp\\\\urlrewrite.msi''; Write-Host ''Downloaded''\")",
+      "Bash(powershell -Command \"Start-Process msiexec.exe -ArgumentList ''/i C:\\\\Windows\\\\Temp\\\\urlrewrite.msi /quiet /norestart'' -Wait -PassThru | Select-Object ExitCode\")",
+      "Bash(powershell -Command \"Get-ChildItem ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\\\\controllers'' | Select-Object Name\")"
+    ]
+  }
+}

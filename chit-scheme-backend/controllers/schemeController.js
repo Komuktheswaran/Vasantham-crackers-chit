@@ -260,9 +260,10 @@ const getSchemeMembers = async (req, res) => {
     }
 
     if (fund_number && fund_number !== 'null' && fund_number !== 'undefined') {
-      query += ` AND sm.Fund_Number LIKE @param${paramIndex}`;
-      params.push({ value: `%${fund_number}%`, type: sql.VarChar(50) });
-      paramIndex++;
+      query += ` AND (sm.Fund_Number = @param${paramIndex} OR sm.Fund_Number LIKE @param${paramIndex + 1})`;
+      params.push({ value: fund_number, type: sql.VarChar(50) });
+      params.push({ value: `%/${fund_number}`, type: sql.VarChar(50) });
+      paramIndex += 2;
     }
     
     if (search) {
@@ -278,7 +279,7 @@ const getSchemeMembers = async (req, res) => {
                            WHERE ` + query.split('WHERE')[1]; // Reuse WHERE clause
 
    
-    query += ` ORDER BY sm.Fund_Number, sm.Join_date DESC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
+    query += ` ORDER BY CAST(SUBSTRING(sm.Fund_Number, LEN(sm.Fund_Number) - CHARINDEX('/', REVERSE(sm.Fund_Number)) + 2, LEN(sm.Fund_Number)) AS INT) ASC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;
 
     
     const [members, totalResult] = await Promise.all([

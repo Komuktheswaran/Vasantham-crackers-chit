@@ -74,17 +74,15 @@ body {
 }
 
 .app-sider {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(8px); /* Reduced from 16px */
+  background: #ffffff !important;
   border-right: 1px solid var(--glass-border);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
-  will-change: transform;
 }
 
 .app-logo-container {
   height: 80px;
   margin: 20px;
-  background: var(--grad-main) !important;
+  background: #3b82f6 !important;
   position: relative;
   overflow: hidden;
   border-radius: 16px;
@@ -94,32 +92,7 @@ body {
   box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
 }
 
-.app-logo-container::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    rgba(255, 255, 255, 0.3),
-    transparent
-  );
-  transform: rotate(45deg);
-  /* Slower animation to reduce main thread load */
-  animation: glossy-sweep 4s infinite linear;
-}
-
-@keyframes glossy-sweep {
-  0% {
-    transform: translate(-100%, -100%) rotate(45deg);
-  }
-  100% {
-    transform: translate(100%, 100%) rotate(45deg);
-  }
-}
+/* glossy-sweep animation removed — was triggering a repaint every frame */
 
 .app-logo-text {
   font-size: 22px !important;
@@ -144,10 +117,9 @@ body {
   margin: 8px 16px !important;
   width: calc(100% - 32px) !important;
   border-radius: 12px !important;
-  transition: var(--trans-smooth) !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
   font-weight: 500;
   color: var(--text-secondary) !important;
-  will-change: transform, background-color;
 }
 
 .ant-menu-item-selected {
@@ -159,15 +131,13 @@ body {
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
   background: rgba(59, 130, 246, 0.05) !important;
   color: var(--primary-vibrant) !important;
-  transform: translateX(4px); /* Slightly reduced for subtlety */
 }
 
 /* ==========================================================================
    Header & User Menu (Light Glass)
    ========================================================================== */
 .app-header {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(8px); /* Reduced blur */
+  background: #ffffff !important;
   border-bottom: 1px solid var(--glass-border);
   height: var(--header-height) !important;
   padding: 0 32px !important;
@@ -187,66 +157,39 @@ body {
 }
 
 .app-user-menu {
-  background: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(59, 130, 246, 0.05) !important;
   border: 1px solid var(--glass-border) !important;
   border-radius: 50px !important;
   padding: 4px 16px !important;
-  transition: var(--trans-smooth);
-}
-
-.app-user-menu:hover {
-  background: rgba(255, 255, 255, 0.3) !important;
-  box-shadow: 0 0 15px rgba(79, 172, 254, 0.1);
 }
 
 /* ==========================================================================
    Content Area & Cards
    ========================================================================== */
 .app-content-wrapper {
-  background: var(--glass-bg) !important;
-  backdrop-filter: blur(8px); /* Reduced blur from 16px */
+  background: #ffffff !important;
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius) !important;
   margin: 32px !important;
   padding: 32px !important;
   box-shadow: var(--glass-shadow);
-  /* Optimization: will-change for heavy hardware acceleration if needed, but use sparingly */
-  animation: page-enter 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-@keyframes page-enter {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.99); /* Reduced movement */
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  /* page-enter animation removed — causes layout thrash on every navigation */
 }
 
 .ant-card {
-  background: rgba(255, 255, 255, 0.6) !important;
-  backdrop-filter: blur(4px); /* Very light blur for cards */
+  background: #ffffff !important;
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 20px !important;
   overflow: hidden;
-  transition: var(--trans-smooth) !important;
 }
 
-.ant-card:hover {
-  transform: translateY(-6px);
-  background: rgba(255, 255, 255, 0.9) !important;
-  border-color: rgba(59, 130, 246, 0.3) !important;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.04);
-}
+/* Removed card hover transform — triggers expensive layout recalculation on scroll */
 
-/* Glassy Buttons */
+/* Buttons */
 .ant-btn {
   border-radius: 12px !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px;
-  transition: var(--trans-smooth) !important;
 }
 
 .ant-btn-primary {
@@ -258,16 +201,15 @@ body {
 
 .ant-btn-primary:hover {
   box-shadow: 0 6px 15px rgba(59, 130, 246, 0.25) !important;
-  transform: translateY(-1px);
 }
 
-/* Glassy Inputs & Selects */
+/* Inputs & Selects */
 .ant-input,
 .ant-select-selector,
 .ant-picker,
 .ant-input-number,
 .ant-input-affix-wrapper {
-  background: rgba(255, 255, 255, 0.6) !important;
+  background: #ffffff !important;
   border: 1px solid rgba(59, 130, 246, 0.1) !important;
   border-radius: 12px !important;
   color: var(--text-main) !important;
@@ -276,7 +218,6 @@ body {
   padding: 4px 20px !important;
   display: flex !important;
   align-items: center !important;
-  transition: var(--trans-smooth) !important;
 }
 
 /* Ensure the outer .ant-select wrapper has NO independent box/border */
@@ -347,7 +288,6 @@ body {
 .ant-picker:hover,
 .ant-input-affix-wrapper:hover {
   border-color: var(--primary-vibrant) !important;
-  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* End of duplicated button block removal */
@@ -433,11 +373,10 @@ body {
   border-color: rgba(244, 63, 94, 0.1) !important;
 }
 
-/* Popover / Dropdown Glass */
+/* Popover / Dropdown */
 .ant-dropdown-menu,
 .ant-select-dropdown {
-  background: rgba(255, 255, 255, 0.98) !important;
-  backdrop-filter: blur(12px) saturate(180%) !important; /* Reduced from 20px */
+  background: #ffffff !important;
   border: 1px solid rgba(59, 130, 246, 0.15) !important;
   border-radius: 12px !important;
   box-shadow: 0 4px 16px rgba(31, 38, 135, 0.08) !important;

@@ -11,6 +11,7 @@ import {
   Tag,
   Space,
   Button,
+  Modal,
 } from "antd";
 import { SearchOutlined, ReloadOutlined, WhatsAppOutlined } from "@ant-design/icons";
 import { schemesAPI, customersAPI, remindersAPI } from "../services/api";
@@ -62,28 +63,41 @@ const SchemeMembers = () => {
     setLoading(true);
     try {
       const queryParams = {
-        page: params.page || pagination.current,
-        limit: params.limit || pagination.pageSize,
-        ...params,
+        page: params.page ?? pagination.current,
+        limit: params.limit ?? pagination.pageSize,
       };
 
-      // Only add filters if they have values
-      if (fundNumber) queryParams.fund_number = fundNumber;
-      if (selectedScheme) queryParams.scheme_id = selectedScheme;
-      if (selectedCustomer) queryParams.customer_id = selectedCustomer;
+      // Use explicitly passed filter params first; fall back to state values.
+      // This prevents params passed by handleSearch from being overwritten.
+      queryParams.fund_number = 'fund_number' in params ? params.fund_number : fundNumber;
+      if ('scheme_id' in params) {
+        if (params.scheme_id) queryParams.scheme_id = params.scheme_id;
+      } else if (selectedScheme) {
+        queryParams.scheme_id = selectedScheme;
+      }
+      if ('customer_id' in params) {
+        if (params.customer_id) queryParams.customer_id = params.customer_id;
+      } else if (selectedCustomer) {
+        queryParams.customer_id = selectedCustomer;
+      }
 
       const response = await schemesAPI.getMembers(queryParams);
-      // API uses sendSuccess, so struct is { success: true, data: { members: [], pagination: {} } }
       const resultData = response.data.data || {};
 
-      setData(resultData.members || []);
+      // Natural-numeric sort so 101 < 102 < 1011 < 1012, not alphabetical
+      const members = (resultData.members || []).sort((a, b) =>
+        (a.Fund_Number || '').localeCompare(b.Fund_Number || '', undefined, { numeric: true }),
+      );
+
+      setData(members);
 
       if (resultData.pagination) {
-        setPagination({
-          ...pagination,
+        setPagination((prev) => ({
+          ...prev,
           current: resultData.pagination.currentPage,
           total: resultData.pagination.totalRecords,
-        });
+          pageSize: resultData.pagination.pageSize || prev.pageSize,
+        }));
       }
     } catch (error) {
       console.error(error);
@@ -93,13 +107,7 @@ const SchemeMembers = () => {
   };
 
   const handleSearch = () => {
-    let searchTerm = fundNumber;
-    // If user enters just a number (e.g. "001"), prepend default prefix
-    if (fundNumber && /^\d+$/.test(fundNumber)) {
-      // Assuming default year 2026 as per request "fund/2026/001"
-      searchTerm = `fund/2026/${fundNumber.padStart(3, "0")}`;
-    }
-    fetchMembers({ page: 1, fund_number: searchTerm });
+    fetchMembers({ page: 1, fund_number: fundNumber });
   };
 
   const handleReset = () => {
@@ -115,6 +123,7 @@ const SchemeMembers = () => {
   };
 
   const handleTableChange = (newPagination) => {
+    setPagination((prev) => ({ ...prev, pageSize: newPagination.pageSize }));
     fetchMembers({
       page: newPagination.current,
       limit: newPagination.pageSize,
@@ -129,6 +138,32 @@ const SchemeMembers = () => {
       // Fix: Access res.data.data.customers
       setCustomers(res.data.data?.customers || []);
     }
+  };
+
+  const handleToggleStatus = (record) => {
+    const newStatus = record.Status === "Active" ? "Inactive" : "Active";
+    Modal.confirm({
+      title: `Set member ${newStatus}?`,
+      content: `Change ${record.Customer_Name || record.Customer_ID} (Fund: ${record.Fund_Number}) to ${newStatus}?`,
+      okText: `Yes, set ${newStatus}`,
+      okType: newStatus === "Inactive" ? "danger" : "primary",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await schemesAPI.updateMemberStatus(record.Customer_ID, record.Scheme_ID, newStatus);
+          // Optimistically update local data without full reload
+          setData((prev) =>
+            prev.map((item) =>
+              item.Customer_ID === record.Customer_ID && item.Scheme_ID === record.Scheme_ID
+                ? { ...item, Status: newStatus }
+                : item,
+            ),
+          );
+        } catch (err) {
+          console.error("Failed to update status", err);
+        }
+      },
+    });
   };
 
   // Manual reminder trigger
@@ -211,6 +246,23 @@ const SchemeMembers = () => {
           {status || "Active"}
         </Tag>
       ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => {
+        const isActive = (record.Status || "Active") === "Active";
+        return (
+          <Button
+            size="small"
+            type={isActive ? "default" : "primary"}
+            danger={isActive}
+            onClick={() => handleToggleStatus(record)}
+          >
+            {isActive ? "Set Inactive" : "Set Active"}
+          </Button>
+        );
+      },
     },
   ];
 
@@ -302,9 +354,13 @@ const SchemeMembers = () => {
         dataSource={data}
         rowKey="Fund_Number"
         loading={loading}
-        pagination={pagination}
+        pagination={{
+          ...pagination,
+          showSizeChanger: true,
+        }}
         onChange={handleTableChange}
         scroll={{ x: "max-content" }}
+        locale={{ emptyText: "No records found" }}
       />
     </div>
   );

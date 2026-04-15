@@ -90,7 +90,7 @@ const App = () => {
 
   useEffect(() => {
     checkAuth();
-  }, [location, checkAuth]);
+  }, [checkAuth]);
 
   const handleLogin = (userData) => {
     setAuthenticated(true);

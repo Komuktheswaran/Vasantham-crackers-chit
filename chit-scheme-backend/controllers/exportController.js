@@ -89,6 +89,19 @@ const exportCustomers = async (req, res) => {
       paramIndex++;
     }
 
+    // Add ref_codes filter (supports single value or multiple)
+    const { ref_codes } = req.query;
+    if (ref_codes) {
+        const codes = Array.isArray(ref_codes) ? ref_codes : ref_codes.split(',');
+        if (codes.length > 0) {
+            const codeParams = codes.map((_, i) => `@refCode${i}`).join(',');
+            whereClauses.push(`c.Reference_Code IN (${codeParams})`);
+            codes.forEach((code, i) => {
+                params.push({ name: `refCode${i}`, value: code, type: sql.VarChar });
+            });
+        }
+    }
+
     if (whereClauses.length > 0) {
       query += ` WHERE ${whereClauses.join(' AND ')}`;
     }

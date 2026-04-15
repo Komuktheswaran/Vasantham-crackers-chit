@@ -91,25 +91,33 @@ app.use((req, res, next) => {
 // ====================================================================
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (server-to-server, curl, mobile apps)
     if (!origin) return callback(null, true);
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
-      'http://localhost:3000',
-      'https://103.38.50.149:5005',
-      'https://103.38.50.149:5006',
-      'http://0.0.0.0:0000',
-      'https://0.0.0.0:0000'
+
+    // Check environment variable first (comma-separated list)
+    if (process.env.ALLOWED_ORIGINS) {
+      const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+      if (envOrigins.includes(origin)) return callback(null, true);
+    }
+
+    // Always allow localhost (any port)
+    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+
+    // Allow all origins from known trusted IPs (any port)
+    const trustedHosts = [
+      '103.38.50.247',
+      '103.38.50.149',
     ];
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      // Log blocked CORS attempts
+    const originHost = origin.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
+    if (trustedHosts.includes(originHost)) return callback(null, true);
+
+    // Log blocked CORS attempts
       const msg = `[${new Date().toISOString()}] 🚫 CORS BLOCKED — Origin: ${origin}`;
       console.warn(msg);
       const stream = getDailyLogStream();
       stream.write(msg + '\n');
       stream.end();
       callback(new Error('Not allowed by CORS'));
-    }
   },
   credentials: true,
   optionsSuccessStatus: 200
@@ -191,18 +199,18 @@ app.get('/api/health', async (req, res) => {
 // ====================================================================
 // API Routes
 // ====================================================================
-app.use('/api/auth',          require('./routes/auth'));
-app.use('/api/users',         require('./routes/users'));
-app.use('/api/dashboard',     require('./routes/dashboard'));
-app.use('/api/customers',     require('./routes/customers'));
-app.use('/api/schemes',       require('./routes/schemes'));
-app.use('/api/payments',      require('./routes/payments'));
-app.use('/api/exports',       require('./routes/exports'));
-app.use('/api/states',        require('./routes/states'));
-app.use('/api/districts',     require('./routes/districts'));
-app.use('/api/order-tracking',require('./routes/orderTracking'));
-app.use('/api/transporters',  require('./routes/transporters'));
-app.use('/api/reminders',     require('./routes/reminders'));
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/users', require('./routes/users'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/customers', require('./routes/customers'));
+app.use('/api/schemes', require('./routes/schemes'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/exports', require('./routes/exports'));
+app.use('/api/states', require('./routes/states'));
+app.use('/api/districts', require('./routes/districts'));
+app.use('/api/order-tracking', require('./routes/orderTracking'));
+app.use('/api/transporters', require('./routes/transporters'));
+app.use('/api/reminders', require('./routes/reminders'));
 
 // ====================================================================
 // Error Handlers
@@ -235,9 +243,9 @@ app.use((req, res) => {
 });
 
 // ====================================================================
-// START SERVER
+// START SERVERs
 // ====================================================================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5011;
 app.listen(PORT, () => {
   console.log(`\n🚀 Server: http://localhost:${PORT}`);
   console.log(`✅ Health: http://localhost:${PORT}/api/health`);

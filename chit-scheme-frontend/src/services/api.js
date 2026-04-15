@@ -75,11 +75,14 @@ export const customersAPI = {
   getNextIds: () => api.get('/customers/next-ids'),
   getByFundNumber: (fundNumber) => api.get(`/customers/fund/${encodeURIComponent(fundNumber)}`),
   getByCode: (code) => api.get(`/customers/code/${encodeURIComponent(code)}`),
+  getReferenceCodes: () => api.get('/customers/reference-codes'),
 };
 
 export const schemesAPI = {
   getAll: (params) => api.get('/schemes', { params }),
   getMembers: (params) => api.get('/schemes/members', { params }),
+  updateMemberStatus: (customerId, schemeId, status) =>
+    api.put(`/customers/${encodeURIComponent(customerId)}/schemes/${encodeURIComponent(schemeId)}/status`, { status }),
   getById: (id) => api.get(`/schemes/${id}`),
   create: (data) => api.post('/schemes', data),
   update: (id, data) => api.put(`/schemes/${id}`, data),
