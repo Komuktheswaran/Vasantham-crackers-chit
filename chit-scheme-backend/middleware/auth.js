@@ -1,20 +1,6 @@
- 
-const jwt = require('jsonwebtoken');
-
-const auth = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-  
-  if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(400).json({ error: 'Invalid token.' });
-  }
-};
-
-module.exports = auth;
+// Backwards-compatible re-export. Keeps `require('../middleware/auth')` working
+// for existing callers (currently routes/reminders.js) while consolidating the
+// actual implementation in middleware/adminAuth.js. New code should import
+// { authenticateToken, requireAdmin } from './adminAuth' directly.
+const { authenticateToken } = require('./adminAuth');
+module.exports = authenticateToken;

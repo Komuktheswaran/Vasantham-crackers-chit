@@ -19,7 +19,16 @@
       "Bash(cmd.exe /c \"powershell -Command \"\"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri ''https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi'' -OutFile ''C:\\\\Windows\\\\Temp\\\\urlrewrite.msi''\"\"\")",
       "Bash(powershell -Command \"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; Invoke-WebRequest -Uri ''https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi'' -OutFile ''C:\\\\Windows\\\\Temp\\\\urlrewrite.msi''; Write-Host ''Downloaded''\")",
       "Bash(powershell -Command \"Start-Process msiexec.exe -ArgumentList ''/i C:\\\\Windows\\\\Temp\\\\urlrewrite.msi /quiet /norestart'' -Wait -PassThru | Select-Object ExitCode\")",
-      "Bash(powershell -Command \"Get-ChildItem ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\\\\controllers'' | Select-Object Name\")"
+      "Bash(powershell -Command \"Get-ChildItem ''D:\\\\React Dev\\\\chit\\\\chit-scheme-backend\\\\controllers'' | Select-Object Name\")",
+      "Bash(find \"D:/React Dev/chit/chit-scheme-backend/models\" -type f -name \"*.js\" -exec basename {} \\\\;)",
+      "Bash(git check-ignore *)",
+      "Bash(grep -rEn \"require.*\\\\\\(1\\\\\\)\\\\\\\\.js|require.*controllers/customerController['\\\\\"]\" --include=\"*.js\" -l .)",
+      "Bash(grep -rEn \"require\\\\\\\\\\(['\\\\\"]\\\\\\\\.[^'\\\\\"]*\\\\\\\\\\(1\\\\\\\\\\)\" --include=\"*.js\" .)",
+      "Bash(node --check server.js)",
+      "Bash(node --check controllers/authController.js)",
+      "Bash(node --check controllers/schemeController.js)",
+      "Bash(node --check middleware/auth.js)",
+      "Bash(node --check controllers/reminderController.js)"
     ]
   }
 }

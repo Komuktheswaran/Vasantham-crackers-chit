@@ -58,7 +58,7 @@ export const customersAPI = {
   getAll: (params) => api.get('/customers', { params }),
   getById: (id) => api.get(`/customers/${encodeURIComponent(id)}`),
   create: (data) => api.post('/customers', data),
-  update: (id, data) => api.put(`/customers/${encodeURIComponent(id)}`, data),
+  update: (id, data) => api.put('/customers/update', { ...data, Customer_ID: id }),
   delete: (id) => api.delete(`/customers/${encodeURIComponent(id)}`),
   checkId: (id) => api.get('/customers/check-id', { params: { id } }),
   assignSchemes: (customerId, schemeIds, sendWhatsapp, fundNumber) =>
@@ -97,6 +97,7 @@ export const paymentsAPI = {
   payAll: (data) => api.post('/payments/pay-all', data),
   update: (id, data) => api.put(`/payments/${id}`, data),
   getNextReferenceId: () => api.get('/payments/next-reference-id'),
+  notify: (payId) => api.post(`/payments/${payId}/notify`),
 };
 
 export const auctionsAPI = {
@@ -156,7 +157,8 @@ export const transportersAPI = {
 };
 
 export const remindersAPI = {
-  sendManualReminders: () => api.post('/reminders/send'),
+  // payload: { months_overdue?: number, customer_id?: string }
+  sendManualReminders: (payload = {}) => api.post('/reminders/send', payload),
 };
 
 export default api;

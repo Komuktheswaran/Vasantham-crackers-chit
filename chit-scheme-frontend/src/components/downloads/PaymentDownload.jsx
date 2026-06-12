@@ -24,7 +24,6 @@ import {
 import dayjs from "dayjs";
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const PaymentDownload = () => {
   const [filters, setFilters] = useState({
@@ -74,20 +73,11 @@ const PaymentDownload = () => {
     }));
   };
 
-  const handleDateRangeChange = (dates) => {
-    if (dates && dates.length === 2) {
-      setFilters((prev) => ({
-        ...prev,
-        date_from: dates[0].format("YYYY-MM-DD"),
-        date_to: dates[1].format("YYYY-MM-DD"),
-      }));
-    } else {
-      setFilters((prev) => ({
-        ...prev,
-        date_from: null,
-        date_to: null,
-      }));
-    }
+  const handleSingleDateChange = (field) => (date) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: date ? date.format("YYYY-MM-DD") : null,
+    }));
   };
 
   const clearFilters = () => {
@@ -208,17 +198,19 @@ const PaymentDownload = () => {
               gap: "16px",
             }}
           >
-            <RangePicker
+            <DatePicker
               style={{ width: "100%" }}
-              onChange={handleDateRangeChange}
-              placeholder={["Start Date", "End Date"]}
+              onChange={handleSingleDateChange("date_from")}
+              placeholder="From Date"
               format="DD-MM-YYYY"
-              onFocus={(e) => e.target.select()}
-              value={
-                filters.date_from && filters.date_to
-                  ? [dayjs(filters.date_from), dayjs(filters.date_to)]
-                  : null
-              }
+              value={filters.date_from ? dayjs(filters.date_from) : null}
+            />
+            <DatePicker
+              style={{ width: "100%" }}
+              onChange={handleSingleDateChange("date_to")}
+              placeholder="To Date"
+              format="DD-MM-YYYY"
+              value={filters.date_to ? dayjs(filters.date_to) : null}
             />
 
             <Select
@@ -259,7 +251,7 @@ const PaymentDownload = () => {
               placeholder="Search by Transaction ID"
               value={filters.transaction_id}
               onChange={(e) =>
-                handleFilterChange("transaction_id", e.target.value)
+                handleFilterChange("transaction_id", (e.target.value || "").toUpperCase())
               }
               style={{ width: "100%" }}
             />

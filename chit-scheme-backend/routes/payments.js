@@ -1,4 +1,4 @@
-const { getPaymentsByCustomer, recordPayment, getDuesByScheme, getDuesByFundNumber, getAllPayments, payAllDues, updatePayment, getNextReferenceId } = require('../controllers/paymentController');
+const { getPaymentsByCustomer, recordPayment, getDuesByScheme, getDuesByFundNumber, getAllPayments, payAllDues, updatePayment, getNextReferenceId, notifyPayment } = require('../controllers/paymentController');
 const express = require('express');
 const { paymentValidation } = require('../middleware/validators');
 const router = express.Router();
@@ -14,5 +14,6 @@ router.get('/dues/:fundNumber(*)', getDuesByFundNumber);
 router.post('/pay-all', payAllDues);
 router.post('/', paymentValidation, recordPayment);
 router.put('/:payId', updatePayment);
+router.post('/:payId/notify', notifyPayment);
 
 module.exports = router;

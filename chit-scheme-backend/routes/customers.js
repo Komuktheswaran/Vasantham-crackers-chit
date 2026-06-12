@@ -75,6 +75,11 @@ router.post('/:id(*)/schemes', assignSchemes);
 router.get('/:id(*)/schemes', getCustomerSchemes);
 router.delete('/:id(*)/schemes/:schemeId', removeScheme);
 
+// Body-based update: avoids "%2F" in the path for Customer_IDs that contain "/"
+// (IIS / many reverse proxies reject %2F in URLs and the failed response has
+// no CORS headers, so the browser surfaces it as a CORS error).
+router.put('/update', customerValidation, updateCustomer);
+
 // Generic customer routes with wildcard (AFTER more specific routes)
 router.get('/:id(*)', getCustomerById);
 router.put('/:id(*)', customerValidation, updateCustomer);

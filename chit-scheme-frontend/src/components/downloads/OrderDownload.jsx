@@ -16,13 +16,14 @@ import {
   ClearOutlined,
 } from "@ant-design/icons";
 import { orderTrackingAPI, exportsAPI } from "../../services/api";
+import dayjs from "dayjs";
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
 const OrderDownload = () => {
   const [filters, setFilters] = useState({
-    dateRange: null,
+    date_from: null,
+    date_to: null,
     source: null,
     search: "",
   });
@@ -40,7 +41,8 @@ const OrderDownload = () => {
 
   const clearFilters = () => {
     setFilters({
-      dateRange: null,
+      date_from: null,
+      date_to: null,
       source: null,
       search: "",
     });
@@ -48,12 +50,17 @@ const OrderDownload = () => {
     setRecordCount(0);
   };
 
+  const handleSingleDateChange = (field) => (date) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: date ? date.format("YYYY-MM-DD") : null,
+    }));
+  };
+
   const getParams = () => {
     const params = {};
-    if (filters.dateRange) {
-      params.date_from = filters.dateRange[0].format("YYYY-MM-DD");
-      params.date_to = filters.dateRange[1].format("YYYY-MM-DD");
-    }
+    if (filters.date_from) params.date_from = filters.date_from;
+    if (filters.date_to) params.date_to = filters.date_to;
     if (filters.source) params.source = filters.source;
     if (filters.search) params.search = filters.search;
     return params;
@@ -131,12 +138,19 @@ const OrderDownload = () => {
               gap: "16px",
             }}
           >
-            <RangePicker
+            <DatePicker
               style={{ width: "100%" }}
-              value={filters.dateRange}
-              onChange={(dates) => handleFilterChange("dateRange", dates)}
-              placeholder={["Start Date", "End Date"]}
-              onFocus={(e) => e.target.select()}
+              value={filters.date_from ? dayjs(filters.date_from) : null}
+              onChange={handleSingleDateChange("date_from")}
+              placeholder="From Date"
+              format="DD-MM-YYYY"
+            />
+            <DatePicker
+              style={{ width: "100%" }}
+              value={filters.date_to ? dayjs(filters.date_to) : null}
+              onChange={handleSingleDateChange("date_to")}
+              placeholder="To Date"
+              format="DD-MM-YYYY"
             />
 
             <Select
@@ -156,7 +170,7 @@ const OrderDownload = () => {
             <Input
               placeholder="Search Tracking / Order Number / Customer"
               value={filters.search}
-              onChange={(e) => handleFilterChange("search", e.target.value)}
+              onChange={(e) => handleFilterChange("search", (e.target.value || "").toUpperCase())}
               style={{ width: "100%" }}
             />
           </div>

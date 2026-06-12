@@ -17,11 +17,11 @@ const generateCustomerId = async (txn = null) => {
     const req = new sql.Request(txn);
     const r = await req
       .input('prefix', sql.VarChar(20), `${prefix}%`)
-      .query(`SELECT TOP 1 Customer_ID FROM Customer_Master WITH (UPDLOCK, HOLDLOCK) WHERE Customer_ID LIKE @prefix ORDER BY Customer_ID DESC`);
+      .query(`SELECT TOP 1 Customer_ID FROM Customer_Master WITH (UPDLOCK, HOLDLOCK) WHERE Customer_ID LIKE @prefix ORDER BY LEN(Customer_ID) DESC, Customer_ID DESC`);
     result = r.recordset;
   } else {
     result = await executeQuery(
-      `SELECT TOP 1 Customer_ID FROM Customer_Master WHERE Customer_ID LIKE @param0 ORDER BY Customer_ID DESC`,
+      `SELECT TOP 1 Customer_ID FROM Customer_Master WHERE Customer_ID LIKE @param0 ORDER BY LEN(Customer_ID) DESC, Customer_ID DESC`,
       [{ value: `${prefix}%`, type: sql.VarChar }]
     );
   }
@@ -45,11 +45,11 @@ const generateFundNumber = async (txn = null) => {
     const req = new sql.Request(txn);
     const r = await req
       .input('prefix', sql.VarChar(20), `${prefix}%`)
-      .query(`SELECT TOP 1 Fund_Number FROM Scheme_Members WITH (UPDLOCK, HOLDLOCK) WHERE Fund_Number LIKE @prefix ORDER BY Fund_Number DESC`);
+      .query(`SELECT TOP 1 Fund_Number FROM Scheme_Members WITH (UPDLOCK, HOLDLOCK) WHERE Fund_Number LIKE @prefix ORDER BY LEN(Fund_Number) DESC, Fund_Number DESC`);
     result = r.recordset;
   } else {
     result = await executeQuery(
-      `SELECT TOP 1 Fund_Number FROM Scheme_Members WHERE Fund_Number LIKE @param0 ORDER BY Fund_Number DESC`,
+      `SELECT TOP 1 Fund_Number FROM Scheme_Members WHERE Fund_Number LIKE @param0 ORDER BY LEN(Fund_Number) DESC, Fund_Number DESC`,
       [{ value: `${prefix}%`, type: sql.VarChar }]
     );
   }
@@ -408,7 +408,10 @@ const createCustomer = async (req, res) => {
 const updateCustomer = async (req, res) => {
   const { getPool } = require('../models/db');
   try {
-    const { id } = req.params;
+    // Accept Customer_ID either from URL param (legacy) or request body
+    // (path-based IDs break for values containing "/", e.g. "CD2026/1379",
+    // because IIS / many reverse proxies reject "%2F" in URLs).
+    const id = req.params.id || req.body.Customer_ID;
     const {
       Customer_Code,
       Name,
@@ -603,20 +606,44 @@ const uploadCustomers = async (req, res) => {
     if (rawRows.length === 0) {
       return sendError(res, 'Excel file is empty', null, 400);
     }
-    if (rawRows.length > 500) {
-      return sendError(res, 'Upload limit exceeded. Maximum 500 rows per upload.', null, 400);
+    const MAX_ROWS = 10000;
+    if (rawRows.length > MAX_ROWS) {
+      return sendError(res, `Upload limit exceeded. Maximum ${MAX_ROWS} rows per upload.`, null, 400);
     }
 
-    // Normalise column names with the same flexible mapping used by the sample file
+    // Neutralise CSV/Excel formula injection in any string we echo back into the
+    // failed-rows workbook. Cells beginning with =, +, -, @, tab, or CR can be
+    // interpreted as formulas by spreadsheet apps (CWE-1236).
+    const sanitizeCell = (v) => {
+      if (typeof v !== 'string') return v;
+      return /^[=+\-@\t\r]/.test(v) ? `'${v}` : v;
+    };
+    const sanitizeRow = (row) => {
+      const out = {};
+      for (const k in row) out[k] = sanitizeCell(row[k]);
+      return out;
+    };
+
+    // Parse a phone-like cell into digits only; returns null if no digits found
+    // so we never insert the literal string "NaN".
+    const parsePhone = (v) => {
+      if (v === null || v === undefined || v === '') return null;
+      const digits = String(v).replace(/\D/g, '');
+      return digits.length > 0 ? digits : null;
+    };
+
+    // Normalise column names with the same flexible mapping used by the sample file.
+    // Keep the original row alongside the normalised record so we can return failures verbatim.
     const processed = [];
+    const failedRows = [];
     for (const row of rawRows) {
       const record = {};
       for (const key in row) {
         const k = key.trim().toLowerCase().replace(/[_\s]/g, '');
         if (k.includes('customercode') || k === 'code')          record.Customer_Code = String(row[key]);
         else if (k.includes('name'))                              record.Name = String(row[key]);
-        else if (k.includes('phonenumber') || k.includes('phone') || k.includes('mobile')) record.Phone_Number = String(parseInt(row[key], 10));
-        else if (k.includes('secondaryphone') || k === 'phone2') record.Phone_Number2 = row[key] ? String(parseInt(row[key], 10)) : null;
+        else if (k.includes('phonenumber') || k.includes('phone') || k.includes('mobile')) record.Phone_Number = parsePhone(row[key]);
+        else if (k.includes('secondaryphone') || k === 'phone2') record.Phone_Number2 = parsePhone(row[key]);
         else if (k.includes('type'))                              record.Customer_Type = String(row[key]);
         else if (k.includes('address1') || k.includes('addressline1')) record.Address1 = String(row[key]);
         else if (k.includes('address2') || k.includes('addressline2')) record.Address2 = String(row[key]);
@@ -625,11 +652,11 @@ const uploadCustomers = async (req, res) => {
         else if (k.includes('pincode') || k.includes('pin'))     record.Pincode = row[key] ? parseInt(row[key], 10) : null;
         else if (k.includes('referencecode') || k.includes('refcode')) record.Reference_Code = String(row[key]);
       }
-      if (record.Name && record.Phone_Number) processed.push(record);
-    }
-
-    if (processed.length === 0) {
-      return sendError(res, 'No valid rows found. Name and Phone Number are required.', null, 400);
+      if (record.Name && record.Phone_Number) {
+        processed.push({ record, original: row });
+      } else {
+        failedRows.push({ ...sanitizeRow(row), Reason: 'Missing required field (Name or valid Phone Number)' });
+      }
     }
 
     // Pre-fetch state/district lookup tables once — not inside the per-row loop
@@ -638,63 +665,63 @@ const uploadCustomers = async (req, res) => {
       executeQuery('SELECT District_ID, District_Name FROM District_Master', []),
     ]);
 
-    const { getPool } = require('../models/db');
-    const pool = await getPool();
-    const transaction = new sql.Transaction(pool);
     let successCount = 0;
-    let failCount = 0;
 
-    try {
-      await transaction.begin();
+    // Independent per-row inserts: a bad row is skipped without affecting others.
+    for (const { record, original } of processed) {
+      try {
+        const customerId = await generateCustomerId();
 
-      for (const record of processed) {
-        try {
-          // Generate ID within the transaction — UPDLOCK prevents race duplicates
-          const customerId = await generateCustomerId(transaction);
+        const stateRow = record.State
+          ? states.find(x => x.State_Name.toLowerCase() === record.State.toLowerCase().trim())
+          : null;
+        const districtRow = record.District
+          ? districts.find(x => x.District_Name.toLowerCase() === record.District.toLowerCase().trim())
+          : null;
 
-          const stateRow = record.State
-            ? states.find(x => x.State_Name.toLowerCase() === record.State.toLowerCase().trim())
-            : null;
-          const districtRow = record.District
-            ? districts.find(x => x.District_Name.toLowerCase() === record.District.toLowerCase().trim())
-            : null;
+        await executeQuery(
+          `INSERT INTO Customer_Master
+            (Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type,
+             Phone_Number, Phone_Number2, Address1, Address2,
+             District_ID, State_ID, Pincode, Created_At)
+           VALUES
+            (@param0, @param1, @param2, @param3, @param4,
+             @param5, @param6, @param7, @param8,
+             @param9, @param10, @param11, GETDATE())`,
+          [
+            { value: customerId,                              type: sql.VarChar(50) },
+            { value: record.Customer_Code || '',              type: sql.VarChar(100) },
+            { value: record.Name,                             type: sql.VarChar(255) },
+            { value: record.Reference_Code || '',             type: sql.VarChar(100) },
+            { value: record.Customer_Type || 'New',           type: sql.VarChar(100) },
+            { value: record.Phone_Number,                     type: sql.VarChar(20) },
+            { value: record.Phone_Number2 || null,            type: sql.VarChar(20) },
+            { value: record.Address1 || '',                   type: sql.VarChar(500) },
+            { value: record.Address2 || '',                   type: sql.VarChar(500) },
+            { value: districtRow ? districtRow.District_ID : null, type: sql.Int },
+            { value: stateRow    ? stateRow.State_ID       : null, type: sql.Int },
+            { value: record.Pincode || null,                  type: sql.Int },
+          ]
+        );
 
-          const ir = new sql.Request(transaction);
-          await ir
-            .input('Customer_ID',    sql.VarChar(50),  customerId)
-            .input('Customer_Code',  sql.VarChar(100), record.Customer_Code || '')
-            .input('Name',           sql.VarChar(255), record.Name)
-            .input('Reference_Code', sql.VarChar(100), record.Reference_Code || '')
-            .input('Customer_Type',  sql.VarChar(100), record.Customer_Type || 'New')
-            .input('Phone_Number',   sql.VarChar(20),  record.Phone_Number)
-            .input('Phone_Number2',  sql.VarChar(20),  record.Phone_Number2 || null)
-            .input('Address1',       sql.VarChar(500), record.Address1 || '')
-            .input('Address2',       sql.VarChar(500), record.Address2 || '')
-            .input('District_ID',    sql.Int,          districtRow ? districtRow.District_ID : null)
-            .input('State_ID',       sql.Int,          stateRow    ? stateRow.State_ID       : null)
-            .input('Pincode',        sql.Int,          record.Pincode || null)
-            .query(`INSERT INTO Customer_Master
-              (Customer_ID, Customer_Code, Name, Reference_Code, Customer_Type,
-               Phone_Number, Phone_Number2, Address1, Address2,
-               District_ID, State_ID, Pincode, Created_At)
-              VALUES
-              (@Customer_ID, @Customer_Code, @Name, @Reference_Code, @Customer_Type,
-               @Phone_Number, @Phone_Number2, @Address1, @Address2,
-               @District_ID, @State_ID, @Pincode, GETDATE())`);
-
-          successCount++;
-        } catch (rowErr) {
-          console.error('[BulkUpload] Row failed:', rowErr.message);
-          failCount++;
-        }
+        successCount++;
+      } catch (rowErr) {
+        // Log the full driver error server-side; return a generic reason to the client
+        // so DB schema/constraint names are not leaked to the browser or the downloaded file.
+        console.error('[BulkUpload] Row failed:', rowErr.message);
+        const reason =
+          rowErr.number === 2627 || rowErr.number === 2601
+            ? 'Duplicate value'
+            : 'Insert failed (invalid data)';
+        failedRows.push({ ...sanitizeRow(original), Reason: reason });
       }
-
-      await transaction.commit();
-      return sendSuccess(res, `Upload complete. Success: ${successCount}, Failed: ${failCount}`, { successCount, failCount });
-    } catch (error) {
-      if (transaction.active) await transaction.rollback().catch(() => {});
-      return sendError(res, 'Bulk upload failed', error);
     }
+
+    return sendSuccess(
+      res,
+      `Upload complete. Success: ${successCount}, Failed: ${failedRows.length}`,
+      { successCount, failCount: failedRows.length, failedRows }
+    );
   } catch (error) {
     return sendError(res, 'Failed to parse uploaded file', error);
   }

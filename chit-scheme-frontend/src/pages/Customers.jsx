@@ -68,22 +68,20 @@ const Customers = () => {
   const [selectedFundNumber, setSelectedFundNumber] = useState("");
   const [selectedSchemeForCreate, setSelectedSchemeForCreate] = useState(null);
   // Filter States
-  const [fundNumberSearch, setFundNumberSearch] = useState("");
-  const [sortParams, setSortParams] = useState({
-    field: "Customer_ID",
-    order: "descend",
-  });
+  const [customerTypeFilter, setCustomerTypeFilter] = useState(null);
+  // No default sort — sort only when the user clicks a sortable column header
+  const [sortParams, setSortParams] = useState({ field: null, order: null });
   const searchDebounceRef = useRef(null);
   // Map of Customer_ID → Fund_Number (loaded separately from scheme members)
   const fundNumberMapRef = useRef({});
 
   // Latest-values ref — updated synchronously each render so stable useCallback closures always read fresh state
   const latestRef = useRef({});
-  latestRef.current = { data, searchText, fundNumberSearch, sortParams };
+  latestRef.current = { data, searchText, customerTypeFilter, sortParams };
 
   // Debounced search — waits 400 ms after the user stops typing before hitting the API
   const handleSearchChange = useCallback((e) => {
-    const value = e.target.value;
+    const value = (e.target.value || "").toUpperCase();
     setSearchText(value);
     if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     searchDebounceRef.current = setTimeout(() => {
@@ -117,26 +115,18 @@ const Customers = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const columns = useMemo(() => [
     {
-      title: "Fund No",
-      key: "Fund_Number",
-      render: (_, record) => {
-        const fn = record.Fund_Number || fundNumberMapRef.current[record.Customer_ID];
-        return fn ? <Tag color="blue">{fn}</Tag> : "-";
-      },
-    },
-    {
-      title: "Cust Code",
-      dataIndex: "Customer_Code",
-      key: "Customer_Code",
-      sorter: (a, b) =>
-        (a.Customer_Code || "").localeCompare(b.Customer_Code || ""),
-    },
-    {
       title: "Cust ID",
       dataIndex: "Customer_ID",
       key: "Customer_ID",
       sorter: true,
       sortOrder: sortParams.field === "Customer_ID" ? sortParams.order : null,
+    },
+    {
+      title: "Cust Code",
+      dataIndex: "Customer_Code",
+      key: "Customer_Code",
+      sorter: true,
+      sortOrder: sortParams.field === "Customer_Code" ? sortParams.order : null,
     },
     {
       title: "Name",
@@ -219,16 +209,20 @@ const Customers = () => {
 
   const fetchCustomers = useCallback(async (params = {}) => {
     // Read from latestRef so this callback never captures stale state
-    const { data, searchText, fundNumberSearch, sortParams } = latestRef.current;
+    const { data, searchText, customerTypeFilter, sortParams } = latestRef.current;
     setLoading(true);
     try {
       const queryParams = {
         page: data.pagination?.currentPage || 1,
         limit: data.pagination?.pageSize || 20,
         search: searchText,
-        fund_number: fundNumberSearch,
-        sort_field: sortParams.field,
-        sort_order: sortParams.order === "ascend" ? "ASC" : "DESC",
+        ...(customerTypeFilter ? { customer_type: customerTypeFilter } : {}),
+        ...(sortParams.field
+          ? {
+              sort_field: sortParams.field,
+              sort_order: sortParams.order === "ascend" ? "ASC" : "DESC",
+            }
+          : {}),
         ...params,
       };
 
@@ -331,17 +325,21 @@ const Customers = () => {
   }, []);
 
   const handleTableChange = (pagination, filters, sorter) => {
-    const newSortParams = {
-      field: sorter.field || "Created_At",
-      order: sorter.order || "descend",
-    };
+    // Only apply sort when the user has actively clicked a column
+    const newSortParams = sorter && sorter.order
+      ? { field: sorter.field, order: sorter.order }
+      : { field: null, order: null };
     setSortParams(newSortParams);
 
     fetchCustomers({
       page: pagination.current,
       limit: pagination.pageSize,
-      sort_field: newSortParams.field,
-      sort_order: newSortParams.order === "ascend" ? "ASC" : "DESC",
+      ...(newSortParams.field
+        ? {
+            sort_field: newSortParams.field,
+            sort_order: newSortParams.order === "ascend" ? "ASC" : "DESC",
+          }
+        : { sort_field: undefined, sort_order: undefined }),
     });
   };
 
@@ -594,13 +592,24 @@ const Customers = () => {
           formData.append("file", file);
           const response = await customersAPI.bulkUpload(formData);
           hide();
-          const { successCount, failCount } = response.data?.data || {};
+          const { successCount, failCount, failedRows } = response.data?.data || {};
           message.success(
             `Upload Complete. Success: ${successCount ?? "N/A"}, Failed: ${failCount ?? 0}`,
           );
+          if (Array.isArray(failedRows) && failedRows.length > 0) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(failedRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Failed Rows");
+            XLSX.writeFile(wb, `failed_customer_upload_${Date.now()}.xlsx`);
+            message.warning(
+              `${failedRows.length} row(s) were skipped. Downloaded failed rows.`,
+            );
+          }
           fetchCustomers({ page: 1 });
         } catch (err) {
           hide();
+          const msg = err?.response?.data?.message || err?.message || "Bulk upload failed";
+          message.error(msg);
           console.error("Bulk upload failed", err);
         }
       },
@@ -737,28 +746,28 @@ const Customers = () => {
           </Col>
           <Col xs={12} sm={12} md={9} lg={9}>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <Input
-                placeholder="Fund Number"
-                value={fundNumberSearch}
-                onChange={(e) => {
-                  setFundNumberSearch(e.target.value);
-                  if (!e.target.value)
-                    fetchCustomers({ fund_number: "", page: 1 });
+              <Select
+                placeholder="Filter by Customer Type"
+                value={customerTypeFilter}
+                onChange={(value) => {
+                  setCustomerTypeFilter(value || null);
+                  fetchCustomers({
+                    customer_type: value || undefined,
+                    page: 1,
+                  });
                 }}
-                onPressEnter={() =>
-                  fetchCustomers({ fund_number: fundNumberSearch, page: 1 })
-                }
-                style={{ width: "180px" }}
-              />
-              <Button
-                type="primary"
-                onClick={() =>
-                  fetchCustomers({ fund_number: fundNumberSearch, page: 1 })
-                }
-                className="ant-input-search-button"
+                allowClear
+                style={{ width: "220px" }}
+                popupClassName="bright-highlight"
               >
-                Search
-              </Button>
+                <Option value="New">New</Option>
+                <Option value="Regular Customer">Regular Customer</Option>
+                <Option value="Wholesale">Wholesale</Option>
+                <Option value="Giftbox">Giftbox</Option>
+                <Option value="Fund Scheme">Fund Scheme</Option>
+                <Option value="Guest">Guest</Option>
+                <Option value="All">All</Option>
+              </Select>
             </div>
           </Col>
         </Row>

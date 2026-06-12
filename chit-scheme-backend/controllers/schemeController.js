@@ -78,9 +78,12 @@ const getAllSchemes = async (req, res) => {
 
     const schemes = await executeQuery(query, params);
 
-    // Total count
-    const totalQuery = `SELECT COUNT(*) as total FROM Chit_Master cm ${search ? `WHERE cm.Name LIKE '%${search.replace(/'/g, "''")}%'` : ''}`;
-    const totalResult = await executeQuery(totalQuery);
+    // Total count — parameterized; never concatenate user input
+    const totalQuery = search
+      ? 'SELECT COUNT(*) as total FROM Chit_Master cm WHERE cm.Name LIKE @param0'
+      : 'SELECT COUNT(*) as total FROM Chit_Master cm';
+    const totalParams = search ? [{ value: `%${search}%`, type: sql.VarChar }] : [];
+    const totalResult = await executeQuery(totalQuery, totalParams);
 
     // ✅ FRONTEND EXPECTS: { schemes: [], total: 0 }
     return res.json({
@@ -272,11 +275,36 @@ const getSchemeMembers = async (req, res) => {
         paramIndex++;
     }
 
-    // Total Count Query
-    const countQueryStr = `SELECT COUNT(*) as total FROM Scheme_Members sm 
+    // due_months: comma-separated 'YYYY-MM' values. Restricts to members who
+    // have at least one UNPAID due whose due_date falls in any of those months.
+    const rawDueMonths = req.query.due_months;
+    if (rawDueMonths) {
+      const months = (Array.isArray(rawDueMonths) ? rawDueMonths : String(rawDueMonths).split(','))
+        .map(s => String(s).trim())
+        .filter(s => /^\d{4}-\d{2}$/.test(s));
+      if (months.length > 0) {
+        const placeholders = months.map((_, i) => `@dueMonth${i}`).join(',');
+        query += ` AND EXISTS (
+          SELECT 1 FROM Scheme_Due sd
+          WHERE sd.Fund_Number = sm.Fund_Number
+            AND (sd.Recd_amount IS NULL OR sd.Recd_amount < sd.Due_amount)
+            AND FORMAT(sd.Due_date, 'yyyy-MM') IN (${placeholders})
+        )`;
+        months.forEach((m, i) => {
+          params.push({ name: `dueMonth${i}`, value: m, type: sql.VarChar(7) });
+        });
+      }
+    }
+
+    // Total Count Query — reuse the WHERE clause from the main query.
+    // Important: only split on the FIRST 'WHERE'; the EXISTS subquery contains
+    // its own WHERE and a naive split('WHERE')[1] truncates the predicate.
+    const firstWhereIdx = query.indexOf('WHERE');
+    const wherePredicate = firstWhereIdx >= 0 ? query.slice(firstWhereIdx + 'WHERE'.length) : '';
+    const countQueryStr = `SELECT COUNT(*) as total FROM Scheme_Members sm
                            JOIN Customer_Master c ON sm.Customer_ID = c.Customer_ID
-                           JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID 
-                           WHERE ` + query.split('WHERE')[1]; // Reuse WHERE clause
+                           JOIN Chit_Master cm ON sm.Scheme_ID = cm.Scheme_ID
+                           WHERE ${wherePredicate}`;
 
    
     query += ` ORDER BY CAST(SUBSTRING(sm.Fund_Number, LEN(sm.Fund_Number) - CHARINDEX('/', REVERSE(sm.Fund_Number)) + 2, LEN(sm.Fund_Number)) AS INT) ASC OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY`;

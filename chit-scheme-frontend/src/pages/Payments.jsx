@@ -19,7 +19,7 @@ import { LeftOutlined, RightOutlined, DownloadOutlined } from "@ant-design/icons
 import { customersAPI, paymentsAPI, schemesAPI } from "../services/api";
 import dayjs from "dayjs";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import "./css/Payments.css";
 
 const { Title, Text } = Typography;
@@ -51,6 +51,8 @@ const Payments = () => {
   // Global list of ALL fund numbers across all customers, sorted
   const [allFundNumbers, setAllFundNumbers] = useState([]); // [{Fund_Number, Customer_ID}]
   const [globalFundIndex, setGlobalFundIndex] = useState(-1);
+  // Full details of the currently selected customer (not limited to allCustomers cache)
+  const [selectedCustomerData, setSelectedCustomerData] = useState(null);
 
   const firstUnpaidDueNumber = useMemo(() => {
     if (!dues || dues.length === 0) return null;
@@ -141,6 +143,7 @@ const Payments = () => {
   const handleCustomerSelect = async (customerId) => {
     if (!customerId) {
       setSelectedCustomer(null);
+      setSelectedCustomerData(null);
       setSelectedScheme(null);
       setSelectedFundNumber(null);
       setSchemes([]);
@@ -150,6 +153,8 @@ const Payments = () => {
       return;
     }
     setSelectedCustomer(customerId);
+    // Set customer data from the cached list (dropdown only shows allCustomers entries)
+    setSelectedCustomerData(allCustomers.find((c) => c.Customer_ID === customerId) || null);
     setSelectedScheme(null);
     setDues([]);
     form.resetFields([
@@ -220,8 +225,20 @@ const Payments = () => {
       const customer = response.data.data || response.data;
       if (!customer) return;
 
+      // Resolve full customer details — fall back to fetching if not in cache
+      let fullCustomer = allCustomers.find((c) => c.Customer_ID === customer.Customer_ID);
+      if (!fullCustomer) {
+        try {
+          const fullRes = await customersAPI.getById(customer.Customer_ID);
+          fullCustomer = fullRes.data.data || fullRes.data;
+        } catch (_) {
+          fullCustomer = customer;
+        }
+      }
+
       // Select the customer (loads their schemes)
       setSelectedCustomer(customer.Customer_ID);
+      setSelectedCustomerData(fullCustomer);
       setSelectedScheme(null);
       setDues([]);
       form.resetFields([
@@ -249,6 +266,10 @@ const Payments = () => {
         setSelectedFundNumber(matchingScheme.Fund_Number);
         fetchDues(matchingScheme.Fund_Number);
         form.setFieldsValue({ schemeId: matchingScheme.Scheme_ID });
+      } else {
+        // Clear stale fund/due data so previous fund's data is not shown
+        setSelectedFundNumber(null);
+        setSelectedScheme(null);
       }
     } catch (err) {
       console.error("Navigation error:", err);
@@ -267,12 +288,24 @@ const Payments = () => {
         message.error("Fund Number not found.");
         // Reset fields so stale data is not shown
         setSelectedCustomer(null);
+        setSelectedCustomerData(null);
         setSelectedScheme(null);
         setSelectedFundNumber(null);
         setSchemes([]);
         setDues([]);
         form.resetFields(["schemeId"]);
         return;
+      }
+
+      // Resolve full customer details — fall back to fetching if not in allCustomers cache
+      let fullCustomer = allCustomers.find((c) => c.Customer_ID === customer.Customer_ID);
+      if (!fullCustomer) {
+        try {
+          const fullRes = await customersAPI.getById(customer.Customer_ID);
+          fullCustomer = fullRes.data.data || fullRes.data;
+        } catch (_) {
+          fullCustomer = customer;
+        }
       }
 
       const resolvedFundNumber = customer.Fund_Number || value;
@@ -283,9 +316,10 @@ const Payments = () => {
 
       const matchingScheme = schemesList.find((s) => s.Fund_Number === resolvedFundNumber);
 
-      // Update all state synchronously (no setTimeout needed)
+      // Update all state
       setSchemes(schemesList);
       setSelectedCustomer(customer.Customer_ID);
+      setSelectedCustomerData(fullCustomer);
       // Sync the customer dropdown value
       form.setFieldsValue({ customer: customer.Customer_ID });
 
@@ -298,6 +332,10 @@ const Payments = () => {
         setGlobalFundIndex(gi);
         message.success(`Found: ${resolvedFundNumber}`);
       } else {
+        // Clear stale fund/due data so previous fund's data is not shown
+        setSelectedScheme(null);
+        setSelectedFundNumber(null);
+        setDues([]);
         message.warning("Customer found but no matching scheme for this fund number.");
       }
     } catch (error) {
@@ -405,7 +443,7 @@ const Payments = () => {
       return;
     }
 
-    const cust = allCustomers.find((c) => c.Customer_ID === selectedCustomer);
+    const cust = selectedCustomerData;
     const scheme = schemes.find((s) => s.Scheme_ID === selectedScheme);
 
     const doc = new jsPDF();
@@ -462,7 +500,7 @@ const Payments = () => {
       tableRows.push(rowData);
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: 92,
       head: [tableColumn],
       body: tableRows,
@@ -829,6 +867,23 @@ const Payments = () => {
     },
   ];
 
+  const handleNotifyPayment = async (record) => {
+    if (!record?.Pay_ID) {
+      message.error("Cannot notify: missing payment ID.");
+      return;
+    }
+    try {
+      await paymentsAPI.notify(record.Pay_ID);
+      message.success("WhatsApp notification sent.");
+    } catch (error) {
+      console.error("Notify failed:", error);
+      message.error(
+        "Failed to send WhatsApp: " +
+          (error.response?.data?.error || error.message),
+      );
+    }
+  };
+
   const historyColumns = [
     {
       title: "Date",
@@ -847,9 +902,18 @@ const Payments = () => {
       title: "Action",
       key: "action",
       render: (_, record) => (
-        <Button type="link" onClick={() => handleEditPayment(record)}>
-          Edit
-        </Button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button type="link" style={{ padding: 0 }} onClick={() => handleEditPayment(record)}>
+            Edit
+          </Button>
+          <Button
+            type="link"
+            style={{ padding: 0, color: "#25D366" }}
+            onClick={() => handleNotifyPayment(record)}
+          >
+            Notify
+          </Button>
+        </div>
       ),
     },
   ];
@@ -870,7 +934,7 @@ const Payments = () => {
                   <Input
                     placeholder="e.g. 001 or fund/2026/001"
                     value={fundSearchValue}
-                    onChange={(e) => setFundSearchValue(e.target.value)}
+                    onChange={(e) => setFundSearchValue((e.target.value || "").toUpperCase())}
                     onPressEnter={() => handleFundSearch(fundSearchValue)}
                   />
                   <Button
@@ -908,9 +972,7 @@ const Payments = () => {
 
               {selectedCustomer &&
                 (() => {
-                  const cust = allCustomers.find(
-                    (c) => c.Customer_ID === selectedCustomer,
-                  );
+                  const cust = selectedCustomerData;
                   return cust ? (
                     <div
                       style={{
@@ -967,7 +1029,7 @@ const Payments = () => {
               <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
                 {/* Customer info on the LEFT */}
                 {selectedCustomer && (() => {
-                  const cust = allCustomers.find((c) => c.Customer_ID === selectedCustomer);
+                  const cust = selectedCustomerData;
                   return cust ? (
                     <div style={{ display: "flex", gap: 12, alignItems: "center", flex: 1, minWidth: 0 }}>
                       <Text strong style={{ fontSize: 13, whiteSpace: "nowrap" }}>{cust.Name}</Text>
@@ -1062,18 +1124,8 @@ const Payments = () => {
         {selectedCustomer && (
           <p>
             Customer:{" "}
-            <strong>
-              {
-                allCustomers.find((c) => c.Customer_ID === selectedCustomer)
-                  ?.Name
-              }
-            </strong>{" "}
-            (
-            {
-              allCustomers.find((c) => c.Customer_ID === selectedCustomer)
-                ?.Phone_Number
-            }
-            )
+            <strong>{selectedCustomerData?.Name}</strong>{" "}
+            ({selectedCustomerData?.Phone_Number})
           </p>
         )}
       </Modal>
@@ -1089,7 +1141,7 @@ const Payments = () => {
               marginRight: 24,
             }}
           >
-            <span>{`Payment History - ${selectedFundNumber}${selectedCustomer ? ` · ${allCustomers.find((c) => c.Customer_ID === selectedCustomer)?.Name || ""}` : ""}`}</span>
+            <span>{`Payment History - ${selectedFundNumber}${selectedCustomerData?.Name ? ` · ${selectedCustomerData.Name}` : ""}`}</span>
             <Button
               type="primary"
               icon={<DownloadOutlined />}

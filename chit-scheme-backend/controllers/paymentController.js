@@ -125,9 +125,14 @@ const recordPayment = async (req, res) => {
 
     await transaction.commit();
 
-    // 📱 Send WhatsApp Notification (Payment Received) 
+    // 📱 Send WhatsApp Notification (Payment Received)
     if (Phone_Number && sendWhatsapp !== false) {
-      sendWhatsappMessage(String(Phone_Number), "payment1", [Name, Amount_Received, Scheme_Name])
+      const receivedDate = Payment_Date ? new Date(Payment_Date) : new Date();
+      const dd = String(receivedDate.getDate()).padStart(2, '0');
+      const mm = String(receivedDate.getMonth() + 1).padStart(2, '0');
+      const yyyy = receivedDate.getFullYear();
+      const amountAndDate = `Rs.${Amount_Received} on ${dd}-${mm}-${yyyy}`;
+      sendWhatsappMessage(String(Phone_Number), "payment1", [Name, amountAndDate, Scheme_Name])
         .catch(err => console.error("WA Send Failed (Payment):", err.message));
     }
 
@@ -445,6 +450,39 @@ const getNextReferenceId = async (req, res) => {
   }
 };
 
+const notifyPayment = async (req, res) => {
+  try {
+    const { payId } = req.params;
+    const rows = await executeQuery(`
+      SELECT pm.Amount_Received, pm.Amount_Received_date, c.Name, c.Phone_Number, cm.Name AS Scheme_Name
+      FROM Payment_Master pm
+      JOIN Customer_Master c ON pm.Customer_ID = c.Customer_ID
+      JOIN Chit_Master cm ON pm.Scheme_ID = cm.Scheme_ID
+      WHERE pm.Pay_ID = @param0
+    `, [{ value: parseInt(payId), type: sql.Int }]);
+
+    if (!rows || rows.length === 0) {
+      return sendError(res, 'Payment not found', null, 404);
+    }
+
+    const { Amount_Received, Amount_Received_date, Name, Phone_Number, Scheme_Name } = rows[0];
+    if (!Phone_Number) {
+      return sendError(res, 'Customer has no phone number on file', null, 400);
+    }
+
+    const receivedDate = Amount_Received_date ? new Date(Amount_Received_date) : new Date();
+    const dd = String(receivedDate.getDate()).padStart(2, '0');
+    const mm = String(receivedDate.getMonth() + 1).padStart(2, '0');
+    const yyyy = receivedDate.getFullYear();
+    const amountAndDate = `Rs.${Amount_Received} on ${dd}-${mm}-${yyyy}`;
+
+    await sendWhatsappMessage(String(Phone_Number), "payment1", [Name, amountAndDate, Scheme_Name]);
+    return sendSuccess(res, 'WhatsApp notification sent', { payId, to: Phone_Number });
+  } catch (error) {
+    return sendError(res, 'Failed to send notification', error);
+  }
+};
+
 module.exports = {
   getPaymentsByCustomer,
   recordPayment,
@@ -452,5 +490,6 @@ module.exports = {
   getAllPayments,
   payAllDues,
   updatePayment,
-  getNextReferenceId
+  getNextReferenceId,
+  notifyPayment
 };

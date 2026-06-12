@@ -477,3 +477,21 @@ body {
     opacity: 1;
   }
 }
+
+/* ==========================================================================
+   Global: force user-entered text to display as UPPERCASE.
+   Only affects text-like inputs and textareas. Excludes password and
+   number inputs (phones, pincodes, amounts) so digits aren't styled.
+   The visual style is enforced here; the actual stored value is uppercased
+   via per-field `normalize` in forms where it matters.
+   ========================================================================== */
+.ant-input:not([type="password"]):not([type="number"]),
+.ant-input-affix-wrapper input:not([type="password"]):not([type="number"]),
+.ant-select-selection-search-input,
+textarea.ant-input {
+  text-transform: uppercase;
+}
+.ant-input::placeholder,
+textarea.ant-input::placeholder {
+  text-transform: none;
+}

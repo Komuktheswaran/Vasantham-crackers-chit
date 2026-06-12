@@ -7,24 +7,22 @@ const { sendSuccess, sendError } = require('../utils/responseHandler');
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('Login Request Body:', req.body);
-    
-    // Query user from database
+
     const users = await executeQuery(
       'SELECT User_ID, Username, Password_Hash, Full_Name, Role FROM Users WHERE Username = @username',
       [{ name: 'username', value: username, type: require('mssql').VarChar }]
     );
-    
+
     const user = users[0];
-    
+
     if (!user) {
-      console.log(`Login failed: User '${username}' not found`);
+      // Constant-time hash to avoid leaking account existence via timing
+      await bcrypt.compare(password || '', '$2a$10$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalu');
       return sendError(res, 'Invalid credentials', null, 401);
     }
 
-    const isMatch = bcrypt.compareSync(password, user.Password_Hash);
+    const isMatch = await bcrypt.compare(password, user.Password_Hash);
     if (!isMatch) {
-      console.log(`Login failed: Password mismatch for user '${username}'`);
       return sendError(res, 'Invalid credentials', null, 401);
     }
     

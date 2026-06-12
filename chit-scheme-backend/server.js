@@ -7,7 +7,9 @@ const morgan = require('morgan');
 const fs = require('fs');
 const path = require('path');
 const cron = require('node-cron');
+const rateLimit = require('express-rate-limit');
 const { processMonthlyReminders } = require('./controllers/reminderController');
+const { authenticateToken } = require('./middleware/adminAuth');
 
 dotenv.config();
 const app = express();
@@ -32,8 +34,10 @@ morgan.token('body', (req) => {
   if (!req.body || Object.keys(req.body).length === 0) return '-';
   try {
     const bodyStr = JSON.stringify(req.body);
-    // Mask password fields
-    const masked = bodyStr.replace(/"password"\s*:\s*"[^"]*"/gi, '"password":"****"');
+    // Mask sensitive fields (case-insensitive). Covers password, token, secret,
+    // OTP, UPI/phone numbers, transaction IDs, JWT, API keys.
+    const SENSITIVE_KEY = /"(password|password_hash|passwordHash|pwd|token|access_token|refresh_token|jwt|secret|api_?key|otp|pin|upi_?phone(_?number)?|phone(_?number)?2?|transaction_?id|payment_transaction_id|aadhaar|pan|account_?number|cvv)"\s*:\s*"[^"]*"/gi;
+    const masked = bodyStr.replace(SENSITIVE_KEY, (m, k) => `"${k}":"****"`);
     return masked.length > 200 ? masked.slice(0, 200) + '...' : masked;
   } catch {
     return '-';
@@ -89,35 +93,35 @@ app.use((req, res, next) => {
 // ====================================================================
 // SECURITY FIX: Secure CORS Configuration
 // ====================================================================
+// Allowlist is an exact-match set of full origins (scheme + host + port).
+// In dev, localhost on any port is allowed. In prod, set ALLOWED_ORIGINS env var.
+const ALLOWED_ORIGINS = new Set(
+  (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(o => o.trim())
+    .filter(Boolean),
+);
+
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (server-to-server, curl, mobile apps)
+    // No Origin header → non-browser caller (curl, server-to-server). Allowed only
+    // because every sensitive route is now JWT-gated; CORS isn't the auth boundary.
     if (!origin) return callback(null, true);
 
-    // Check environment variable first (comma-separated list)
-    if (process.env.ALLOWED_ORIGINS) {
-      const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
-      if (envOrigins.includes(origin)) return callback(null, true);
+    if (ALLOWED_ORIGINS.has(origin)) return callback(null, true);
+
+    // Dev convenience: any localhost port over http(s)
+    if (process.env.NODE_ENV !== 'production' &&
+        /^https?:\/\/localhost(:\d+)?$/.test(origin)) {
+      return callback(null, true);
     }
 
-    // Always allow localhost (any port)
-    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
-
-    // Allow all origins from known trusted IPs (any port)
-    const trustedHosts = [
-      '103.38.50.247',
-      '103.38.50.149',
-    ];
-    const originHost = origin.replace(/^https?:\/\//, '').replace(/:\d+$/, '');
-    if (trustedHosts.includes(originHost)) return callback(null, true);
-
-    // Log blocked CORS attempts
-      const msg = `[${new Date().toISOString()}] 🚫 CORS BLOCKED — Origin: ${origin}`;
-      console.warn(msg);
-      const stream = getDailyLogStream();
-      stream.write(msg + '\n');
-      stream.end();
-      callback(new Error('Not allowed by CORS'));
+    const msg = `[${new Date().toISOString()}] 🚫 CORS BLOCKED — Origin: ${origin}`;
+    console.warn(msg);
+    const stream = getDailyLogStream();
+    stream.write(msg + '\n');
+    stream.end();
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   optionsSuccessStatus: 200
@@ -150,7 +154,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
@@ -167,49 +171,73 @@ app.use(helmet({
 app.use(require('./middleware/auditLogger'));
 
 // ====================================================================
-// Health check
+// Health check — public returns only {status, db}; full DB config requires admin JWT
 // ====================================================================
 app.get('/api/health', async (req, res) => {
   try {
     const { executeQuery } = require('./models/db');
-    const { dbConfig } = require('./config/database');
-    console.log('🔍 Database Configuration:', {
-      ...dbConfig,
-      password: dbConfig.password ? '****' : 'NOT_SET'
-    });
     await executeQuery('SELECT 1');
-    const safeConfig = {
-      server: dbConfig.server,
-      database: dbConfig.database,
-      user: dbConfig.user,
-      port: dbConfig.port,
-      options: dbConfig.options
-    };
-    res.json({ status: 'OK', db: 'Connected', config: safeConfig, timestamp: new Date() });
+
+    // Try to decode an admin token; if present + valid + role=admin, return details.
+    let detailed = false;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded?.role === 'admin') detailed = true;
+      } catch (_) { /* ignore — public response */ }
+    }
+
+    if (detailed) {
+      const { dbConfig } = require('./config/database');
+      return res.json({
+        status: 'OK',
+        db: 'Connected',
+        config: {
+          server: dbConfig.server,
+          database: dbConfig.database,
+          user: dbConfig.user,
+          port: dbConfig.port,
+          options: dbConfig.options,
+        },
+        timestamp: new Date(),
+      });
+    }
+    res.json({ status: 'OK', db: 'Connected' });
   } catch (error) {
     console.error('Health Check Error:', error);
-    const { dbConfig } = require('./config/database');
-    res.status(500).json({
-      status: 'Error', db: 'Disconnected', error: error.message,
-      configUsed: { server: dbConfig?.server, user: dbConfig?.user, port: dbConfig?.port }
-    });
+    res.status(500).json({ status: 'Error', db: 'Disconnected' });
   }
 });
 
 // ====================================================================
-// API Routes
+// API Routes — every sensitive router requires a valid JWT.
+// `/api/auth` is the only public router. State/district lookup are reference
+// data but kept behind auth so an attacker can't enumerate them.
 // ====================================================================
+// Brute-force protection for the login endpoint.
+// 10 attempts per IP per 15 minutes; well below any legitimate use.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+});
+app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/users', require('./routes/users'));
-app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/dashboard', authenticateToken, require('./routes/dashboard'));
 app.use('/api/customers', require('./routes/customers'));
-app.use('/api/schemes', require('./routes/schemes'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/exports', require('./routes/exports'));
-app.use('/api/states', require('./routes/states'));
-app.use('/api/districts', require('./routes/districts'));
-app.use('/api/order-tracking', require('./routes/orderTracking'));
-app.use('/api/transporters', require('./routes/transporters'));
+app.use('/api/schemes', authenticateToken, require('./routes/schemes'));
+app.use('/api/payments', authenticateToken, require('./routes/payments'));
+app.use('/api/exports', authenticateToken, require('./routes/exports'));
+app.use('/api/states', authenticateToken, require('./routes/states'));
+app.use('/api/districts', authenticateToken, require('./routes/districts'));
+app.use('/api/order-tracking', authenticateToken, require('./routes/orderTracking'));
+app.use('/api/transporters', authenticateToken, require('./routes/transporters'));
 app.use('/api/reminders', require('./routes/reminders'));
 
 // ====================================================================
