@@ -107,16 +107,19 @@ const getAllCustomers = async (req, res) => {
     const params = [];
     let paramIndex = 0;
 
-    // Search functionality - Updated for Name, Phone, omer Code, omer ID, and Fund Number
+    // Search functionality — Name, Phone, Customer Code, Customer ID,
+    // Address Line 1, Address Line 2, and Fund Number.
     if (search) {
       whereClause += ` AND (
-        c.Name LIKE @param${paramIndex} 
+        c.Name LIKE @param${paramIndex}
         OR CAST(c.Phone_Number AS VARCHAR(20)) LIKE @param${paramIndex}
         OR c.Customer_Code LIKE @param${paramIndex}
         OR c.Customer_ID LIKE @param${paramIndex}
+        OR c.Address1 LIKE @param${paramIndex}
+        OR c.Address2 LIKE @param${paramIndex}
         OR EXISTS (
-          SELECT 1 FROM Scheme_Members sm 
-          WHERE sm.Customer_ID = c.Customer_ID 
+          SELECT 1 FROM Scheme_Members sm
+          WHERE sm.Customer_ID = c.Customer_ID
           AND sm.Fund_Number LIKE @param${paramIndex}
         )
       )`;
@@ -606,7 +609,7 @@ const uploadCustomers = async (req, res) => {
     if (rawRows.length === 0) {
       return sendError(res, 'Excel file is empty', null, 400);
     }
-    const MAX_ROWS = 10000;
+    const MAX_ROWS = 50000;
     if (rawRows.length > MAX_ROWS) {
       return sendError(res, `Upload limit exceeded. Maximum ${MAX_ROWS} rows per upload.`, null, 400);
     }

@@ -495,3 +495,24 @@ textarea.ant-input {
 textarea.ant-input::placeholder {
   text-transform: none;
 }
+
+/* Login screen exception — show characters exactly as typed (passwords are
+   case-sensitive and the username may be lowercase). Scoped to .login-container
+   so it doesn't affect any other page. */
+.login-container .ant-input,
+.login-container .ant-input-affix-wrapper input,
+.login-container textarea.ant-input {
+  text-transform: none !important;
+}
+
+/* User Management page + its Create/Edit User modal — same exception as login.
+   The modal is portaled outside .user-mgmt-page, so we also target its
+   wrapClassName="user-mgmt-modal" to catch the form inputs there. */
+.user-mgmt-page .ant-input,
+.user-mgmt-page .ant-input-affix-wrapper input,
+.user-mgmt-page textarea.ant-input,
+.user-mgmt-modal .ant-input,
+.user-mgmt-modal .ant-input-affix-wrapper input,
+.user-mgmt-modal textarea.ant-input {
+  text-transform: none !important;
+}

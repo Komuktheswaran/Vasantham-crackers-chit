@@ -28,7 +28,24 @@
       "Bash(node --check controllers/authController.js)",
       "Bash(node --check controllers/schemeController.js)",
       "Bash(node --check middleware/auth.js)",
-      "Bash(node --check controllers/reminderController.js)"
+      "Bash(node --check controllers/reminderController.js)",
+      "Bash(node --check models/db.js)",
+      "Bash(node --check controllers/auditLogController.js)",
+      "Bash(node --check routes/auditLogs.js)",
+      "Bash(node --check instrument.js)",
+      "Bash(node --check controllers/paymentController.js)",
+      "Bash(node --check routes/payments.js)",
+      "Bash(node --check config/database.js)",
+      "Bash(node --check src/pages/Payments.jsx)",
+      "Bash(node --check controllers/customerController_v2.js)",
+      "Bash(node --check controllers/exportController.js)",
+      "Bash(node migrations/create_monthly_winners.js)",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/pages/WinnersBoard.jsx',{presets:[['@babel/preset-react'],['@babel/preset-env',{targets:{node:'current'}}]]}\\); require\\('@babel/core'\\).transformFileSync\\('src/pages/Auction.jsx',{presets:[['@babel/preset-react'],['@babel/preset-env',{targets:{node:'current'}}]]}\\); require\\('@babel/core'\\).transformFileSync\\('src/App.jsx',{presets:[['@babel/preset-react'],['@babel/preset-env',{targets:{node:'current'}}]]}\\); console.log\\('JSX parse OK'\\);\")",
+      "Bash(node -e \"require\\('@babel/core'\\).transformFileSync\\('src/pages/WinnersBoard.jsx',{presets:[['@babel/preset-react'],['@babel/preset-env',{targets:{node:'current'}}]]}\\); console.log\\('OK'\\);\")",
+      "Bash(node -e ' *)",
+      "PowerShell(Get-CimInstance Win32_Process -Filter \"Name='node.exe'\")",
+      "PowerShell(try { pm2 jlist 2>$null | ConvertFrom-Json | Select-Object name, pid, @{n='uptime';e={$_.pm2_env.pm_uptime}}, @{n='status';e={$_.pm2_env.status}} | Format-List } catch { \"pm2 not available or no processes\" })",
+      "Bash(git add *)"
     ]
   }
 }

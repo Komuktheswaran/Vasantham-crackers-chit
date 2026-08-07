@@ -191,7 +191,7 @@ const UserManagement = () => {
   ];
 
   return (
-    <div className="page-container">
+    <div className="page-container user-mgmt-page">
       <div className="page-header-row">
         <h2 className="page-title">User Management</h2>
         <Space>
@@ -230,6 +230,7 @@ const UserManagement = () => {
       <Modal
         title={editingUser ? "Edit User" : "Create New User"}
         open={modalVisible}
+        wrapClassName="user-mgmt-modal"
         onCancel={() => {
           setModalVisible(false);
           form.resetFields();

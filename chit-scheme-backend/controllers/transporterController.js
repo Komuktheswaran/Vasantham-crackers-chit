@@ -181,6 +181,30 @@ const addDeliveryPoint = async (req, res) => {
   }
 };
 
+const updateDeliveryPoint = async (req, res) => {
+  try {
+    const { pointId } = req.params;
+    const { Place_Name, Branch_Address, Branch_Phone } = req.body;
+
+    await executeUpdate(`
+      UPDATE Delivery_Points
+      SET Place_Name = @param1,
+      Branch_Address = @param2,
+      Branch_Phone = @param3
+      WHERE Delivery_Point_ID = @param0
+    `, [
+      { value: parseInt(pointId), type: sql.Int },
+      { value: Place_Name, type: sql.VarChar(100) },
+      { value: Branch_Address || null, type: sql.VarChar(255) },
+      { value: Branch_Phone || null, type: sql.VarChar(50) }
+    ]);
+
+    return sendSuccess(res, 'Delivery point updated successfully');
+  } catch (error) {
+    return sendError(res, 'Failed to update delivery point', error);
+  }
+};
+
 const deleteDeliveryPoint = async (req, res) => {
   try {
     const { pointId } = req.params;
@@ -224,6 +248,7 @@ module.exports = {
   deleteTransporter,
   getDeliveryPoints,
   addDeliveryPoint,
+  updateDeliveryPoint,
   deleteDeliveryPoint,
   getAllDeliveryPoints
 };

@@ -7,6 +7,7 @@ const {
   deleteTransporter,
   getDeliveryPoints,
   addDeliveryPoint,
+  updateDeliveryPoint,
   deleteDeliveryPoint,
   getAllDeliveryPoints
 } = require('../controllers/transporterController');
@@ -15,6 +16,7 @@ const router = express.Router();
 
 // Delivery Points routes (must come before /:id routes to avoid conflicts)
 router.get('/delivery-points/all', getAllDeliveryPoints);
+router.put('/delivery-points/:pointId', updateDeliveryPoint);
 router.delete('/delivery-points/:pointId', deleteDeliveryPoint);
 
 // Transporter routes

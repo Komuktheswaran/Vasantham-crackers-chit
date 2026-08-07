@@ -33,7 +33,7 @@ router.use(authenticateToken);
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB maximum file size
+    fileSize: 25 * 1024 * 1024, // 25MB maximum file size (supports up to 50,000 rows)
   },
   fileFilter: (req, file, cb) => {
     // Only allow CSV and Excel files

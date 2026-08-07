@@ -1,0 +1,3106 @@
+﻿**********************
+Windows PowerShell transcript start
+Start time: 20260620090739
+Username: MADU-SRV9\Madusoft9Admin
+RunAs User: MADU-SRV9\Madusoft9Admin
+Configuration Name: 
+Machine: MADU-SRV9 (Microsoft Windows NT 10.0.20348.0)
+Host Application: C:\Windows\system32\WindowsPowerShell\v1.0\PowerShell.exe
+Process ID: 13452
+PSVersion: 5.1.20348.4294
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.20348.4294
+BuildVersion: 10.0.20348.4294
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+Transcript started, output file is verify-run.log
+PS D:\React Dev\chit\loadtest> .\run-all.ps1 -Pass admin123 -Scenarios smoke,load
+
+############## LOAD TEST BATTERY ##############
+Backend  : https://103.38.50.247:100
+Frontend : https://103.38.50.247
+Started  : 06/20/2026 09:07:48
+Started  : admin
+Started  : admin123
+
+=== BACKEND API: smoke ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 1m0s max duration (incl. graceful stop):
+              * default: 1 looping VUs for 30s (gracefulStop: 30s)
+
+
+================ k6 summary ================
+Scenario        : smoke
+Total requests  : 7
+Failed requests : 0.00%
+Latency p50     : 172ms
+Latency p95     : 19308ms
+Latency p99     : 0ms
+5xx count       : 0
+Auth failures   : 0
+============================================
+
+running (0m39.0s), 0/1 VUs, 1 complete and 0 interrupted iterations
+default ✓ [======================================] 1 VUs  30s
+ERRO[0279] thresholds on metrics 'http_req_duration{endpoint:customers-with-scheme-1000}, http_req_duration{endpoint:scheme-members-paged}' have been
+ crossed
+
+=== BACKEND API: load ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 10 max VUs, 2m30s max duration (incl. graceful stop):
+              * default: 10 looping VUs for 2m0s (gracefulStop: 30s)
+
+
+================ k6 summary ================
+Scenario        : load
+Total requests  : 288
+Failed requests : 1.04%
+Latency p50     : 193ms
+Latency p95     : 25654ms
+Latency p99     : 0ms
+5xx count       : 3
+Auth failures   : 0
+============================================
+
+running (2m30.2s), 00/10 VUs, 42 complete and 7 interrupted iterations
+default ✓ [======================================] 10 VUs  2m0s
+ERRO[0151] thresholds on metrics 'http_req_duration{endpoint:customers-with-scheme-1000}, http_req_duration{endpoint:scheme-members-month-filter}' ha
+ve been crossed
+
+=== FRONTEND STATIC: smoke ===
+
+    EXECUTION
+    iteration_duration.............: avg=3.56s   min=2.07s   med=3.63s  max=4.97s  p(90)=4.82s   p(95)=4.89s
+    iterations.....................: 9     0.280318/s
+    vus............................: 1     min=1       max=1
+    vus_max........................: 1     min=1       max=1
+
+    NETWORK
+    data_received..................: 24 MB 737 kB/s
+    data_sent......................: 27 kB 830 B/s
+
+
+
+
+running (0m32.1s), 0/1 VUs, 9 complete and 0 interrupted iterations
+default ✓ [======================================] 1 VUs  30s
+
+=== FRONTEND STATIC: load ===
+
+
+=== DIRECT DB: smoke ===
+
+
+=== DIRECT DB: load ===
+
+
+############## BATTERY COMPLETE ##############
+Elapsed: 00:13:05.1403787
+Results: results-backend-*.json, results-frontend-*.json
+Now open SSMS and run db-diagnostics.sql for the DB-side view.
+PS D:\React Dev\chit\loadtest> # Frontend rebuild + redeploy
+PS D:\React Dev\chit\loadtest> cd "D:\React Dev\chit\chit-scheme-frontend"
+PS D:\React Dev\chit\chit-scheme-frontend> npm run build
+[db] �� SLOW SELECT 2242ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 1356ms
+   ✓ 20 ok / 0 failed   p50=7ms  p95=2243ms  p99=2243ms  throughput=4.3/s
+▶ audit-logs-list (paged)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=4ms  p95=250ms  p99=250ms  throughput=59.3/s
+
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=20, parallel=1)[db] �� SLOW SELECT 3458ms
+[db] �� SLOW SELECT 1157ms
+[db] �� SLOW SELECT 2221ms
+[db] �� SLOW SELECT 2868ms
+[db] �� SLOW SELECT 2056ms
+[db] �� SLOW SELECT 3370ms
+[db] �� SLOW SELECT 2404ms
+[db] �� SLOW SELECT 1950ms
+[db] �� SLOW SELECT 2751ms
+[db] �� SLOW SELECT 2137ms
+[db] �� SLOW SELECT 2262ms
+   ✓ 20 ok / 0 failed   p50=1951ms  p95=3460ms  p99=3460ms  throughput=0.7/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=13ms  p95=27ms  p99=27ms  throughput=70.7/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+=== DIRECT DB: load ===
+[dotenv@17.2.3] injecting env (14) from .env -- tip: ✅✅ audit secrets and track compliance: https://dotenvx.com/ops
+
+=== DB stress: profile=load ===
+
+▶ customers-list (page 1)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=24ms  p95=214ms  p99=243ms  throughput=268.1/s
+
+▶ scheme-members (no filter)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=17ms  p95=32ms  p99=35ms  throughput=539.1/s
+▶ scheme-members (unpaid this month EXISTS)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=22ms  p95=61ms  p99=179ms  throughput=353.4/s
+
+▶ audit-logs-list (paged)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=23ms  p95=34ms  p99=38ms  throughput=423.7/s
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=200, parallel=10)
+[db] �� SLOW SELECT 501ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 733ms
+[db] �� SLOW SELECT 678ms
+[db] �� SLOW SELECT 726ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 578ms
+[db] �� SLOW SELECT 741ms
+[db] �� SLOW SELECT 501ms
+[db] �� SLOW SELECT 530ms
+[db] �� SLOW SELECT 552ms
+[db] �� SLOW SELECT 560ms
+[db] �� SLOW SELECT 703ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 711ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 721ms
+[db] �� SLOW SELECT 736ms
+[db] �� SLOW SELECT 515ms
+[db] �� SLOW SELECT 517ms
+[db] �� SLOW SELECT 511ms
+[db] �� SLOW SELECT 515ms
+[db] �� SLOW SELECT 546ms
+[db] �� SLOW SELECT 502ms
+[db] �� SLOW SELECT 535ms
+[db] �� SLOW SELECT 527ms
+[db] �� SLOW SELECT 516ms
+[db] �� SLOW SELECT 550ms
+[db] �� SLOW SELECT 643ms
+[db] �� SLOW SELECT 647ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 638ms
+[db] �� SLOW SELECT 1191ms
+[db] �� SLOW SELECT 1175ms
+[db] �� SLOW SELECT 1071ms
+[db] �� SLOW SELECT 1172ms
+[db] �� SLOW SELECT 1200ms
+[db] �� SLOW SELECT 1116ms
+[db] �� SLOW SELECT 1381ms
+[db] �� SLOW SELECT 1396ms
+[db] �� SLOW SELECT 1399ms
+[db] �� SLOW SELECT 1400ms
+[db] �� SLOW SELECT 815ms
+[db] �� SLOW SELECT 1095ms
+[db] �� SLOW SELECT 1196ms
+[db] �� SLOW SELECT 1217ms
+[db] �� SLOW SELECT 1078ms
+[db] �� SLOW SELECT 1094ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 785ms
+[db] �� SLOW SELECT 1096ms
+[db] �� SLOW SELECT 1123ms
+[db] �� SLOW SELECT 874ms
+[db] �� SLOW SELECT 553ms
+[db] �� SLOW SELECT 556ms
+[db] �� SLOW SELECT 622ms
+   ✓ 200 ok / 0 failed   p50=356ms  p95=1173ms  p99=1400ms  throughput=20.9/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=200, parallel=10)
+[db] �� SLOW SELECT 604ms
+[db] �� SLOW SELECT 552ms
+[db] �� SLOW SELECT 637ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 553ms
+[db] �� SLOW SELECT 506ms
+[db] �� SLOW SELECT 603ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 642ms
+[db] �� SLOW SELECT 795ms
+[db] �� SLOW SELECT 528ms
+[db] �� SLOW SELECT 554ms
+[db] �� SLOW SELECT 500ms
+[db] �� SLOW SELECT 554ms
+[db] �� SLOW SELECT 529ms
+[db] �� SLOW SELECT 608ms
+[db] �� SLOW SELECT 534ms
+[db] �� SLOW SELECT 536ms
+[db] �� SLOW SELECT 611ms
+[db] �� SLOW SELECT 530ms
+[db] �� SLOW SELECT 702ms
+[db] �� SLOW SELECT 541ms
+[db] �� SLOW SELECT 538ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 506ms
+[db] �� SLOW SELECT 558ms
+[db] �� SLOW SELECT 526ms
+[db] �� SLOW SELECT 650ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 678ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 707ms
+[db] �� SLOW SELECT 523ms
+[db] �� SLOW SELECT 527ms
+[db] �� SLOW SELECT 665ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 595ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 500ms
+[db] �� SLOW SELECT 565ms
+[db] �� SLOW SELECT 514ms
+[db] �� SLOW SELECT 750ms
+[db] �� SLOW SELECT 637ms
+[db] �� SLOW SELECT 599ms
+[db] �� SLOW SELECT 702ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 1036ms
+[db] �� SLOW SELECT 517ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 735ms
+[db] �� SLOW SELECT 667ms
+[db] �� SLOW SELECT 520ms
+[db] �� SLOW SELECT 679ms
+[db] �� SLOW SELECT 510ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 590ms
+[db] �� SLOW SELECT 913ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 635ms
+[db] �� SLOW SELECT 917ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 700ms
+[db] �� SLOW SELECT 600ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 584ms
+[db] �� SLOW SELECT 598ms
+[db] �� SLOW SELECT 857ms
+[db] �� SLOW SELECT 850ms
+   ✓ 200 ok / 0 failed   p50=454ms  p95=788ms  p99=921ms  throughput=20.6/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+=== DIRECT DB: stress ===
+[dotenv@17.2.3] injecting env (14) from .env -- tip: �� encrypt with Dotenvx: https://dotenvx.com
+
+=== DB stress: profile=stress ===
+
+▶ customers-list (page 1)  (n=1000, parallel=30)
+[db] �� SLOW SELECT 500ms
+[db] �� SLOW SELECT 513ms
+[db] �� SLOW SELECT 516ms
+[db] �� SLOW SELECT 522ms
+[db] �� SLOW SELECT 527ms
+[db] �� SLOW SELECT 531ms
+[db] �� SLOW SELECT 532ms
+[db] �� SLOW SELECT 534ms
+[db] �� SLOW SELECT 542ms
+[db] �� SLOW SELECT 544ms
+[db] �� SLOW SELECT 546ms
+[db] �� SLOW SELECT 550ms
+[db] �� SLOW SELECT 515ms
+[db] �� SLOW SELECT 523ms
+[db] �� SLOW SELECT 524ms
+[db] �� SLOW SELECT 526ms
+[db] �� SLOW SELECT 527ms
+[db] �� SLOW SELECT 562ms
+   ✓ 1000 ok / 0 failed   p50=59ms  p95=186ms  p99=749ms  throughput=352.4/s
+
+▶ scheme-members (no filter)  (n=1000, parallel=30)
+   ✓ 1000 ok / 0 failed   p50=48ms  p95=76ms  p99=93ms  throughput=585.1/s
+
+▶ scheme-members (unpaid this month EXISTS)  (n=1000, parallel=30)
+[db] �� SLOW SELECT 553ms
+[db] �� SLOW SELECT 624ms
+[db] �� SLOW SELECT 629ms
+[db] �� SLOW SELECT 699ms
+[db] �� SLOW SELECT 716ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 941ms
+[db] �� SLOW SELECT 955ms
+[db] �� SLOW SELECT 1021ms
+[db] �� SLOW SELECT 1025ms
+[db] �� SLOW SELECT 1035ms
+[db] �� SLOW SELECT 1165ms
+[db] �� SLOW SELECT 1207ms
+[db] �� SLOW SELECT 1250ms
+   ✓ 1000 ok / 0 failed   p50=94ms  p95=204ms  p99=836ms  throughput=252.1/s
+
+▶ audit-logs-list (paged)  (n=1000, parallel=30)
+   ✓ 1000 ok / 0 failed   p50=55ms  p95=86ms  p99=99ms  throughput=516.3/s
+
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=1000, parallel=30)
+[db] �� SLOW SELECT 4121ms
+[db] �� SLOW SELECT 5078ms
+[db] �� SLOW SELECT 6407ms
+[db] �� SLOW SELECT 6943ms
+[db] �� SLOW SELECT 7896ms
+[db] �� SLOW SELECT 9113ms
+[db] �� SLOW SELECT 9663ms
+[db] �� SLOW SELECT 10167ms
+[db] �� SLOW SELECT 12085ms
+[db] �� SLOW SELECT 12804ms
+[db] �� SLOW SELECT 14342ms
+[db] �� SLOW SELECT 15147ms
+[db] �� SLOW SELECT 16383ms
+[db] �� SLOW SELECT 17471ms
+[db] �� SLOW SELECT 19058ms
+[db] �� SLOW SELECT 20197ms
+[db] �� SLOW SELECT 20901ms
+[db] �� SLOW SELECT 21544ms
+[db] �� SLOW SELECT 22363ms
+[db] �� SLOW SELECT 22897ms
+[db] �� SLOW SELECT 23598ms
+[db] �� SLOW SELECT 24426ms
+[db] �� SLOW SELECT 25315ms
+[db] �� SLOW SELECT 25426ms
+[db] �� SLOW SELECT 25428ms
+[db] �� SLOW SELECT 25449ms
+[db] �� SLOW SELECT 25457ms
+[db] �� SLOW SELECT 25463ms
+[db] �� SLOW SELECT 21372ms
+[db] �� SLOW SELECT 25505ms
+[db] �� SLOW SELECT 25513ms
+[db] �� SLOW SELECT 18610ms
+[db] �� SLOW SELECT 19178ms
+[db] �� SLOW SELECT 17727ms
+[db] �� SLOW SELECT 20569ms
+[db] �� SLOW SELECT 16566ms
+[db] �� SLOW SELECT 15539ms
+[db] �� SLOW SELECT 16070ms
+[db] �� SLOW SELECT 13693ms
+[db] �� SLOW SELECT 12998ms
+[db] �� SLOW SELECT 11475ms
+[db] �� SLOW SELECT 9445ms
+[db] �� SLOW SELECT 11236ms
+[db] �� SLOW SELECT 8954ms
+[db] �� SLOW SELECT 7399ms
+[db] �� SLOW SELECT 6661ms
+[db] �� SLOW SELECT 6366ms
+[db] �� SLOW SELECT 5764ms
+[db] �� SLOW SELECT 6008ms
+[db] �� SLOW SELECT 5691ms
+[db] �� SLOW SELECT 5903ms
+[db] �� SLOW SELECT 4042ms
+[db] �� SLOW SELECT 2821ms
+[db] �� SLOW SELECT 3240ms
+[db] �� SLOW SELECT 1123ms
+[db] �� SLOW SELECT 2418ms
+[db] �� SLOW SELECT 4169ms
+[db] �� SLOW SELECT 3942ms
+[db] �� SLOW SELECT 3965ms
+[db] �� SLOW SELECT 4077ms
+[db] �� SLOW SELECT 4046ms
+[db] �� SLOW SELECT 4379ms
+[db] �� SLOW SELECT 1489ms
+[db] �� SLOW SELECT 2627ms
+[db] �� SLOW SELECT 3491ms
+[db] �� SLOW SELECT 3551ms
+[db] �� SLOW SELECT 4400ms
+[db] �� SLOW SELECT 4174ms
+[db] �� SLOW SELECT 4483ms
+[db] �� SLOW SELECT 4315ms
+[db] �� SLOW SELECT 4608ms
+[db] �� SLOW SELECT 4431ms
+[db] �� SLOW SELECT 5677ms
+[db] �� SLOW SELECT 4625ms
+[db] �� SLOW SELECT 4664ms
+[db] �� SLOW SELECT 4485ms
+[db] �� SLOW SELECT 4750ms
+[db] �� SLOW SELECT 4804ms
+[db] �� SLOW SELECT 4845ms
+[db] �� SLOW SELECT 4983ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 715ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 676ms
+[db] �� SLOW SELECT 750ms
+[db] �� SLOW SELECT 755ms
+[db] �� SLOW SELECT 725ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 898ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 731ms
+[db] �� SLOW SELECT 748ms
+[db] �� SLOW SELECT 665ms
+[db] �� SLOW SELECT 637ms
+[db] �� SLOW SELECT 768ms
+[db] �� SLOW SELECT 577ms
+[db] �� SLOW SELECT 1009ms
+[db] �� SLOW SELECT 601ms
+[db] �� SLOW SELECT 943ms
+[db] �� SLOW SELECT 903ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 839ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 677ms
+[db] �� SLOW SELECT 1161ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 921ms
+[db] �� SLOW SELECT 839ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 857ms
+[db] �� SLOW SELECT 856ms
+[db] �� SLOW SELECT 859ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 828ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 759ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 928ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 945ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 848ms
+[db] �� SLOW SELECT 867ms
+[db] �� SLOW SELECT 1029ms
+[db] �� SLOW SELECT 898ms
+[db] �� SLOW SELECT 824ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 999ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 932ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 857ms
+[db] �� SLOW SELECT 882ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 946ms
+[db] �� SLOW SELECT 1042ms
+[db] �� SLOW SELECT 990ms
+[db] �� SLOW SELECT 992ms
+[db] �� SLOW SELECT 1027ms
+[db] �� SLOW SELECT 1004ms
+[db] �� SLOW SELECT 1056ms
+[db] �� SLOW SELECT 1058ms
+[db] �� SLOW SELECT 1052ms
+[db] �� SLOW SELECT 1073ms
+[db] �� SLOW SELECT 1300ms
+[db] �� SLOW SELECT 1107ms
+[db] �� SLOW SELECT 1027ms
+[db] �� SLOW SELECT 1028ms
+[db] �� SLOW SELECT 1013ms
+[db] �� SLOW SELECT 1002ms
+[db] �� SLOW SELECT 962ms
+[db] �� SLOW SELECT 918ms
+[db] �� SLOW SELECT 1036ms
+[db] �� SLOW SELECT 985ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 952ms
+[db] �� SLOW SELECT 1025ms
+[db] �� SLOW SELECT 906ms
+[db] �� SLOW SELECT 966ms
+[db] �� SLOW SELECT 881ms
+[db] �� SLOW SELECT 1036ms
+[db] �� SLOW SELECT 1014ms
+[db] �� SLOW SELECT 992ms
+[db] �� SLOW SELECT 818ms
+[db] �� SLOW SELECT 757ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 732ms
+[db] �� SLOW SELECT 815ms
+[db] �� SLOW SELECT 1028ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 734ms
+[db] �� SLOW SELECT 676ms
+[db] �� SLOW SELECT 760ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 704ms
+[db] �� SLOW SELECT 684ms
+[db] �� SLOW SELECT 841ms
+[db] �� SLOW SELECT 745ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 907ms
+[db] �� SLOW SELECT 913ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 820ms
+[db] �� SLOW SELECT 690ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 698ms
+[db] �� SLOW SELECT 809ms
+[db] �� SLOW SELECT 703ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 967ms
+[db] �� SLOW SELECT 904ms
+[db] �� SLOW SELECT 863ms
+[db] �� SLOW SELECT 827ms
+[db] �� SLOW SELECT 696ms
+[db] �� SLOW SELECT 681ms
+[db] �� SLOW SELECT 895ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 895ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 1034ms
+[db] �� SLOW SELECT 1023ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 698ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 848ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 750ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 827ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 771ms
+[db] �� SLOW SELECT 729ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 842ms
+[db] �� SLOW SELECT 921ms
+[db] �� SLOW SELECT 830ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 637ms
+[db] �� SLOW SELECT 629ms
+[db] �� SLOW SELECT 639ms
+[db] �� SLOW SELECT 655ms
+[db] �� SLOW SELECT 660ms
+[db] �� SLOW SELECT 660ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 887ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 697ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 781ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 759ms
+[db] �� SLOW SELECT 774ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 680ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 809ms
+[db] �� SLOW SELECT 809ms
+[db] �� SLOW SELECT 779ms
+[db] �� SLOW SELECT 727ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 649ms
+[db] �� SLOW SELECT 609ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 736ms
+[db] �� SLOW SELECT 666ms
+[db] �� SLOW SELECT 665ms
+[db] �� SLOW SELECT 830ms
+[db] �� SLOW SELECT 887ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 714ms
+[db] �� SLOW SELECT 758ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 720ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 719ms
+[db] �� SLOW SELECT 680ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 689ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 691ms
+[db] �� SLOW SELECT 694ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 898ms
+[db] �� SLOW SELECT 871ms
+[db] �� SLOW SELECT 906ms
+[db] �� SLOW SELECT 851ms
+[db] �� SLOW SELECT 731ms
+[db] �� SLOW SELECT 640ms
+[db] �� SLOW SELECT 818ms
+[db] �� SLOW SELECT 670ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 693ms
+[db] �� SLOW SELECT 845ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 744ms
+[db] �� SLOW SELECT 895ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 727ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 760ms
+[db] �� SLOW SELECT 665ms
+[db] �� SLOW SELECT 721ms
+[db] �� SLOW SELECT 784ms
+[db] �� SLOW SELECT 696ms
+[db] �� SLOW SELECT 743ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 684ms
+[db] �� SLOW SELECT 560ms
+[db] �� SLOW SELECT 562ms
+[db] �� SLOW SELECT 713ms
+[db] �� SLOW SELECT 716ms
+[db] �� SLOW SELECT 758ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 797ms
+[db] �� SLOW SELECT 736ms
+[db] �� SLOW SELECT 763ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 708ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 687ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 907ms
+[db] �� SLOW SELECT 907ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 756ms
+[db] �� SLOW SELECT 881ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 701ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 809ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 893ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 799ms
+[db] �� SLOW SELECT 626ms
+[db] �� SLOW SELECT 637ms
+[db] �� SLOW SELECT 847ms
+[db] �� SLOW SELECT 740ms
+[db] �� SLOW SELECT 955ms
+[db] �� SLOW SELECT 936ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 940ms
+[db] �� SLOW SELECT 883ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 593ms
+[db] �� SLOW SELECT 574ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 880ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 917ms
+[db] �� SLOW SELECT 672ms
+[db] �� SLOW SELECT 900ms
+[db] �� SLOW SELECT 911ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 725ms
+[db] �� SLOW SELECT 660ms
+[db] �� SLOW SELECT 656ms
+[db] �� SLOW SELECT 748ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 592ms
+[db] �� SLOW SELECT 610ms
+[db] �� SLOW SELECT 670ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 644ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 774ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 733ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 679ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 653ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 666ms
+[db] �� SLOW SELECT 638ms
+[db] �� SLOW SELECT 640ms
+[db] �� SLOW SELECT 935ms
+[db] �� SLOW SELECT 938ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 748ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 789ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 583ms
+[db] �� SLOW SELECT 582ms
+[db] �� SLOW SELECT 582ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 846ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 864ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 725ms
+[db] �� SLOW SELECT 622ms
+[db] �� SLOW SELECT 740ms
+[db] �� SLOW SELECT 648ms
+[db] �� SLOW SELECT 731ms
+[db] �� SLOW SELECT 783ms
+[db] �� SLOW SELECT 693ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 671ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 693ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 711ms
+[db] �� SLOW SELECT 763ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 797ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 797ms
+[db] �� SLOW SELECT 777ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 807ms
+[db] �� SLOW SELECT 810ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 675ms
+[db] �� SLOW SELECT 676ms
+[db] �� SLOW SELECT 916ms
+[db] �� SLOW SELECT 918ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 745ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 810ms
+[db] �� SLOW SELECT 914ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 846ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 865ms
+[db] �� SLOW SELECT 764ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 611ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 828ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 848ms
+[db] �� SLOW SELECT 815ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 672ms
+[db] �� SLOW SELECT 828ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 781ms
+[db] �� SLOW SELECT 1010ms
+[db] �� SLOW SELECT 658ms
+[db] �� SLOW SELECT 639ms
+[db] �� SLOW SELECT 856ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 729ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 961ms
+[db] �� SLOW SELECT 959ms
+[db] �� SLOW SELECT 925ms
+[db] �� SLOW SELECT 903ms
+[db] �� SLOW SELECT 617ms
+[db] �� SLOW SELECT 654ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 828ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 740ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 800ms
+[db] �� SLOW SELECT 764ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 621ms
+[db] �� SLOW SELECT 670ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 845ms
+[db] �� SLOW SELECT 846ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 781ms
+[db] �� SLOW SELECT 668ms
+[db] �� SLOW SELECT 660ms
+[db] �� SLOW SELECT 837ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 703ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 735ms
+[db] �� SLOW SELECT 858ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 755ms
+[db] �� SLOW SELECT 756ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 639ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 940ms
+[db] �� SLOW SELECT 955ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 705ms
+[db] �� SLOW SELECT 843ms
+[db] �� SLOW SELECT 843ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 927ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 797ms
+[db] �� SLOW SELECT 1031ms
+[db] �� SLOW SELECT 781ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 711ms
+[db] �� SLOW SELECT 783ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 875ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 575ms
+[db] �� SLOW SELECT 746ms
+[db] �� SLOW SELECT 591ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 644ms
+[db] �� SLOW SELECT 815ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 668ms
+[db] �� SLOW SELECT 561ms
+[db] �� SLOW SELECT 731ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 709ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 735ms
+[db] �� SLOW SELECT 721ms
+[db] �� SLOW SELECT 577ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 746ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 720ms
+[db] �� SLOW SELECT 722ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 745ms
+[db] �� SLOW SELECT 608ms
+[db] �� SLOW SELECT 645ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 786ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 876ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 778ms
+[db] �� SLOW SELECT 704ms
+[db] �� SLOW SELECT 657ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 904ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 906ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 1101ms
+[db] �� SLOW SELECT 1076ms
+[db] �� SLOW SELECT 954ms
+[db] �� SLOW SELECT 965ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 944ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 1220ms
+[db] �� SLOW SELECT 1229ms
+[db] �� SLOW SELECT 1117ms
+[db] �� SLOW SELECT 1108ms
+[db] �� SLOW SELECT 1088ms
+[db] �� SLOW SELECT 1175ms
+[db] �� SLOW SELECT 1125ms
+[db] �� SLOW SELECT 1074ms
+[db] �� SLOW SELECT 1077ms
+[db] �� SLOW SELECT 1248ms
+[db] �� SLOW SELECT 1277ms
+[db] �� SLOW SELECT 1248ms
+[db] �� SLOW SELECT 1172ms
+[db] �� SLOW SELECT 1171ms
+[db] �� SLOW SELECT 1304ms
+[db] �� SLOW SELECT 1322ms
+[db] �� SLOW SELECT 1079ms
+[db] �� SLOW SELECT 1029ms
+[db] �� SLOW SELECT 1000ms
+[db] �� SLOW SELECT 1267ms
+[db] �� SLOW SELECT 1423ms
+[db] �� SLOW SELECT 1423ms
+[db] �� SLOW SELECT 1260ms
+[db] �� SLOW SELECT 1239ms
+[db] �� SLOW SELECT 1112ms
+[db] �� SLOW SELECT 1033ms
+[db] �� SLOW SELECT 872ms
+[db] �� SLOW SELECT 944ms
+[db] �� SLOW SELECT 1155ms
+[db] �� SLOW SELECT 1104ms
+[db] �� SLOW SELECT 1110ms
+[db] �� SLOW SELECT 950ms
+[db] �� SLOW SELECT 1107ms
+[db] �� SLOW SELECT 968ms
+[db] �� SLOW SELECT 914ms
+[db] �� SLOW SELECT 1068ms
+[db] �� SLOW SELECT 677ms
+[db] �� SLOW SELECT 815ms
+[db] �� SLOW SELECT 880ms
+[db] �� SLOW SELECT 959ms
+[db] �� SLOW SELECT 847ms
+[db] �� SLOW SELECT 933ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 814ms
+[db] �� SLOW SELECT 789ms
+[db] �� SLOW SELECT 718ms
+[db] �� SLOW SELECT 580ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 880ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 624ms
+[db] �� SLOW SELECT 699ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 722ms
+[db] �� SLOW SELECT 793ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 733ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 653ms
+[db] �� SLOW SELECT 572ms
+[db] �� SLOW SELECT 708ms
+[db] �� SLOW SELECT 793ms
+[db] �� SLOW SELECT 700ms
+[db] �� SLOW SELECT 678ms
+[db] �� SLOW SELECT 764ms
+[db] �� SLOW SELECT 800ms
+[db] �� SLOW SELECT 942ms
+[db] �� SLOW SELECT 949ms
+[db] �� SLOW SELECT 746ms
+[db] �� SLOW SELECT 696ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 817ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 846ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 635ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 734ms
+[db] �� SLOW SELECT 681ms
+[db] �� SLOW SELECT 860ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 705ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 764ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 768ms
+[db] �� SLOW SELECT 615ms
+[db] �� SLOW SELECT 699ms
+[db] �� SLOW SELECT 636ms
+[db] �� SLOW SELECT 702ms
+[db] �� SLOW SELECT 904ms
+[db] �� SLOW SELECT 721ms
+[db] �� SLOW SELECT 866ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 970ms
+[db] �� SLOW SELECT 889ms
+[db] �� SLOW SELECT 599ms
+[db] �� SLOW SELECT 662ms
+[db] �� SLOW SELECT 634ms
+[db] �� SLOW SELECT 631ms
+[db] �� SLOW SELECT 837ms
+[db] �� SLOW SELECT 824ms
+[db] �� SLOW SELECT 810ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 954ms
+[db] �� SLOW SELECT 511ms
+[db] �� SLOW SELECT 750ms
+[db] �� SLOW SELECT 614ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 786ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 816ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 628ms
+[db] �� SLOW SELECT 625ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 816ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 669ms
+[db] �� SLOW SELECT 683ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 705ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 926ms
+[db] �� SLOW SELECT 924ms
+[db] �� SLOW SELECT 760ms
+[db] �� SLOW SELECT 642ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 851ms
+[db] �� SLOW SELECT 783ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 910ms
+[db] �� SLOW SELECT 759ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 945ms
+[db] �� SLOW SELECT 597ms
+[db] �� SLOW SELECT 666ms
+[db] �� SLOW SELECT 628ms
+[db] �� SLOW SELECT 925ms
+[db] �� SLOW SELECT 895ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 684ms
+[db] �� SLOW SELECT 646ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 865ms
+[db] �� SLOW SELECT 971ms
+[db] �� SLOW SELECT 900ms
+[db] �� SLOW SELECT 1044ms
+[db] �� SLOW SELECT 998ms
+[db] �� SLOW SELECT 823ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 810ms
+[db] �� SLOW SELECT 920ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 875ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 879ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 645ms
+[db] �� SLOW SELECT 881ms
+[db] �� SLOW SELECT 691ms
+[db] �� SLOW SELECT 672ms
+[db] �� SLOW SELECT 919ms
+[db] �� SLOW SELECT 865ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 892ms
+[db] �� SLOW SELECT 612ms
+[db] �� SLOW SELECT 813ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 663ms
+[db] �� SLOW SELECT 793ms
+[db] �� SLOW SELECT 719ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 743ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 763ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 741ms
+[db] �� SLOW SELECT 594ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 785ms
+[db] �� SLOW SELECT 786ms
+[db] �� SLOW SELECT 785ms
+[db] �� SLOW SELECT 725ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 741ms
+[db] �� SLOW SELECT 687ms
+[db] �� SLOW SELECT 636ms
+[db] �� SLOW SELECT 595ms
+[db] �� SLOW SELECT 830ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 745ms
+[db] �� SLOW SELECT 928ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 716ms
+[db] �� SLOW SELECT 794ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 745ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 757ms
+[db] �� SLOW SELECT 697ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 672ms
+[db] �� SLOW SELECT 607ms
+[db] �� SLOW SELECT 865ms
+[db] �� SLOW SELECT 795ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 778ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 585ms
+[db] �� SLOW SELECT 590ms
+[db] �� SLOW SELECT 667ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 814ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 864ms
+[db] �� SLOW SELECT 759ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 950ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 879ms
+[db] �� SLOW SELECT 705ms
+[db] �� SLOW SELECT 580ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 700ms
+[db] �� SLOW SELECT 731ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 858ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 963ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 978ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 624ms
+[db] �� SLOW SELECT 841ms
+[db] �� SLOW SELECT 635ms
+[db] �� SLOW SELECT 648ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 817ms
+[db] �� SLOW SELECT 823ms
+[db] �� SLOW SELECT 925ms
+[db] �� SLOW SELECT 707ms
+[db] �� SLOW SELECT 704ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 919ms
+[db] �� SLOW SELECT 851ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 1047ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 935ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 1007ms
+[db] �� SLOW SELECT 960ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 924ms
+[db] �� SLOW SELECT 889ms
+[db] �� SLOW SELECT 958ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 675ms
+[db] �� SLOW SELECT 932ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 968ms
+[db] �� SLOW SELECT 966ms
+[db] �� SLOW SELECT 969ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 916ms
+[db] �� SLOW SELECT 882ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 628ms
+[db] �� SLOW SELECT 975ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 866ms
+[db] �� SLOW SELECT 857ms
+[db] �� SLOW SELECT 794ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 788ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 777ms
+[db] �� SLOW SELECT 635ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 803ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 814ms
+[db] �� SLOW SELECT 803ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 812ms
+[db] �� SLOW SELECT 799ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 826ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 635ms
+[db] �� SLOW SELECT 610ms
+[db] �� SLOW SELECT 813ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 971ms
+[db] �� SLOW SELECT 882ms
+[db] �� SLOW SELECT 759ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 933ms
+[db] �� SLOW SELECT 587ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 743ms
+[db] �� SLOW SELECT 734ms
+[db] �� SLOW SELECT 944ms
+[db] �� SLOW SELECT 865ms
+[db] �� SLOW SELECT 920ms
+[db] �� SLOW SELECT 977ms
+[db] �� SLOW SELECT 883ms
+[db] �� SLOW SELECT 882ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 793ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 815ms
+   ✓ 1000 ok / 0 failed   p50=815ms  p95=5678ms  p99=23600ms  throughput=18.1/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=1000, parallel=30)
+[db] �� SLOW SELECT 515ms
+[db] �� SLOW SELECT 537ms
+[db] �� SLOW SELECT 544ms
+[db] �� SLOW SELECT 587ms
+[db] �� SLOW SELECT 613ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 677ms
+[db] �� SLOW SELECT 704ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 513ms
+[db] �� SLOW SELECT 975ms
+[db] �� SLOW SELECT 521ms
+[db] �� SLOW SELECT 577ms
+[db] �� SLOW SELECT 599ms
+[db] �� SLOW SELECT 508ms
+[db] �� SLOW SELECT 617ms
+[db] �� SLOW SELECT 1097ms
+[db] �� SLOW SELECT 560ms
+[db] �� SLOW SELECT 708ms
+[db] �� SLOW SELECT 726ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 817ms
+[db] �� SLOW SELECT 669ms
+[db] �� SLOW SELECT 668ms
+[db] �� SLOW SELECT 926ms
+[db] �� SLOW SELECT 859ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 646ms
+[db] �� SLOW SELECT 1100ms
+[db] �� SLOW SELECT 1263ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 602ms
+[db] �� SLOW SELECT 1028ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 619ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 622ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 589ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 664ms
+[db] �� SLOW SELECT 733ms
+[db] �� SLOW SELECT 937ms
+[db] �� SLOW SELECT 859ms
+[db] �� SLOW SELECT 954ms
+[db] �� SLOW SELECT 799ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 680ms
+[db] �� SLOW SELECT 616ms
+[db] �� SLOW SELECT 812ms
+[db] �� SLOW SELECT 1204ms
+[db] �� SLOW SELECT 1274ms
+[db] �� SLOW SELECT 613ms
+[db] �� SLOW SELECT 610ms
+[db] �� SLOW SELECT 932ms
+[db] �� SLOW SELECT 1058ms
+[db] �� SLOW SELECT 656ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 690ms
+[db] �� SLOW SELECT 689ms
+[db] �� SLOW SELECT 555ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 768ms
+[db] �� SLOW SELECT 665ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 837ms
+[db] �� SLOW SELECT 796ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 1146ms
+[db] �� SLOW SELECT 863ms
+[db] �� SLOW SELECT 875ms
+[db] �� SLOW SELECT 1101ms
+[db] �� SLOW SELECT 620ms
+[db] �� SLOW SELECT 887ms
+[db] �� SLOW SELECT 1040ms
+[db] �� SLOW SELECT 1036ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 691ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 994ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 1265ms
+[db] �� SLOW SELECT 1001ms
+[db] �� SLOW SELECT 1077ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 876ms
+[db] �� SLOW SELECT 1139ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 1050ms
+[db] �� SLOW SELECT 892ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 943ms
+[db] �� SLOW SELECT 1033ms
+[db] �� SLOW SELECT 669ms
+[db] �� SLOW SELECT 786ms
+[db] �� SLOW SELECT 1033ms
+[db] �� SLOW SELECT 1297ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 1194ms
+[db] �� SLOW SELECT 1116ms
+[db] �� SLOW SELECT 880ms
+[db] �� SLOW SELECT 982ms
+[db] �� SLOW SELECT 956ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 1133ms
+[db] �� SLOW SELECT 747ms
+[db] �� SLOW SELECT 533ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 1025ms
+[db] �� SLOW SELECT 1295ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 911ms
+[db] �� SLOW SELECT 733ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 1427ms
+[db] �� SLOW SELECT 951ms
+[db] �� SLOW SELECT 1106ms
+[db] �� SLOW SELECT 1197ms
+[db] �� SLOW SELECT 982ms
+[db] �� SLOW SELECT 1296ms
+[db] �� SLOW SELECT 1048ms
+[db] �� SLOW SELECT 924ms
+[db] �� SLOW SELECT 1038ms
+[db] �� SLOW SELECT 941ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 859ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 1036ms
+[db] �� SLOW SELECT 986ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 1049ms
+[db] �� SLOW SELECT 919ms
+[db] �� SLOW SELECT 853ms
+[db] �� SLOW SELECT 1389ms
+[db] �� SLOW SELECT 1174ms
+[db] �� SLOW SELECT 1086ms
+[db] �� SLOW SELECT 1119ms
+[db] �� SLOW SELECT 1126ms
+[db] �� SLOW SELECT 926ms
+[db] �� SLOW SELECT 1049ms
+[db] �� SLOW SELECT 1031ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 893ms
+[db] �� SLOW SELECT 1112ms
+[db] �� SLOW SELECT 1321ms
+[db] �� SLOW SELECT 1033ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 777ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 890ms
+[db] �� SLOW SELECT 1164ms
+[db] �� SLOW SELECT 957ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 1007ms
+[db] �� SLOW SELECT 906ms
+[db] �� SLOW SELECT 504ms
+[db] �� SLOW SELECT 1008ms
+[db] �� SLOW SELECT 921ms
+[db] �� SLOW SELECT 1229ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 614ms
+[db] �� SLOW SELECT 732ms
+[db] �� SLOW SELECT 1174ms
+[db] �� SLOW SELECT 1425ms
+[db] �� SLOW SELECT 794ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 679ms
+[db] �� SLOW SELECT 1185ms
+[db] �� SLOW SELECT 961ms
+[db] �� SLOW SELECT 876ms
+[db] �� SLOW SELECT 1302ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 1044ms
+[db] �� SLOW SELECT 1044ms
+[db] �� SLOW SELECT 842ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 1158ms
+[db] �� SLOW SELECT 630ms
+[db] �� SLOW SELECT 535ms
+[db] �� SLOW SELECT 882ms
+[db] �� SLOW SELECT 602ms
+[db] �� SLOW SELECT 589ms
+[db] �� SLOW SELECT 923ms
+[db] �� SLOW SELECT 870ms
+[db] �� SLOW SELECT 630ms
+[db] �� SLOW SELECT 1231ms
+[db] �� SLOW SELECT 942ms
+[db] �� SLOW SELECT 960ms
+[db] �� SLOW SELECT 641ms
+[db] �� SLOW SELECT 1379ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 913ms
+[db] �� SLOW SELECT 592ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 1137ms
+[db] �� SLOW SELECT 524ms
+[db] �� SLOW SELECT 571ms
+[db] �� SLOW SELECT 632ms
+[db] �� SLOW SELECT 946ms
+[db] �� SLOW SELECT 803ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 1002ms
+[db] �� SLOW SELECT 736ms
+[db] �� SLOW SELECT 889ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 1075ms
+[db] �� SLOW SELECT 830ms
+[db] �� SLOW SELECT 827ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 1112ms
+[db] �� SLOW SELECT 954ms
+[db] �� SLOW SELECT 1016ms
+[db] �� SLOW SELECT 1022ms
+[db] �� SLOW SELECT 999ms
+[db] �� SLOW SELECT 986ms
+[db] �� SLOW SELECT 824ms
+[db] �� SLOW SELECT 1132ms
+[db] �� SLOW SELECT 1077ms
+[db] �� SLOW SELECT 1067ms
+[db] �� SLOW SELECT 1211ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 970ms
+[db] �� SLOW SELECT 771ms
+[db] �� SLOW SELECT 935ms
+[db] �� SLOW SELECT 653ms
+[db] �� SLOW SELECT 1009ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 667ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 771ms
+[db] �� SLOW SELECT 1135ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 1090ms
+[db] �� SLOW SELECT 1015ms
+[db] �� SLOW SELECT 978ms
+[db] �� SLOW SELECT 968ms
+[db] �� SLOW SELECT 1096ms
+[db] �� SLOW SELECT 927ms
+[db] �� SLOW SELECT 903ms
+[db] �� SLOW SELECT 1333ms
+[db] �� SLOW SELECT 1092ms
+[db] �� SLOW SELECT 1008ms
+[db] �� SLOW SELECT 910ms
+[db] �� SLOW SELECT 1097ms
+[db] �� SLOW SELECT 1101ms
+[db] �� SLOW SELECT 1014ms
+[db] �� SLOW SELECT 660ms
+[db] �� SLOW SELECT 572ms
+[db] �� SLOW SELECT 1057ms
+[db] �� SLOW SELECT 1012ms
+[db] �� SLOW SELECT 1231ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 1198ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 829ms
+[db] �� SLOW SELECT 820ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 1071ms
+[db] �� SLOW SELECT 989ms
+[db] �� SLOW SELECT 1127ms
+[db] �� SLOW SELECT 997ms
+[db] �� SLOW SELECT 843ms
+[db] �� SLOW SELECT 948ms
+[db] �� SLOW SELECT 696ms
+[db] �� SLOW SELECT 1355ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 645ms
+[db] �� SLOW SELECT 760ms
+[db] �� SLOW SELECT 987ms
+[db] �� SLOW SELECT 1274ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 763ms
+[db] �� SLOW SELECT 1024ms
+[db] �� SLOW SELECT 1894ms
+[db] �� SLOW SELECT 571ms
+[db] �� SLOW SELECT 1115ms
+[db] �� SLOW SELECT 1131ms
+[db] �� SLOW SELECT 998ms
+[db] �� SLOW SELECT 653ms
+[db] �� SLOW SELECT 1362ms
+[db] �� SLOW SELECT 681ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 806ms
+[db] �� SLOW SELECT 846ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 1319ms
+[db] �� SLOW SELECT 1131ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 1037ms
+[db] �� SLOW SELECT 1346ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 670ms
+[db] �� SLOW SELECT 975ms
+[db] �� SLOW SELECT 678ms
+[db] �� SLOW SELECT 723ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 1067ms
+[db] �� SLOW SELECT 771ms
+[db] �� SLOW SELECT 641ms
+[db] �� SLOW SELECT 1043ms
+[db] �� SLOW SELECT 864ms
+[db] �� SLOW SELECT 719ms
+[db] �� SLOW SELECT 1430ms
+[db] �� SLOW SELECT 1308ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 973ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 898ms
+[db] �� SLOW SELECT 1351ms
+[db] �� SLOW SELECT 966ms
+[db] �� SLOW SELECT 1115ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 639ms
+[db] �� SLOW SELECT 993ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 1013ms
+[db] �� SLOW SELECT 843ms
+[db] �� SLOW SELECT 1007ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 501ms
+[db] �� SLOW SELECT 615ms
+[db] �� SLOW SELECT 740ms
+[db] �� SLOW SELECT 608ms
+[db] �� SLOW SELECT 794ms
+[db] �� SLOW SELECT 966ms
+[db] �� SLOW SELECT 904ms
+[db] �� SLOW SELECT 1016ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 1133ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 554ms
+[db] �� SLOW SELECT 1068ms
+[db] �� SLOW SELECT 998ms
+[db] �� SLOW SELECT 950ms
+[db] �� SLOW SELECT 893ms
+[db] �� SLOW SELECT 945ms
+[db] �� SLOW SELECT 1337ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 956ms
+[db] �� SLOW SELECT 954ms
+[db] �� SLOW SELECT 951ms
+[db] �� SLOW SELECT 1057ms
+[db] �� SLOW SELECT 817ms
+[db] �� SLOW SELECT 1442ms
+[db] �� SLOW SELECT 1020ms
+[db] �� SLOW SELECT 1194ms
+[db] �� SLOW SELECT 970ms
+[db] �� SLOW SELECT 792ms
+[db] �� SLOW SELECT 913ms
+[db] �� SLOW SELECT 994ms
+[db] �� SLOW SELECT 616ms
+[db] �� SLOW SELECT 513ms
+[db] �� SLOW SELECT 1120ms
+[db] �� SLOW SELECT 655ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 741ms
+[db] �� SLOW SELECT 559ms
+[db] �� SLOW SELECT 537ms
+[db] �� SLOW SELECT 953ms
+[db] �� SLOW SELECT 1246ms
+[db] �� SLOW SELECT 601ms
+[db] �� SLOW SELECT 1139ms
+[db] �� SLOW SELECT 656ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 778ms
+[db] �� SLOW SELECT 599ms
+[db] �� SLOW SELECT 1085ms
+[db] �� SLOW SELECT 632ms
+[db] �� SLOW SELECT 609ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 1043ms
+[db] �� SLOW SELECT 1100ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 946ms
+[db] �� SLOW SELECT 1301ms
+[db] �� SLOW SELECT 1008ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 708ms
+[db] �� SLOW SELECT 921ms
+[db] �� SLOW SELECT 935ms
+[db] �� SLOW SELECT 1096ms
+[db] �� SLOW SELECT 1031ms
+[db] �� SLOW SELECT 1014ms
+[db] �� SLOW SELECT 1193ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 906ms
+[db] �� SLOW SELECT 987ms
+[db] �� SLOW SELECT 1238ms
+[db] �� SLOW SELECT 1076ms
+[db] �� SLOW SELECT 1236ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 985ms
+[db] �� SLOW SELECT 1110ms
+[db] �� SLOW SELECT 1236ms
+[db] �� SLOW SELECT 670ms
+[db] �� SLOW SELECT 1022ms
+[db] �� SLOW SELECT 768ms
+[db] �� SLOW SELECT 779ms
+[db] �� SLOW SELECT 952ms
+[db] �� SLOW SELECT 1328ms
+[db] �� SLOW SELECT 850ms
+[db] �� SLOW SELECT 671ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 983ms
+[db] �� SLOW SELECT 822ms
+[db] �� SLOW SELECT 824ms
+[db] �� SLOW SELECT 1153ms
+[db] �� SLOW SELECT 939ms
+[db] �� SLOW SELECT 1214ms
+[db] �� SLOW SELECT 732ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 678ms
+[db] �� SLOW SELECT 997ms
+[db] �� SLOW SELECT 999ms
+[db] �� SLOW SELECT 1259ms
+[db] �� SLOW SELECT 1167ms
+[db] �� SLOW SELECT 1432ms
+[db] �� SLOW SELECT 903ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 944ms
+[db] �� SLOW SELECT 629ms
+[db] �� SLOW SELECT 1767ms
+[db] �� SLOW SELECT 936ms
+[db] �� SLOW SELECT 1151ms
+[db] �� SLOW SELECT 1163ms
+[db] �� SLOW SELECT 816ms
+[db] �� SLOW SELECT 1039ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 1189ms
+[db] �� SLOW SELECT 980ms
+[db] �� SLOW SELECT 1313ms
+[db] �� SLOW SELECT 981ms
+[db] �� SLOW SELECT 1238ms
+[db] �� SLOW SELECT 1002ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 1090ms
+[db] �� SLOW SELECT 1517ms
+[db] �� SLOW SELECT 509ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 1014ms
+[db] �� SLOW SELECT 748ms
+[db] �� SLOW SELECT 1147ms
+[db] �� SLOW SELECT 622ms
+[db] �� SLOW SELECT 1220ms
+[db] �� SLOW SELECT 643ms
+[db] �� SLOW SELECT 1394ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 1138ms
+[db] �� SLOW SELECT 1103ms
+[db] �� SLOW SELECT 935ms
+[db] �� SLOW SELECT 1292ms
+[db] �� SLOW SELECT 776ms
+[db] �� SLOW SELECT 1247ms
+[db] �� SLOW SELECT 1194ms
+[db] �� SLOW SELECT 781ms
+[db] �� SLOW SELECT 1145ms
+[db] �� SLOW SELECT 973ms
+[db] �� SLOW SELECT 1068ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 987ms
+[db] �� SLOW SELECT 1264ms
+[db] �� SLOW SELECT 1136ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 1233ms
+[db] �� SLOW SELECT 963ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 980ms
+[db] �� SLOW SELECT 1018ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 724ms
+[db] �� SLOW SELECT 1032ms
+[db] �� SLOW SELECT 1131ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 755ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 923ms
+[db] �� SLOW SELECT 1233ms
+[db] �� SLOW SELECT 1061ms
+[db] �� SLOW SELECT 715ms
+[db] �� SLOW SELECT 1020ms
+[db] �� SLOW SELECT 683ms
+[db] �� SLOW SELECT 720ms
+[db] �� SLOW SELECT 1069ms
+[db] �� SLOW SELECT 974ms
+[db] �� SLOW SELECT 860ms
+[db] �� SLOW SELECT 681ms
+[db] �� SLOW SELECT 916ms
+[db] �� SLOW SELECT 816ms
+[db] �� SLOW SELECT 962ms
+[db] �� SLOW SELECT 803ms
+[db] �� SLOW SELECT 822ms
+[db] �� SLOW SELECT 746ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 1050ms
+[db] �� SLOW SELECT 1133ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 941ms
+[db] �� SLOW SELECT 996ms
+[db] �� SLOW SELECT 738ms
+[db] �� SLOW SELECT 741ms
+[db] �� SLOW SELECT 1066ms
+[db] �� SLOW SELECT 597ms
+[db] �� SLOW SELECT 1230ms
+[db] �� SLOW SELECT 633ms
+[db] �� SLOW SELECT 909ms
+[db] �� SLOW SELECT 972ms
+[db] �� SLOW SELECT 1121ms
+[db] �� SLOW SELECT 1063ms
+[db] �� SLOW SELECT 1327ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 1043ms
+[db] �� SLOW SELECT 1377ms
+[db] �� SLOW SELECT 1137ms
+[db] �� SLOW SELECT 1220ms
+[db] �� SLOW SELECT 1102ms
+[db] �� SLOW SELECT 1638ms
+[db] �� SLOW SELECT 1151ms
+[db] �� SLOW SELECT 743ms
+[db] �� SLOW SELECT 1066ms
+[db] �� SLOW SELECT 1074ms
+[db] �� SLOW SELECT 1061ms
+[db] �� SLOW SELECT 800ms
+[db] �� SLOW SELECT 1219ms
+[db] �� SLOW SELECT 918ms
+[db] �� SLOW SELECT 1446ms
+[db] �� SLOW SELECT 1292ms
+[db] �� SLOW SELECT 1273ms
+[db] �� SLOW SELECT 699ms
+[db] �� SLOW SELECT 1234ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 1429ms
+[db] �� SLOW SELECT 1164ms
+[db] �� SLOW SELECT 804ms
+[db] �� SLOW SELECT 934ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 1203ms
+[db] �� SLOW SELECT 1354ms
+[db] �� SLOW SELECT 1055ms
+[db] �� SLOW SELECT 1473ms
+[db] �� SLOW SELECT 1053ms
+[db] �� SLOW SELECT 1742ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 1188ms
+[db] �� SLOW SELECT 1449ms
+[db] �� SLOW SELECT 1253ms
+[db] �� SLOW SELECT 965ms
+[db] �� SLOW SELECT 1046ms
+[db] �� SLOW SELECT 1018ms
+[db] �� SLOW SELECT 1216ms
+[db] �� SLOW SELECT 1006ms
+[db] �� SLOW SELECT 628ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 1289ms
+[db] �� SLOW SELECT 653ms
+[db] �� SLOW SELECT 1072ms
+[db] �� SLOW SELECT 657ms
+[db] �� SLOW SELECT 769ms
+[db] �� SLOW SELECT 1356ms
+[db] �� SLOW SELECT 717ms
+[db] �� SLOW SELECT 1054ms
+[db] �� SLOW SELECT 893ms
+[db] �� SLOW SELECT 1268ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 984ms
+[db] �� SLOW SELECT 735ms
+[db] �� SLOW SELECT 589ms
+[db] �� SLOW SELECT 963ms
+[db] �� SLOW SELECT 876ms
+[db] �� SLOW SELECT 649ms
+[db] �� SLOW SELECT 818ms
+[db] �� SLOW SELECT 925ms
+[db] �� SLOW SELECT 1128ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 1166ms
+[db] �� SLOW SELECT 1009ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 1050ms
+[db] �� SLOW SELECT 1326ms
+[db] �� SLOW SELECT 1082ms
+[db] �� SLOW SELECT 1124ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 1080ms
+[db] �� SLOW SELECT 1561ms
+[db] �� SLOW SELECT 874ms
+[db] �� SLOW SELECT 972ms
+[db] �� SLOW SELECT 974ms
+[db] �� SLOW SELECT 1382ms
+[db] �� SLOW SELECT 1139ms
+[db] �� SLOW SELECT 1072ms
+[db] �� SLOW SELECT 1085ms
+[db] �� SLOW SELECT 1337ms
+[db] �� SLOW SELECT 1332ms
+[db] �� SLOW SELECT 966ms
+[db] �� SLOW SELECT 1084ms
+[db] �� SLOW SELECT 813ms
+[db] �� SLOW SELECT 904ms
+[db] �� SLOW SELECT 883ms
+[db] �� SLOW SELECT 1093ms
+[db] �� SLOW SELECT 978ms
+[db] �� SLOW SELECT 730ms
+[db] �� SLOW SELECT 952ms
+[db] �� SLOW SELECT 976ms
+[db] �� SLOW SELECT 1026ms
+[db] �� SLOW SELECT 789ms
+[db] �� SLOW SELECT 1172ms
+[db] �� SLOW SELECT 1048ms
+[db] �� SLOW SELECT 612ms
+[db] �� SLOW SELECT 1154ms
+[db] �� SLOW SELECT 704ms
+[db] �� SLOW SELECT 1096ms
+[db] �� SLOW SELECT 1046ms
+[db] �� SLOW SELECT 625ms
+[db] �� SLOW SELECT 851ms
+[db] �� SLOW SELECT 897ms
+[db] �� SLOW SELECT 785ms
+[db] �� SLOW SELECT 1025ms
+[db] �� SLOW SELECT 1029ms
+[db] �� SLOW SELECT 1092ms
+[db] �� SLOW SELECT 1291ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 922ms
+[db] �� SLOW SELECT 584ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 1022ms
+[db] �� SLOW SELECT 1280ms
+[db] �� SLOW SELECT 1153ms
+[db] �� SLOW SELECT 1025ms
+[db] �� SLOW SELECT 969ms
+[db] �� SLOW SELECT 684ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 1059ms
+[db] �� SLOW SELECT 1169ms
+[db] �� SLOW SELECT 980ms
+[db] �� SLOW SELECT 1251ms
+[db] �� SLOW SELECT 1002ms
+[db] �� SLOW SELECT 1034ms
+[db] �� SLOW SELECT 1319ms
+[db] �� SLOW SELECT 1343ms
+[db] �� SLOW SELECT 877ms
+[db] �� SLOW SELECT 928ms
+[db] �� SLOW SELECT 1119ms
+[db] �� SLOW SELECT 662ms
+[db] �� SLOW SELECT 1301ms
+[db] �� SLOW SELECT 1086ms
+[db] �� SLOW SELECT 1371ms
+[db] �� SLOW SELECT 1092ms
+[db] �� SLOW SELECT 1154ms
+[db] �� SLOW SELECT 1197ms
+[db] �� SLOW SELECT 900ms
+[db] �� SLOW SELECT 1266ms
+[db] �� SLOW SELECT 1343ms
+[db] �� SLOW SELECT 1174ms
+[db] �� SLOW SELECT 1055ms
+[db] �� SLOW SELECT 1070ms
+[db] �� SLOW SELECT 1343ms
+[db] �� SLOW SELECT 986ms
+[db] �� SLOW SELECT 1328ms
+[db] �� SLOW SELECT 1405ms
+[db] �� SLOW SELECT 1338ms
+[db] �� SLOW SELECT 1340ms
+[db] �� SLOW SELECT 1005ms
+[db] �� SLOW SELECT 1453ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 1230ms
+[db] �� SLOW SELECT 1051ms
+[db] �� SLOW SELECT 1264ms
+[db] �� SLOW SELECT 1265ms
+[db] �� SLOW SELECT 1121ms
+[db] �� SLOW SELECT 1272ms
+[db] �� SLOW SELECT 1457ms
+[db] �� SLOW SELECT 1045ms
+[db] �� SLOW SELECT 1226ms
+[db] �� SLOW SELECT 1021ms
+[db] �� SLOW SELECT 1065ms
+[db] �� SLOW SELECT 1063ms
+[db] �� SLOW SELECT 662ms
+[db] �� SLOW SELECT 874ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 1040ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 1442ms
+[db] �� SLOW SELECT 1443ms
+[db] �� SLOW SELECT 1351ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 599ms
+[db] �� SLOW SELECT 1252ms
+[db] �� SLOW SELECT 1161ms
+[db] �� SLOW SELECT 1086ms
+[db] �� SLOW SELECT 976ms
+[db] �� SLOW SELECT 763ms
+[db] �� SLOW SELECT 1059ms
+[db] �� SLOW SELECT 1152ms
+[db] �� SLOW SELECT 876ms
+[db] �� SLOW SELECT 1165ms
+[db] �� SLOW SELECT 1233ms
+[db] �� SLOW SELECT 1050ms
+[db] �� SLOW SELECT 1009ms
+[db] �� SLOW SELECT 911ms
+[db] �� SLOW SELECT 1012ms
+[db] �� SLOW SELECT 1133ms
+[db] �� SLOW SELECT 1066ms
+[db] �� SLOW SELECT 831ms
+[db] �� SLOW SELECT 1131ms
+[db] �� SLOW SELECT 1159ms
+[db] �� SLOW SELECT 1148ms
+[db] �� SLOW SELECT 1439ms
+[db] �� SLOW SELECT 1165ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 1056ms
+[db] �� SLOW SELECT 931ms
+[db] �� SLOW SELECT 1008ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 947ms
+[db] �� SLOW SELECT 1160ms
+[db] �� SLOW SELECT 692ms
+[db] �� SLOW SELECT 1159ms
+[db] �� SLOW SELECT 1328ms
+[db] �� SLOW SELECT 705ms
+[db] �� SLOW SELECT 1075ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 673ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 1121ms
+[db] �� SLOW SELECT 1093ms
+[db] �� SLOW SELECT 512ms
+[db] �� SLOW SELECT 1029ms
+[db] �� SLOW SELECT 923ms
+[db] �� SLOW SELECT 801ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 887ms
+[db] �� SLOW SELECT 937ms
+[db] �� SLOW SELECT 1120ms
+[db] �� SLOW SELECT 1289ms
+[db] �� SLOW SELECT 616ms
+[db] �� SLOW SELECT 594ms
+[db] �� SLOW SELECT 559ms
+[db] �� SLOW SELECT 1062ms
+[db] �� SLOW SELECT 515ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 978ms
+[db] �� SLOW SELECT 1082ms
+[db] �� SLOW SELECT 973ms
+[db] �� SLOW SELECT 690ms
+[db] �� SLOW SELECT 714ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 671ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 999ms
+[db] �� SLOW SELECT 977ms
+[db] �� SLOW SELECT 1144ms
+[db] �� SLOW SELECT 1086ms
+[db] �� SLOW SELECT 1055ms
+[db] �� SLOW SELECT 952ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 1028ms
+[db] �� SLOW SELECT 595ms
+[db] �� SLOW SELECT 1187ms
+[db] �� SLOW SELECT 1280ms
+[db] �� SLOW SELECT 719ms
+[db] �� SLOW SELECT 562ms
+[db] �� SLOW SELECT 1015ms
+[db] �� SLOW SELECT 833ms
+[db] �� SLOW SELECT 981ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 726ms
+[db] �� SLOW SELECT 873ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 1000ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 1139ms
+[db] �� SLOW SELECT 805ms
+[db] �� SLOW SELECT 1157ms
+[db] �� SLOW SELECT 652ms
+[db] �� SLOW SELECT 1080ms
+[db] �� SLOW SELECT 1283ms
+[db] �� SLOW SELECT 611ms
+[db] �� SLOW SELECT 1187ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 1141ms
+[db] �� SLOW SELECT 998ms
+[db] �� SLOW SELECT 1209ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 756ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 955ms
+[db] �� SLOW SELECT 668ms
+[db] �� SLOW SELECT 823ms
+[db] �� SLOW SELECT 1132ms
+[db] �� SLOW SELECT 529ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 1223ms
+[db] �� SLOW SELECT 768ms
+[db] �� SLOW SELECT 1008ms
+[db] �� SLOW SELECT 800ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 1162ms
+[db] �� SLOW SELECT 929ms
+[db] �� SLOW SELECT 847ms
+[db] �� SLOW SELECT 728ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 973ms
+[db] �� SLOW SELECT 1023ms
+[db] �� SLOW SELECT 1385ms
+[db] �� SLOW SELECT 1244ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 812ms
+[db] �� SLOW SELECT 1059ms
+[db] �� SLOW SELECT 586ms
+[db] �� SLOW SELECT 860ms
+[db] �� SLOW SELECT 682ms
+[db] �� SLOW SELECT 814ms
+[db] �� SLOW SELECT 1484ms
+[db] �� SLOW SELECT 717ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 927ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 1289ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 1014ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 946ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 1167ms
+[db] �� SLOW SELECT 1165ms
+[db] �� SLOW SELECT 543ms
+[db] �� SLOW SELECT 1015ms
+[db] �� SLOW SELECT 1457ms
+[db] �� SLOW SELECT 1060ms
+[db] �� SLOW SELECT 1180ms
+[db] �� SLOW SELECT 862ms
+[db] �� SLOW SELECT 859ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 633ms
+[db] �� SLOW SELECT 573ms
+[db] �� SLOW SELECT 572ms
+[db] �� SLOW SELECT 1313ms
+[db] �� SLOW SELECT 758ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 848ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 1019ms
+[db] �� SLOW SELECT 707ms
+[db] �� SLOW SELECT 1182ms
+[db] �� SLOW SELECT 962ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 752ms
+[db] �� SLOW SELECT 849ms
+[db] �� SLOW SELECT 981ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 837ms
+[db] �� SLOW SELECT 927ms
+[db] �� SLOW SELECT 675ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 504ms
+[db] �� SLOW SELECT 1058ms
+[db] �� SLOW SELECT 796ms
+[db] �� SLOW SELECT 814ms
+[db] �� SLOW SELECT 640ms
+[db] �� SLOW SELECT 1053ms
+[db] �� SLOW SELECT 867ms
+[db] �� SLOW SELECT 1162ms
+[db] �� SLOW SELECT 1168ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 690ms
+[db] �� SLOW SELECT 930ms
+[db] �� SLOW SELECT 911ms
+[db] �� SLOW SELECT 572ms
+[db] �� SLOW SELECT 839ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 961ms
+[db] �� SLOW SELECT 920ms
+[db] �� SLOW SELECT 1206ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 952ms
+[db] �� SLOW SELECT 976ms
+[db] �� SLOW SELECT 641ms
+[db] �� SLOW SELECT 626ms
+[db] �� SLOW SELECT 1150ms
+[db] �� SLOW SELECT 1231ms
+[db] �� SLOW SELECT 672ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 1111ms
+[db] �� SLOW SELECT 570ms
+[db] �� SLOW SELECT 1202ms
+[db] �� SLOW SELECT 1104ms
+[db] �� SLOW SELECT 627ms
+[db] �� SLOW SELECT 1039ms
+[db] �� SLOW SELECT 1406ms
+[db] �� SLOW SELECT 832ms
+[db] �� SLOW SELECT 1040ms
+[db] �� SLOW SELECT 943ms
+[db] �� SLOW SELECT 1288ms
+[db] �� SLOW SELECT 1161ms
+[db] �� SLOW SELECT 1148ms
+[db] �� SLOW SELECT 1139ms
+[db] �� SLOW SELECT 1198ms
+[db] �� SLOW SELECT 1391ms
+[db] �� SLOW SELECT 1482ms
+[db] �� SLOW SELECT 1262ms
+[db] �� SLOW SELECT 729ms
+[db] �� SLOW SELECT 1403ms
+[db] �� SLOW SELECT 999ms
+[db] �� SLOW SELECT 1146ms
+[db] �� SLOW SELECT 1147ms
+[db] �� SLOW SELECT 1308ms
+[db] �� SLOW SELECT 1020ms
+[db] �� SLOW SELECT 1078ms
+[db] �� SLOW SELECT 1148ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 713ms
+[db] �� SLOW SELECT 610ms
+[db] �� SLOW SELECT 824ms
+[db] �� SLOW SELECT 1097ms
+[db] �� SLOW SELECT 1217ms
+[db] �� SLOW SELECT 740ms
+[db] �� SLOW SELECT 1226ms
+[db] �� SLOW SELECT 717ms
+[db] �� SLOW SELECT 1229ms
+[db] �� SLOW SELECT 744ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 991ms
+[db] �� SLOW SELECT 662ms
+[db] �� SLOW SELECT 964ms
+[db] �� SLOW SELECT 4461ms
+   ✓ 1000 ok / 0 failed   p50=926ms  p95=1338ms  p99=1474ms  throughput=28.8/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+=== DIRECT DB: soak ===
+[dotenv@17.2.3] injecting env (14) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+=== DB stress: profile=soak ===
+
+▶ customers-list (page 1)  (n=6000, parallel=5)
+   ✓ 6000 ok / 0 failed   p50=7ms  p95=15ms  p99=24ms  throughput=580.3/s
+▶ scheme-members (no filter)  (n=6000, parallel=5)
+   ✓ 6000 ok / 0 failed   p50=6ms  p95=14ms  p99=24ms  throughput=678.3/s
+▶ scheme-members (unpaid this month EXISTS)  (n=6000, parallel=5)
+   ✓ 6000 ok / 0 failed   p50=15ms  p95=34ms  p99=49ms  throughput=289.6/s
+
+▶ audit-logs-list (paged)  (n=6000, parallel=5)
+   ✓ 6000 ok / 0 failed   p50=7ms  p95=17ms  p99=27ms  throughput=584.7/s
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=6000, parallel=5)
+[db] �� SLOW SELECT 602ms
+[db] �� SLOW SELECT 530ms
+[db] �� SLOW SELECT 556ms
+[db] �� SLOW SELECT 500ms
+   ✓ 6000 ok / 0 failed   p50=120ms  p95=213ms  p99=315ms  throughput=38.5/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=6000, parallel=5)
+[db] �� SLOW SELECT 1419ms
+[db] �� SLOW SELECT 937ms
+[db] �� SLOW SELECT 940ms
+[db] �� SLOW SELECT 955ms
+[db] �� SLOW SELECT 798ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 1764ms
+[db] �� SLOW SELECT 816ms
+[db] �� SLOW SELECT 913ms
+[db] �� SLOW SELECT 524ms
+[db] �� SLOW SELECT 534ms
+[db] �� SLOW SELECT 529ms
+[db] �� SLOW SELECT 536ms
+[db] �� SLOW SELECT 972ms
+[db] �� SLOW SELECT 542ms
+[db] �� SLOW SELECT 549ms
+[db] �� SLOW SELECT 560ms
+[db] �� SLOW SELECT 571ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 710ms
+[db] �� SLOW SELECT 735ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 744ms
+[db] �� SLOW SELECT 634ms
+[db] �� SLOW SELECT 617ms
+[db] �� SLOW SELECT 618ms
+[db] �� SLOW SELECT 633ms
+[db] �� SLOW SELECT 758ms
+[db] �� SLOW SELECT 734ms
+[db] �� SLOW SELECT 742ms
+[db] �� SLOW SELECT 750ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 1298ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 787ms
+[db] �� SLOW SELECT 762ms
+[db] �� SLOW SELECT 784ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 895ms
+[db] �� SLOW SELECT 812ms
+[db] �� SLOW SELECT 1425ms
+[db] �� SLOW SELECT 1416ms
+[db] �� SLOW SELECT 1420ms
+[db] �� SLOW SELECT 1431ms
+[db] �� SLOW SELECT 1343ms
+[db] �� SLOW SELECT 749ms
+[db] �� SLOW SELECT 753ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 774ms
+[db] �� SLOW SELECT 647ms
+[db] �� SLOW SELECT 648ms
+[db] �� SLOW SELECT 663ms
+[db] �� SLOW SELECT 668ms
+[db] �� SLOW SELECT 687ms
+[db] �� SLOW SELECT 639ms
+[db] �� SLOW SELECT 651ms
+[db] �� SLOW SELECT 679ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 684ms
+[db] �� SLOW SELECT 746ms
+[db] �� SLOW SELECT 770ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 777ms
+[db] �� SLOW SELECT 802ms
+[db] �� SLOW SELECT 536ms
+[db] �� SLOW SELECT 517ms
+[db] �� SLOW SELECT 539ms
+[db] �� SLOW SELECT 542ms
+[db] �� SLOW SELECT 545ms
+[db] �� SLOW SELECT 871ms
+[db] �� SLOW SELECT 854ms
+[db] �� SLOW SELECT 878ms
+[db] �� SLOW SELECT 869ms
+[db] �� SLOW SELECT 866ms
+[db] �� SLOW SELECT 794ms
+[db] �� SLOW SELECT 807ms
+[db] �� SLOW SELECT 799ms
+[db] �� SLOW SELECT 1078ms
+[db] �� SLOW SELECT 1492ms
+[db] �� SLOW SELECT 1050ms
+[db] �� SLOW SELECT 1058ms
+[db] �� SLOW SELECT 1201ms
+[db] �� SLOW SELECT 1214ms
+[db] �� SLOW SELECT 1405ms
+[db] �� SLOW SELECT 1452ms
+[db] �� SLOW SELECT 1442ms
+[db] �� SLOW SELECT 1684ms
+[db] �� SLOW SELECT 1695ms
+[db] �� SLOW SELECT 1140ms
+[db] �� SLOW SELECT 1891ms
+[db] �� SLOW SELECT 1001ms
+[db] �� SLOW SELECT 1697ms
+[db] �� SLOW SELECT 1850ms
+[db] �� SLOW SELECT 1402ms
+[db] �� SLOW SELECT 1061ms
+[db] �� SLOW SELECT 1479ms
+[db] �� SLOW SELECT 1693ms
+[db] �� SLOW SELECT 969ms
+[db] �� SLOW SELECT 765ms
+[db] �� SLOW SELECT 988ms
+[db] �� SLOW SELECT 1115ms
+[db] �� SLOW SELECT 1601ms
+[db] �� SLOW SELECT 1277ms
+[db] �� SLOW SELECT 1272ms
+[db] �� SLOW SELECT 1310ms
+[db] �� SLOW SELECT 1243ms
+[db] �� SLOW SELECT 744ms
+[db] �� SLOW SELECT 761ms
+[db] �� SLOW SELECT 758ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 766ms
+[db] �� SLOW SELECT 775ms
+[db] �� SLOW SELECT 784ms
+[db] �� SLOW SELECT 1647ms
+[db] �� SLOW SELECT 1595ms
+[db] �� SLOW SELECT 1700ms
+[db] �� SLOW SELECT 1713ms
+[db] �� SLOW SELECT 1722ms
+[db] �� SLOW SELECT 1205ms
+[db] �� SLOW SELECT 881ms
+[db] �� SLOW SELECT 910ms
+[db] �� SLOW SELECT 1755ms
+[db] �� SLOW SELECT 939ms
+[db] �� SLOW SELECT 830ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 688ms
+[db] �� SLOW SELECT 754ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 885ms
+[db] �� SLOW SELECT 1391ms
+[db] �� SLOW SELECT 1017ms
+[db] �� SLOW SELECT 991ms
+[db] �� SLOW SELECT 927ms
+[db] �� SLOW SELECT 508ms
+[db] �� SLOW SELECT 542ms
+[db] �� SLOW SELECT 544ms
+[db] �� SLOW SELECT 557ms
+[db] �� SLOW SELECT 558ms
+[db] �� SLOW SELECT 1218ms
+[db] �� SLOW SELECT 1232ms
+[db] �� SLOW SELECT 1235ms
+[db] �� SLOW SELECT 1228ms
+[db] �� SLOW SELECT 715ms
+[db] �� SLOW SELECT 706ms
+[db] �� SLOW SELECT 714ms
+[db] �� SLOW SELECT 720ms
+[db] �� SLOW SELECT 1970ms
+[db] �� SLOW SELECT 847ms
+[db] �� SLOW SELECT 856ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 855ms
+[db] �� SLOW SELECT 852ms
+[db] �� SLOW SELECT 773ms
+[db] �� SLOW SELECT 772ms
+[db] �� SLOW SELECT 810ms
+[db] �� SLOW SELECT 809ms
+[db] �� SLOW SELECT 808ms
+[db] �� SLOW SELECT 573ms
+[db] �� SLOW SELECT 605ms
+[db] �� SLOW SELECT 614ms
+[db] �� SLOW SELECT 587ms
+[db] �� SLOW SELECT 581ms
+[db] �� SLOW SELECT 606ms
+[db] �� SLOW SELECT 614ms
+[db] �� SLOW SELECT 620ms
+[db] �� SLOW SELECT 611ms
+[db] �� SLOW SELECT 887ms
+[db] �� SLOW SELECT 856ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 884ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 509ms
+[db] �� SLOW SELECT 513ms
+[db] �� SLOW SELECT 631ms
+[db] �� SLOW SELECT 1082ms
+[db] �� SLOW SELECT 1098ms
+[db] �� SLOW SELECT 1100ms
+[db] �� SLOW SELECT 1097ms
+[db] �� SLOW SELECT 1131ms
+[db] �� SLOW SELECT 1573ms
+[db] �� SLOW SELECT 1429ms
+[db] �� SLOW SELECT 1224ms
+[db] �� SLOW SELECT 1436ms
+[db] �� SLOW SELECT 1835ms
+[db] �� SLOW SELECT 627ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 1241ms
+[db] �� SLOW SELECT 900ms
+[db] �� SLOW SELECT 1098ms
+[db] �� SLOW SELECT 1589ms
+[db] �� SLOW SELECT 1367ms
+[db] �� SLOW SELECT 1091ms
+[db] �� SLOW SELECT 1106ms
+[db] �� SLOW SELECT 624ms
+[db] �� SLOW SELECT 634ms
+[db] �� SLOW SELECT 630ms
+[db] �� SLOW SELECT 647ms
+[db] �� SLOW SELECT 1020ms
+[db] �� SLOW SELECT 767ms
+[db] �� SLOW SELECT 774ms
+[db] �� SLOW SELECT 771ms
+[db] �� SLOW SELECT 795ms
+[db] �� SLOW SELECT 1021ms
+[db] �� SLOW SELECT 960ms
+[db] �� SLOW SELECT 956ms
+[db] �� SLOW SELECT 963ms
+[db] �� SLOW SELECT 961ms
+[db] �� SLOW SELECT 1002ms
+[db] �� SLOW SELECT 669ms
+[db] �� SLOW SELECT 788ms
+[db] �� SLOW SELECT 658ms
+[db] �� SLOW SELECT 695ms
+[db] �� SLOW SELECT 679ms
+[db] �� SLOW SELECT 806ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 821ms
+[db] �� SLOW SELECT 1095ms
+[db] �� SLOW SELECT 858ms
+[db] �� SLOW SELECT 866ms
+[db] �� SLOW SELECT 905ms
+[db] �� SLOW SELECT 902ms
+[db] �� SLOW SELECT 901ms
+[db] �� SLOW SELECT 900ms
+[db] �� SLOW SELECT 751ms
+[db] �� SLOW SELECT 760ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 1392ms
+[db] �� SLOW SELECT 1400ms
+[db] �� SLOW SELECT 774ms
+[db] �� SLOW SELECT 910ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 554ms
+[db] �� SLOW SELECT 698ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 838ms
+[db] �� SLOW SELECT 836ms
+[db] �� SLOW SELECT 924ms
+[db] �� SLOW SELECT 811ms
+[db] �� SLOW SELECT 819ms
+[db] �� SLOW SELECT 1074ms
+[db] �� SLOW SELECT 1085ms
+[db] �� SLOW SELECT 786ms
+[db] �� SLOW SELECT 1045ms
+[db] �� SLOW SELECT 1628ms
+[db] �� SLOW SELECT 926ms
+[db] �� SLOW SELECT 1366ms
+[db] �� SLOW SELECT 2182ms
+[db] �� SLOW SELECT 1416ms
+[db] �� SLOW SELECT 1819ms
+[db] �� SLOW SELECT 1431ms
+[db] �� SLOW SELECT 861ms
+[db] �� SLOW SELECT 586ms
+[db] �� SLOW SELECT 590ms
+[db] �� SLOW SELECT 641ms
+[db] �� SLOW SELECT 544ms
+[db] �� SLOW SELECT 995ms
+[db] �� SLOW SELECT 967ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 1350ms
+[db] �� SLOW SELECT 1170ms
+[db] �� SLOW SELECT 1223ms
+[db] �� SLOW SELECT 1231ms
+[db] �� SLOW SELECT 1541ms
+[db] �� SLOW SELECT 1012ms
+[db] �� SLOW SELECT 840ms
+[db] �� SLOW SELECT 1369ms
+[db] �� SLOW SELECT 2008ms
+[db] �� SLOW SELECT 1562ms
+[db] �� SLOW SELECT 2080ms
+[db] �� SLOW SELECT 1899ms
+[db] �� SLOW SELECT 1761ms
+[db] �� SLOW SELECT 888ms
+[db] �� SLOW SELECT 511ms
+[db] �� SLOW SELECT 508ms
+[db] �� SLOW SELECT 512ms
+[db] �� SLOW SELECT 782ms
+[db] �� SLOW SELECT 793ms
+[db] �� SLOW SELECT 790ms
+[db] �� SLOW SELECT 796ms
+[db] �� SLOW SELECT 1099ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 834ms
+[db] �� SLOW SELECT 868ms
+[db] �� SLOW SELECT 871ms
+[db] �� SLOW SELECT 848ms
+[db] �� SLOW SELECT 649ms
+[db] �� SLOW SELECT 671ms
+[db] �� SLOW SELECT 675ms
+[db] �� SLOW SELECT 685ms
+[db] �� SLOW SELECT 689ms
+[db] �� SLOW SELECT 889ms
+[db] �� SLOW SELECT 886ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 908ms
+[db] �� SLOW SELECT 896ms
+[db] �� SLOW SELECT 1007ms
+[db] �� SLOW SELECT 1021ms
+[db] �� SLOW SELECT 1058ms
+[db] �� SLOW SELECT 1422ms
+[db] �� SLOW SELECT 1461ms
+[db] �� SLOW SELECT 517ms
+[db] �� SLOW SELECT 575ms
+[db] �� SLOW SELECT 938ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 1148ms
+[db] �� SLOW SELECT 1129ms
+[db] �� SLOW SELECT 1271ms
+[db] �� SLOW SELECT 1396ms
+[db] �� SLOW SELECT 1748ms
+[db] �� SLOW SELECT 1259ms
+[db] �� SLOW SELECT 1285ms
+[db] �� SLOW SELECT 1584ms
+[db] �� SLOW SELECT 970ms
+[db] �� SLOW SELECT 992ms
+[db] �� SLOW SELECT 1517ms
+[db] �� SLOW SELECT 1544ms
+[db] �� SLOW SELECT 1204ms
+[db] �� SLOW SELECT 1574ms
+[db] �� SLOW SELECT 1221ms
+[db] �� SLOW SELECT 1087ms
+[db] �� SLOW SELECT 1656ms
+[db] �� SLOW SELECT 1282ms
+[db] �� SLOW SELECT 1315ms
+[db] �� SLOW SELECT 1500ms
+[db] �� SLOW SELECT 1134ms
+[db] �� SLOW SELECT 1042ms
+[db] �� SLOW SELECT 1219ms
+[db] �� SLOW SELECT 1267ms
+[db] �� SLOW SELECT 1263ms
+[db] �� SLOW SELECT 1026ms
+[db] �� SLOW SELECT 655ms
+[db] �� SLOW SELECT 522ms
+[db] �� SLOW SELECT 978ms
+[db] �� SLOW SELECT 727ms
+[db] �� SLOW SELECT 1121ms
+[db] �� SLOW SELECT 1226ms
+[db] �� SLOW SELECT 1096ms
+[db] �� SLOW SELECT 1355ms
+[db] �� SLOW SELECT 1738ms
+[db] �� SLOW SELECT 1107ms
+[db] �� SLOW SELECT 1563ms
+[db] �� SLOW SELECT 844ms
+[db] �� SLOW SELECT 1970ms
+[db] �� SLOW SELECT 891ms
+[db] �� SLOW SELECT 899ms
+[db] �� SLOW SELECT 881ms
+[db] �� SLOW SELECT 508ms
+[db] �� SLOW SELECT 507ms
+[db] �� SLOW SELECT 903ms
+[db] �� SLOW SELECT 894ms
+[db] �� SLOW SELECT 950ms
+[db] �� SLOW SELECT 717ms
+[db] �� SLOW SELECT 739ms
+[db] �� SLOW SELECT 1548ms
+[db] �� SLOW SELECT 1576ms
+[db] �� SLOW SELECT 1609ms
+[db] �� SLOW SELECT 1345ms
+[db] �� SLOW SELECT 1330ms
+[db] �� SLOW SELECT 1110ms
+[db] �� SLOW SELECT 1145ms
+[db] �� SLOW SELECT 1143ms
+[db] �� SLOW SELECT 835ms
+[db] �� SLOW SELECT 1892ms
+[db] �� SLOW SELECT 851ms
+[db] �� SLOW SELECT 1895ms
+[db] �� SLOW SELECT 850ms
+   ✓ 6000 ok / 0 failed   p50=50ms  p95=689ms  p99=1401ms  throughput=44.8/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+############## BATTERY COMPLETE ##############
+Elapsed: 00:46:22.0037037
+Results: results-backend-*.json, results-frontend-*.json
+Now open SSMS and run db-diagnostics.sql for the DB-side view.
+
+PS D:\React Dev\chit\loadtest> Get-Content results-backend-smoke.json  | ConvertFrom-Json | Select-Object -ExpandProperty metrics | Select-Object -Pr
+operty http_req_duration, http_req_failed, http_reqs | Format-List
+
+
+http_req_duration : @{max=25278.7729; p(90)=7846.151539999995; p(95)=16562.462219999987; avg=3262.9136124999995; min=17.0821;
+                    med=105.31325000000001}
+http_req_failed   : @{passes=0; fails=8; thresholds=; value=0}
+http_reqs         : @{count=8; rate=0.24991094345432838}
+
+
+
+PS D:\React Dev\chit\loadtest> Get-Content results-backend-load.json   | ConvertFrom-Json | Select-Object -ExpandProperty metrics | Select-Object -Pr
+operty http_req_duration, http_req_failed, http_reqs | Format-List
+
+
+http_req_duration : @{p(95)=25758.4166; avg=5496.590917535541; min=18.4566; med=1241.6884; max=27923.5926; p(90)=25383.917}
+http_req_failed   : @{passes=0; fails=211; thresholds=; value=0}
+http_reqs         : @{count=211; rate=1.5263486338007115}
+
+
+
+PS D:\React Dev\chit\loadtest> Get-Content results-backend-stress.json | ConvertFrom-Json | Select-Object -ExpandProperty metrics | Select-Object -Pr
+operty http_req_duration, http_req_failed, http_reqs | Format-List
+
+
+http_req_duration : @{med=26508.72095; max=51819.567; p(90)=34674.95362; p(95)=39273.86378499999; avg=23580.12756949153; min=33.6363}
+http_req_failed   : @{passes=12; fails=342; thresholds=; value=0.03389830508474576}
+http_reqs         : @{count=354; rate=0.9829475351630932}
+
+
+
+PS D:\React Dev\chit\loadtest> Get-Content results-backend-soak.json   | ConvertFrom-Json | Select-Object -ExpandProperty metrics | Select-Object -Pr
+operty http_req_duration, http_req_failed, http_reqs | Format-List
+
+
+http_req_duration : @{p(95)=25493.23448; avg=5202.828665461847; min=9.338; med=208.35410000000002; max=27628.4782; p(90)=25213.468409999998}
+http_req_failed   : @{passes=0; fails=498; thresholds=; value=0}
+http_reqs         : @{count=498; rate=0.7902518902716913}
+
+
+
+PS D:\React Dev\chit\loadtest> cd "D:\React Dev\chit\loadtest"
+PS D:\React Dev\chit\loadtest> Start-Transcript -Path "verify-run.log"
+Transcript started, output file is verify-run.log
+PS D:\React Dev\chit\loadtest> .\run-all.ps1 -Pass admin123 -Scenarios smoke,load
+
+############## LOAD TEST BATTERY ##############
+Backend  : https://103.38.50.247:100
+Frontend : https://103.38.50.247
+Started  : 06/20/2026 09:07:48
+
+Started  : admin
+
+Started  : admin123
+
+
+=== BACKEND API: smoke ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 1m0s max duration (incl. graceful stop):
+              * default: 1 looping VUs for 30s (gracefulStop: 30s)
+
+
+================ k6 summary ================
+Scenario        : smoke
+Total requests  : 7
+Failed requests : 0.00%
+Latency p50     : 172ms
+Latency p95     : 19308ms
+Latency p99     : 0ms
+5xx count       : 0
+Auth failures   : 0
+============================================
+
+running (0m39.0s), 0/1 VUs, 1 complete and 0 interrupted iterations
+default ✓ [======================================] 1 VUs  30s
+ERRO[0279] thresholds on metrics 'http_req_duration{endpoint:customers-with-scheme-1000}, http_req_duration{endpoint:scheme-members-paged}' have been
+ crossed
+
+=== BACKEND API: load ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: smoke.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 10 max VUs, 2m30s max duration (incl. graceful stop):
+              * default: 10 looping VUs for 2m0s (gracefulStop: 30s)
+
+
+================ k6 summary ================
+Scenario        : load
+Total requests  : 288
+Failed requests : 1.04%
+Latency p50     : 193ms
+Latency p95     : 25654ms
+Latency p99     : 0ms
+5xx count       : 3
+Auth failures   : 0
+============================================
+
+running (2m30.2s), 00/10 VUs, 42 complete and 7 interrupted iterations
+default ✓ [======================================] 10 VUs  2m0s
+ERRO[0151] thresholds on metrics 'http_req_duration{endpoint:customers-with-scheme-1000}, http_req_duration{endpoint:scheme-members-month-filter}' ha
+ve been crossed
+
+=== FRONTEND STATIC: smoke ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: frontend.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 1 max VUs, 1m0s max duration (incl. graceful stop):
+              * default: 1 looping VUs for 30s (gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✓ 'p(95)<500' p(95)=47.49ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 45      1.401589/s
+    checks_succeeded...: 100.00% 45 out of 45
+    checks_failed......: 0.00%   0 out of 45
+
+    ✓ index 200
+    ✓ has react root
+    ✓ js 200
+    ✓ css 200
+
+    HTTP
+    http_req_duration..............: avg=14.04ms min=365.8µs med=2.35ms max=93.5ms p(90)=43.57ms p(95)=47.49ms
+      { expected_response:true }...: avg=14.04ms min=365.8µs med=2.35ms max=93.5ms p(90)=43.57ms p(95)=47.49ms
+    http_req_failed................: 0.00% 0 out of 36
+    http_reqs......................: 36    1.121271/s
+
+    EXECUTION
+    iteration_duration.............: avg=3.56s   min=2.07s   med=3.63s  max=4.97s  p(90)=4.82s   p(95)=4.89s
+    iterations.....................: 9     0.280318/s
+    vus............................: 1     min=1       max=1
+    vus_max........................: 1     min=1       max=1
+
+    NETWORK
+    data_received..................: 24 MB 737 kB/s
+    data_sent......................: 27 kB 830 B/s
+
+
+
+
+running (0m32.1s), 0/1 VUs, 9 complete and 0 interrupted iterations
+default ✓ [======================================] 1 VUs  30s
+
+=== FRONTEND STATIC: load ===
+
+         /\      Grafana   /‾‾/
+    /\  /  \     |\  __   /  /
+   /  \/    \    | |/ /  /   ‾‾\
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/
+
+
+     execution: local
+        script: frontend.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 20 max VUs, 2m30s max duration (incl. graceful stop):
+              * default: 20 looping VUs for 2m0s (gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS
+
+    http_req_duration
+    ✓ 'p(95)<500' p(95)=59.71ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS
+
+    checks_total.......: 3410    27.503319/s
+    checks_succeeded...: 100.00% 3410 out of 3410
+    checks_failed......: 0.00%   0 out of 3410
+
+    ✓ index 200
+    ✓ has react root
+    ✓ js 200
+    ✓ css 200
+
+    HTTP
+    http_req_duration..............: avg=20.09ms min=0s    med=2.54ms max=773.69ms p(90)=45.96ms p(95)=59.71ms
+      { expected_response:true }...: avg=20.09ms min=0s    med=2.54ms max=773.69ms p(90)=45.96ms p(95)=59.71ms
+    http_req_failed................: 0.00%  0 out of 2728
+    http_reqs......................: 2728   22.002656/s
+
+    EXECUTION
+    iteration_duration.............: avg=3.57s   min=2.04s med=3.6s   max=5.7s     p(90)=4.77s   p(95)=4.91s
+    iterations.....................: 682    5.500664/s
+    vus............................: 1      min=1         max=20
+    vus_max........................: 20     min=20        max=20
+
+    NETWORK
+    data_received..................: 1.8 GB 15 MB/s
+    data_sent......................: 2.0 MB 16 kB/s
+
+
+
+
+running (2m04.0s), 00/20 VUs, 682 complete and 0 interrupted iterations
+default ✓ [======================================] 20 VUs  2m0s
+
+=== DIRECT DB: smoke ===
+[dotenv@17.2.3] injecting env (14) from .env -- tip: ⚙️  override existing env vars with { override: true }
+
+=== DB stress: profile=smoke ===
+
+▶ customers-list (page 1)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=5ms  p95=328ms  p99=328ms  throughput=46.4/s
+
+▶ scheme-members (no filter)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=5ms  p95=28ms  p99=28ms  throughput=165.3/s
+
+▶ scheme-members (unpaid this month EXISTS)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=7ms  p95=221ms  p99=221ms  throughput=50.5/s
+
+▶ audit-logs-list (paged)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=5ms  p95=15ms  p99=15ms  throughput=152.7/s
+
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=45ms  p95=188ms  p99=188ms  throughput=18.3/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=20, parallel=1)
+   ✓ 20 ok / 0 failed   p50=66ms  p95=109ms  p99=109ms  throughput=14.6/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+=== DIRECT DB: load ===
+[dotenv@17.2.3] injecting env (14) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+
+=== DB stress: profile=load ===
+
+▶ customers-list (page 1)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=32ms  p95=277ms  p99=308ms  throughput=206.4/s
+
+▶ scheme-members (no filter)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=16ms  p95=52ms  p99=60ms  throughput=487.8/s
+
+▶ scheme-members (unpaid this month EXISTS)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=33ms  p95=97ms  p99=251ms  throughput=229.6/s
+
+▶ audit-logs-list (paged)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=18ms  p95=31ms  p99=37ms  throughput=510.2/s
+
+▶ scheme-members 5000 (Customers/Payments page mount)  (n=200, parallel=10)
+   ✓ 200 ok / 0 failed   p50=295ms  p95=407ms  p99=456ms  throughput=32.3/s
+
+▶ customers has_scheme=true 1000 (Payments page mount)  (n=200, parallel=10)
+[db] �� SLOW SELECT 513ms
+[db] �� SLOW SELECT 529ms
+[db] �� SLOW SELECT 524ms
+[db] �� SLOW SELECT 500ms
+[db] �� SLOW SELECT 627ms
+[db] �� SLOW SELECT 509ms
+[db] �� SLOW SELECT 504ms
+[db] �� SLOW SELECT 594ms
+[db] �� SLOW SELECT 532ms
+[db] �� SLOW SELECT 532ms
+[db] �� SLOW SELECT 539ms
+[db] �� SLOW SELECT 703ms
+[db] �� SLOW SELECT 505ms
+[db] �� SLOW SELECT 557ms
+[db] �� SLOW SELECT 528ms
+[db] �� SLOW SELECT 674ms
+[db] �� SLOW SELECT 791ms
+[db] �� SLOW SELECT 712ms
+[db] �� SLOW SELECT 583ms
+[db] �� SLOW SELECT 605ms
+[db] �� SLOW SELECT 596ms
+[db] �� SLOW SELECT 631ms
+[db] �� SLOW SELECT 519ms
+[db] �� SLOW SELECT 555ms
+[db] �� SLOW SELECT 511ms
+[db] �� SLOW SELECT 600ms
+[db] �� SLOW SELECT 579ms
+[db] �� SLOW SELECT 544ms
+[db] �� SLOW SELECT 656ms
+[db] �� SLOW SELECT 737ms
+[db] �� SLOW SELECT 543ms
+[db] �� SLOW SELECT 825ms
+[db] �� SLOW SELECT 680ms
+[db] �� SLOW SELECT 590ms
+[db] �� SLOW SELECT 780ms
+[db] �� SLOW SELECT 744ms
+[db] �� SLOW SELECT 560ms
+[db] �� SLOW SELECT 642ms
+[db] �� SLOW SELECT 512ms
+[db] �� SLOW SELECT 538ms
+[db] �� SLOW SELECT 701ms
+[db] �� SLOW SELECT 548ms
+[db] �� SLOW SELECT 686ms
+[db] �� SLOW SELECT 585ms
+[db] �� SLOW SELECT 625ms
+[db] �� SLOW SELECT 627ms
+[db] �� SLOW SELECT 650ms
+[db] �� SLOW SELECT 554ms
+[db] �� SLOW SELECT 564ms
+   ✓ 200 ok / 0 failed   p50=376ms  p95=687ms  p99=791ms  throughput=27.6/s
+
+Done. Note: numbers exclude Node/Express/JSON overhead.
+
+############## BATTERY COMPLETE ##############
+Elapsed: 00:13:05.1403787
+Results: results-backend-*.json, results-frontend-*.json
+Now open SSMS and run db-diagnostics.sql for the DB-side view.
+
+PS D:\React Dev\chit\loadtest>
+PS D:\React Dev\chit\loadtest>
+PS D:\React Dev\chit\loadtest>
+PS D:\React Dev\chit\loadtest> # Frontend rebuild + redeploy
+PS D:\React Dev\chit\loadtest> cd "D:\React Dev\chit\chit-scheme-frontend"
+PS D:\React Dev\chit\chit-scheme-frontend> npm run build
+
+> chit-scheme-frontend@0.1.0 build
+> vite build
+
+9:29:56 AM [vite] warning: `esbuild` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `oxc` instead.
+9:29:56 AM [vite] warning: `optimizeDeps.esbuildOptions` option was specified by "vite:react-babel" plugin. This option is deprecated, please use `op
+timizeDeps.rolldownOptions` instead.
+You or a plugin you are using have set `optimizeDeps.esbuildOptions` but this option is now deprecated. Vite now uses Rolldown to optimize the depend
+encies. Please use `optimizeDeps.rolldownOptions` instead.
+vite v8.0.5 building client environment for production...
+✓ 4234 modules transformed.
+computing gzip size...
+build/index.html                          1.12 kB │ gzip:   0.59 kB
+build/assets/index-DnP3FkRH.css          26.74 kB │ gzip:   5.13 kB
+build/assets/chunk-BEqpzyXh.js            0.81 kB │ gzip:   0.46 kB
+build/assets/purify.es-BZM8rNJx.js       21.21 kB │ gzip:   8.65 kB
+build/assets/index.es-C8FJuCN9.js       150.70 kB │ gzip:  48.71 kB
+build/assets/html2canvas-CnLVI-SH.js    199.56 kB │ gzip:  46.78 kB
+build/assets/index-CdQl7_co.js        2,591.99 kB │ gzip: 794.55 kB
+
+✓ built in 6.53s
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+PS D:\React Dev\chit\chit-scheme-frontend> 
+Stop-Transcript
+.\run-all.ps1 -Pass admin123
+Start-Transcript -Path "verify-fix-a.log"
+cd "D:\React Dev\chit\loadtest"
+**********************
+Windows PowerShell transcript end
+End time: 20260620093122
+**********************

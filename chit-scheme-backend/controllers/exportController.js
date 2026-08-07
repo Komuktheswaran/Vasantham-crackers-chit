@@ -13,6 +13,7 @@ const exportCustomers = async (req, res) => {
     let query = `
       SELECT DISTINCT
         c.Customer_ID,
+        c.Customer_Code,
         c.Name,
         c.Phone_Number,
         c.Phone_Number2,

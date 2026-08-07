@@ -1,7 +1,11 @@
+// MUST be first — Sentry's auto-instrumentation patches modules at require time
+require('./instrument');
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const dotenv = require('dotenv');
+const Sentry = require('@sentry/node');
 const bodyParser = require("body-parser");
 const morgan = require('morgan');
 const fs = require('fs');
@@ -218,13 +222,18 @@ app.get('/api/health', async (req, res) => {
 // data but kept behind auth so an attacker can't enumerate them.
 // ====================================================================
 // Brute-force protection for the login endpoint.
-// 10 attempts per IP per 15 minutes; well below any legitimate use.
+// 50 attempts per IP per 15 minutes — comfortable for a small team that
+// shares an office NAT (everyone exits with the same public IP) while still
+// far below what a brute-force script would need.
+// Successful logins are NOT counted, so a single user re-logging-in many
+// times in a day doesn't burn through the budget.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 50,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many login attempts. Try again in 15 minutes.' },
+  skipSuccessfulRequests: true,
+  message: { error: 'Too many failed login attempts. Try again in 15 minutes.' },
 });
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth', require('./routes/auth'));
@@ -238,11 +247,20 @@ app.use('/api/states', authenticateToken, require('./routes/states'));
 app.use('/api/districts', authenticateToken, require('./routes/districts'));
 app.use('/api/order-tracking', authenticateToken, require('./routes/orderTracking'));
 app.use('/api/transporters', authenticateToken, require('./routes/transporters'));
+app.use('/api/auctions', authenticateToken, require('./routes/auctions'));
+app.use('/api/winners', authenticateToken, require('./routes/winners'));
+app.use('/api/audit-logs', require('./routes/auditLogs'));
 app.use('/api/reminders', require('./routes/reminders'));
 
 // ====================================================================
 // Error Handlers
 // ====================================================================
+// Sentry's express error handler — captures unhandled errors from any route.
+// No-op when SENTRY_DSN is unset.
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
 // JSON Parsing Error (400)
 app.use((err, req, res, next) => {
   if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {

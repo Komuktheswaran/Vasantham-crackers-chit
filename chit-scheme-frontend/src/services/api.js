@@ -98,6 +98,11 @@ export const paymentsAPI = {
   update: (id, data) => api.put(`/payments/${id}`, data),
   getNextReferenceId: () => api.get('/payments/next-reference-id'),
   notify: (payId) => api.post(`/payments/${payId}/notify`),
+  // O(1) navigation — no preload of 5000 fund numbers
+  // Query param because fund numbers contain slashes (fund/2026/001),
+  // which IIS request-filtering rejects in the URL path.
+  nextFund: (fundNumber) => api.get('/payments/fund-next', { params: { current: fundNumber } }),
+  prevFund: (fundNumber) => api.get('/payments/fund-prev', { params: { current: fundNumber } }),
 };
 
 export const auctionsAPI = {
@@ -106,6 +111,14 @@ export const auctionsAPI = {
   create: (data) => api.post('/auctions', data),
   update: (id, data) => api.put(`/auctions/${id}`, data),
   delete: (id) => api.delete(`/auctions/${id}`),
+};
+
+export const winnersAPI = {
+  // params: { month?: 'YYYY-MM' }
+  getAll: (params) => api.get('/winners', { params }),
+  // data: { Win_Month: 'YYYY-MM', winners: [{ Place, Fund_Number }] }
+  save: (data) => api.post('/winners', data),
+  remove: (month) => api.delete(`/winners/${encodeURIComponent(month)}`),
 };
 
 export const statesAPI = {
@@ -152,8 +165,14 @@ export const transportersAPI = {
   delete: (id) => api.delete(`/transporters/${id}`),
   getDeliveryPoints: (transporterId) => api.get(`/transporters/${transporterId}/delivery-points`),
   addDeliveryPoint: (transporterId, data) => api.post(`/transporters/${transporterId}/delivery-points`, data),
+  updateDeliveryPoint: (id, data) => api.put(`/transporters/delivery-points/${id}`, data),
   deleteDeliveryPoint: (id) => api.delete(`/transporters/delivery-points/${id}`),
   getAllDeliveryPoints: () => api.get('/transporters/delivery-points/all'),
+};
+
+export const auditLogsAPI = {
+  // params: { page, limit, user, endpoint, method, status, ip, date_from, date_to }
+  getAll: (params) => api.get('/audit-logs', { params }),
 };
 
 export const remindersAPI = {

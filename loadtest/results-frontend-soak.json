@@ -1,0 +1,154 @@
+{
+    "metrics": {
+        "checks": {
+            "passes": 4195,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_duration{expected_response:true}": {
+            "med": 2.3264500000000004,
+            "max": 349.0374,
+            "p(90)": 44.7853,
+            "p(95)": 50.53115,
+            "avg": 14.069410488676974,
+            "min": 0
+        },
+        "http_req_connecting": {
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.009629469606674611,
+            "min": 0,
+            "med": 0,
+            "max": 7.3125
+        },
+        "vus": {
+            "value": 2,
+            "min": 2,
+            "max": 5
+        },
+        "vus_max": {
+            "min": 5,
+            "max": 5,
+            "value": 5
+        },
+        "iterations": {
+            "count": 839,
+            "rate": 1.392428175401419
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 3356,
+            "thresholds": {
+                "rate<0.01": false
+            },
+            "value": 0
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0.05560890941597141,
+            "min": 0,
+            "med": 0,
+            "max": 38.997,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "iteration_duration": {
+            "max": 5113.4096,
+            "p(90)": 4762.171200000001,
+            "p(95)": 4912.81942,
+            "avg": 3584.835964481527,
+            "min": 2053.0821,
+            "med": 3554.7689
+        },
+        "data_received": {
+            "count": 2205586819,
+            "rate": 3660454.38625696
+        },
+        "http_req_blocked": {
+            "avg": 0.06725286054827173,
+            "min": 0,
+            "med": 0,
+            "max": 45.9334,
+            "p(90)": 0,
+            "p(95)": 0
+        },
+        "http_reqs": {
+            "count": 3356,
+            "rate": 5.569712701605676
+        },
+        "http_req_sending": {
+            "avg": 0.2708926996424314,
+            "min": 0,
+            "med": 0.10705,
+            "max": 37.9401,
+            "p(90)": 0.9187,
+            "p(95)": 1.0036
+        },
+        "http_req_waiting": {
+            "p(90)": 3.00145,
+            "p(95)": 5.866474999999999,
+            "avg": 2.148015822407627,
+            "min": 0,
+            "med": 1.3485999999999998,
+            "max": 178.1015
+        },
+        "http_req_duration": {
+            "min": 0,
+            "med": 2.3264500000000004,
+            "max": 349.0374,
+            "p(90)": 44.7853,
+            "p(95)": 50.53115,
+            "avg": 14.069410488676974,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "data_sent": {
+            "count": 2385094,
+            "rate": 3958.3695906804196
+        },
+        "http_req_receiving": {
+            "med": 0.5548,
+            "max": 304.0005,
+            "p(90)": 41.99,
+            "p(95)": 47.923775000000006,
+            "avg": 11.650501966626916,
+            "min": 0
+        }
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "index 200": {
+                    "passes": 839,
+                    "fails": 0,
+                    "name": "index 200",
+                    "path": "::index 200",
+                    "id": "f8eeec8cab0b254279c11245c6ad769e"
+                },
+                "has react root": {
+                    "name": "has react root",
+                    "path": "::has react root",
+                    "id": "4aea644bdedb1a59c33599af2b5d0857",
+                    "passes": 839,
+                    "fails": 0
+                },
+                "js 200": {
+                    "passes": 1678,
+                    "fails": 0,
+                    "name": "js 200",
+                    "path": "::js 200",
+                    "id": "ae24b56d574edb932851e41e81884cfb"
+                },
+                "css 200": {
+                    "name": "css 200",
+                    "path": "::css 200",
+                    "id": "c6feca117480811ad013f68c6088fed7",
+                    "passes": 839,
+                    "fails": 0
+                }
+            }
+    }
+}

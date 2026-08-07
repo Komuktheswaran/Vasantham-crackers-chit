@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import {
   Card,
   Typography,
@@ -27,8 +27,10 @@ const { Option } = Select;
 
 const Payments = () => {
   const [form] = Form.useForm();
+  // `customers` holds the current search-results dropdown options.
+  // It's populated by handleSearch() on each keystroke (debounced),
+  // not pre-loaded — see the comment near where the mount fetch used to be.
   const [customers, setCustomers] = useState([]);
-  const [allCustomers, setAllCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [schemes, setSchemes] = useState([]);
   const [selectedScheme, setSelectedScheme] = useState(null);
@@ -48,10 +50,10 @@ const Payments = () => {
   const [editingPayment, setEditingPayment] = useState(null);
   const [editForm] = Form.useForm();
   const [currentSchemeIndex, setCurrentSchemeIndex] = useState(0);
-  // Global list of ALL fund numbers across all customers, sorted
-  const [allFundNumbers, setAllFundNumbers] = useState([]); // [{Fund_Number, Customer_ID}]
-  const [globalFundIndex, setGlobalFundIndex] = useState(-1);
-  // Full details of the currently selected customer (not limited to allCustomers cache)
+  // Lightweight prev/next state — no preload of 5000 fund numbers
+  const [hasPrevFund, setHasPrevFund] = useState(false);
+  const [hasNextFund, setHasNextFund] = useState(false);
+  // Full details of the currently selected customer
   const [selectedCustomerData, setSelectedCustomerData] = useState(null);
 
   const firstUnpaidDueNumber = useMemo(() => {
@@ -67,76 +69,59 @@ const Payments = () => {
     return firstUnpaid ? firstUnpaid.Due_number : null;
   }, [dues]);
 
-  // Load all customers on mount
-  useEffect(() => {
-    const fetchCustomers = async () => {
-      try {
-        const response = await customersAPI.getAll({
-          has_scheme: "true",
-          limit: 1000,
-        });
-        // Access nested data object if it exists (standard backend response wrapper)
-        const resultData = response.data.data || response.data;
-        const customersList = resultData.customers || [];
-        setAllCustomers(customersList);
-        setCustomers(customersList);
-      } catch (error) {
-        console.error("Error loading customers:", error);
-      }
-    };
-    fetchCustomers();
+  // No mount-time customer preload. The Payments page previously fetched
+  // 1000 customers up front to power the search dropdown; that was the heaviest
+  // single request the UI ever made. Switched to search-as-you-type below.
+  // Prev/next fund navigation is also O(1) — see refreshFundNeighbours().
 
-    // Also fetch all fund numbers globally for prev/next navigation
-    const fetchAllFunds = async () => {
-      try {
-        const res = await schemesAPI.getMembers({ limit: 5000 });
-        const members = res.data.data?.members || res.data?.members || [];
-        // Sort by fund number string naturally
-        const sorted = members
-          .filter((m) => m.Fund_Number && m.Customer_ID)
-          .map((m) => ({
-            Fund_Number: m.Fund_Number,
-            Customer_ID: m.Customer_ID,
-          }))
-          .sort((a, b) =>
-            a.Fund_Number.localeCompare(b.Fund_Number, undefined, {
-              numeric: true,
-            }),
-          );
-        setAllFundNumbers(sorted);
-      } catch (err) {
-        console.error("Failed to load all fund numbers for navigation", err);
-      }
-    };
-    fetchAllFunds();
-  }, []);
+  // Debounce token for the search-as-you-type handler
+  const searchDebounceRef = useRef(null);
 
-  // Filter customers by search value — exact/starts-with match only (no substring)
-  const handleSearch = (value) => {
-    if (!value) {
-      setCustomers(allCustomers);
+  // Probe whether prev/next exist for the current fund — used to enable/disable arrows
+  const refreshFundNeighbours = async (fundNumber) => {
+    if (!fundNumber) {
+      setHasPrevFund(false);
+      setHasNextFund(false);
       return;
     }
+    try {
+      const [prevRes, nextRes] = await Promise.all([
+        paymentsAPI.prevFund(fundNumber),
+        paymentsAPI.nextFund(fundNumber),
+      ]);
+      setHasPrevFund(!!(prevRes.data?.data?.fundNumber));
+      setHasNextFund(!!(nextRes.data?.data?.fundNumber));
+    } catch (err) {
+      console.error("Neighbour probe failed", err);
+      setHasPrevFund(false);
+      setHasNextFund(false);
+    }
+  };
 
-    const lower = value.toLowerCase();
-    const filtered = allCustomers.filter((c) => {
-      const id = (c.Customer_ID || '').toLowerCase();
-      const code = (c.Customer_Code || '').toLowerCase();
-      const name = (c.Name || '').toLowerCase();
-      const phone = (c.Phone_Number || '').toString();
-      // Exact match OR starts-with; avoids "002" matching "1002"
-      return (
-        id === lower ||
-        id.startsWith(lower) ||
-        code === lower ||
-        code.startsWith(lower) ||
-        name.startsWith(lower) ||
-        name.includes(' ' + lower) || // match first name OR any word
-        phone === value ||
-        phone.startsWith(value)
-      );
-    });
-    setCustomers(filtered.length ? filtered : []);
+  // Search-as-you-type — debounced 350ms server-side query.
+  // The backend's /api/customers?search=&has_scheme=true endpoint already
+  // matches Name/Customer_Code/Customer_ID/Phone_Number, so we don't have to
+  // pre-filter anything client-side. Each keystroke loads at most 20 rows.
+  const handleSearch = (value) => {
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    if (!value) {
+      setCustomers([]);
+      return;
+    }
+    searchDebounceRef.current = setTimeout(async () => {
+      try {
+        const response = await customersAPI.getAll({
+          search: value,
+          has_scheme: "true",
+          limit: 20,
+        });
+        const result = response.data.data || response.data || {};
+        setCustomers(result.customers || []);
+      } catch (err) {
+        console.error("Customer search failed", err);
+        setCustomers([]);
+      }
+    }, 350);
   };
 
   // Handle customer selection
@@ -153,8 +138,20 @@ const Payments = () => {
       return;
     }
     setSelectedCustomer(customerId);
-    // Set customer data from the cached list (dropdown only shows allCustomers entries)
-    setSelectedCustomerData(allCustomers.find((c) => c.Customer_ID === customerId) || null);
+    // Look up the chosen customer's full details from the current search-results
+    // list. If they're not there (rare — they had to be there to be clickable),
+    // fall back to fetching by ID so the side card still populates.
+    const fromList = customers.find((c) => c.Customer_ID === customerId);
+    if (fromList) {
+      setSelectedCustomerData(fromList);
+    } else {
+      try {
+        const r = await customersAPI.getById(customerId);
+        setSelectedCustomerData(r.data?.data || r.data || null);
+      } catch (_) {
+        setSelectedCustomerData(null);
+      }
+    }
     setSelectedScheme(null);
     setDues([]);
     form.resetFields([
@@ -179,10 +176,7 @@ const Payments = () => {
         setFundSearchValue(activeScheme.Fund_Number);
         fetchDues(activeScheme.Fund_Number);
         form.setFieldsValue({ schemeId: activeScheme.Scheme_ID });
-        const gi = allFundNumbers.findIndex(
-          (f) => f.Fund_Number === activeScheme.Fund_Number,
-        );
-        setGlobalFundIndex(gi);
+        refreshFundNeighbours(activeScheme.Fund_Number);
       } else {
         setSelectedFundNumber(null);
         setFundSearchValue("");
@@ -204,37 +198,32 @@ const Payments = () => {
       // Sync fund search field when scheme is changed manually
       setFundSearchValue(scheme.Fund_Number);
       fetchDues(scheme.Fund_Number);
-      const gi = allFundNumbers.findIndex(
-        (f) => f.Fund_Number === scheme.Fund_Number,
-      );
-      setGlobalFundIndex(gi);
+      refreshFundNeighbours(scheme.Fund_Number);
     }
   };
 
-  // Navigate to prev or next fund number (GLOBAL — across all customers)
+  // Navigate to prev or next fund number — looks it up on demand via the new
+  // /api/payments/fund/:n/{next|prev} endpoint (O(1) instead of preloading 5000).
   const handleNavigateFund = async (direction) => {
-    const newIndex = globalFundIndex + direction;
-    if (newIndex < 0 || newIndex >= allFundNumbers.length) return;
-    const target = allFundNumbers[newIndex];
-    setGlobalFundIndex(newIndex);
-    setFundSearchValue(target.Fund_Number);
-
+    if (!selectedFundNumber) return;
     try {
-      // Load the customer for this fund number
-      const response = await customersAPI.getByFundNumber(target.Fund_Number);
+      const probe = direction === 1
+        ? await paymentsAPI.nextFund(selectedFundNumber)
+        : await paymentsAPI.prevFund(selectedFundNumber);
+      const targetFund = probe.data?.data?.fundNumber;
+      if (!targetFund) return;
+      setFundSearchValue(targetFund);
+
+      const response = await customersAPI.getByFundNumber(targetFund);
       const customer = response.data.data || response.data;
       if (!customer) return;
 
-      // Resolve full customer details — fall back to fetching if not in cache
-      let fullCustomer = allCustomers.find((c) => c.Customer_ID === customer.Customer_ID);
-      if (!fullCustomer) {
-        try {
-          const fullRes = await customersAPI.getById(customer.Customer_ID);
-          fullCustomer = fullRes.data.data || fullRes.data;
-        } catch (_) {
-          fullCustomer = customer;
-        }
-      }
+      // Resolve full customer details (no longer cached; fetch on demand)
+      let fullCustomer = customer;
+      try {
+        const fullRes = await customersAPI.getById(customer.Customer_ID);
+        fullCustomer = fullRes.data.data || fullRes.data || customer;
+      } catch (_) { /* keep the lightweight `customer` payload */ }
 
       // Select the customer (loads their schemes)
       setSelectedCustomer(customer.Customer_ID);
@@ -257,7 +246,7 @@ const Payments = () => {
       setSchemes(schemesList);
 
       const matchingScheme = schemesList.find(
-        (s) => s.Fund_Number === target.Fund_Number,
+        (s) => s.Fund_Number === targetFund,
       );
       if (matchingScheme) {
         const idx = schemesList.indexOf(matchingScheme);
@@ -266,10 +255,12 @@ const Payments = () => {
         setSelectedFundNumber(matchingScheme.Fund_Number);
         fetchDues(matchingScheme.Fund_Number);
         form.setFieldsValue({ schemeId: matchingScheme.Scheme_ID });
+        refreshFundNeighbours(matchingScheme.Fund_Number);
       } else {
-        // Clear stale fund/due data so previous fund's data is not shown
         setSelectedFundNumber(null);
         setSelectedScheme(null);
+        setHasPrevFund(false);
+        setHasNextFund(false);
       }
     } catch (err) {
       console.error("Navigation error:", err);
@@ -297,16 +288,12 @@ const Payments = () => {
         return;
       }
 
-      // Resolve full customer details — fall back to fetching if not in allCustomers cache
-      let fullCustomer = allCustomers.find((c) => c.Customer_ID === customer.Customer_ID);
-      if (!fullCustomer) {
-        try {
-          const fullRes = await customersAPI.getById(customer.Customer_ID);
-          fullCustomer = fullRes.data.data || fullRes.data;
-        } catch (_) {
-          fullCustomer = customer;
-        }
-      }
+      // Resolve full customer details (no longer cached; fetch on demand)
+      let fullCustomer = customer;
+      try {
+        const fullRes = await customersAPI.getById(customer.Customer_ID);
+        fullCustomer = fullRes.data.data || fullRes.data || customer;
+      } catch (_) { /* keep the lightweight `customer` payload */ }
 
       const resolvedFundNumber = customer.Fund_Number || value;
 
@@ -328,8 +315,7 @@ const Payments = () => {
         setSelectedFundNumber(matchingScheme.Fund_Number);
         form.setFieldsValue({ schemeId: matchingScheme.Scheme_ID });
         fetchDues(matchingScheme.Fund_Number);
-        const gi = allFundNumbers.findIndex((f) => f.Fund_Number === matchingScheme.Fund_Number);
-        setGlobalFundIndex(gi);
+        refreshFundNeighbours(matchingScheme.Fund_Number);
         message.success(`Found: ${resolvedFundNumber}`);
       } else {
         // Clear stale fund/due data so previous fund's data is not shown
@@ -1047,7 +1033,7 @@ const Payments = () => {
                       <Button
                         icon={<LeftOutlined />}
                         size="small"
-                        disabled={globalFundIndex <= 0}
+                        disabled={!hasPrevFund}
                         onClick={() => handleNavigateFund(-1)}
                         style={{ border: "none", background: "transparent", padding: 0 }}
                       />
@@ -1059,7 +1045,7 @@ const Payments = () => {
                       <Button
                         icon={<RightOutlined />}
                         size="small"
-                        disabled={globalFundIndex >= allFundNumbers.length - 1}
+                        disabled={!hasNextFund}
                         onClick={() => handleNavigateFund(1)}
                         style={{ border: "none", background: "transparent", padding: 0 }}
                       />

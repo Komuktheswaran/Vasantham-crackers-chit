@@ -13,17 +13,26 @@ import {
   Alert,
   Tag,
   Table,
+  DatePicker,
 } from "antd";
 import {
   SearchOutlined,
   DollarOutlined,
   CheckCircleOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
-import { customersAPI, paymentsAPI, auctionsAPI } from "../services/api";
+import { customersAPI, paymentsAPI, auctionsAPI, winnersAPI } from "../services/api";
 import dayjs from "dayjs";
 import "./css/Auction.css";
 
 const { Text } = Typography;
+
+// Prize for each place — display only; the server is authoritative on save.
+const WINNER_PLACES = [
+  { place: 1, label: "1st Prize", prize: "100% discount on remaining month dues", color: "#d4af37" },
+  { place: 2, label: "2nd Prize", prize: "60 items Gift Box × 1", color: "#9ca3af" },
+  { place: 3, label: "3rd Prize", prize: "50 items Gift Box × 1", color: "#cd7f32" },
+];
 
 const Auction = () => {
   const [fundNumber, setFundNumber] = useState("");
@@ -33,6 +42,12 @@ const Auction = () => {
   const [auctionsHistory, setAuctionsHistory] = useState([]);
   const [transactionId, setTransactionId] = useState("");
   const [payLoading, setPayLoading] = useState(false);
+
+  // ---- Declare Monthly Winners state ----
+  const [winnerMonth, setWinnerMonth] = useState(dayjs());
+  // Fund number entered for each place, keyed by place number (1/2/3).
+  const [winnerFunds, setWinnerFunds] = useState({ 1: "", 2: "", 3: "" });
+  const [winnerLoading, setWinnerLoading] = useState(false);
 
   const handleSearch = async () => {
     if (!fundNumber) {
@@ -148,6 +163,67 @@ const Auction = () => {
     });
   };
 
+  const handleSaveWinners = () => {
+    if (!winnerMonth) {
+      message.warning("Please select the winners' month.");
+      return;
+    }
+
+    const winners = WINNER_PLACES.map(({ place }) => ({
+      Place: place,
+      Fund_Number: (winnerFunds[place] || "").trim(),
+    })).filter((w) => w.Fund_Number);
+
+    if (winners.length === 0) {
+      message.warning("Enter at least one winner's Fund Number.");
+      return;
+    }
+
+    const monthStr = winnerMonth.format("YYYY-MM");
+    const firstPlace = winners.find((w) => w.Place === 1);
+
+    Modal.confirm({
+      title: `Declare winners for ${winnerMonth.format("MMMM YYYY")}?`,
+      content: (
+        <div>
+          <p>This will save the following winners (overwriting any existing winners for this month):</p>
+          <ul style={{ paddingLeft: 18 }}>
+            {WINNER_PLACES.filter((p) => (winnerFunds[p.place] || "").trim()).map((p) => (
+              <li key={p.place}>
+                <strong>{p.label}</strong> — Fund {(winnerFunds[p.place] || "").trim()} — {p.prize}
+              </li>
+            ))}
+          </ul>
+          {firstPlace && (
+            <Alert
+              type="warning"
+              showIcon
+              style={{ marginTop: 8 }}
+              message="1st Prize waives all remaining dues"
+              description={`Fund ${firstPlace.Fund_Number}'s remaining Scheme Dues will be marked as fully paid (100% discount). This cannot be auto-reversed.`}
+            />
+          )}
+        </div>
+      ),
+      okText: "Save Winners",
+      okType: "primary",
+      width: 520,
+      onOk: async () => {
+        setWinnerLoading(true);
+        try {
+          await winnersAPI.save({ Win_Month: monthStr, winners });
+          setWinnerFunds({ 1: "", 2: "", 3: "" });
+          // Refresh the dues/auction view if the 1st-place winner is being shown.
+          if (customerData) handleSearch();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setWinnerLoading(false);
+        }
+      },
+    });
+  };
+
   const pendingTotal = calculatePendingAmount();
 
   return (
@@ -185,6 +261,72 @@ const Auction = () => {
             style={{ flexShrink: 0 }}
           >
             Search
+          </Button>
+        </div>
+      </Card>
+
+      <Card
+        className="winners-declare-card"
+        title={
+          <span>
+            <TrophyOutlined style={{ color: "#d4af37", marginRight: 8 }} />
+            Declare Monthly Winners
+          </span>
+        }
+        style={{ marginBottom: 24 }}
+        extra={
+          <DatePicker
+            picker="month"
+            value={winnerMonth}
+            onChange={(d) => setWinnerMonth(d)}
+            allowClear={false}
+            format="MMMM YYYY"
+          />
+        }
+      >
+        <Text type="secondary" style={{ display: "block", marginBottom: 16, fontSize: 14 }}>
+          Enter the Fund Number of each winner for the selected month.
+        </Text>
+        <Row gutter={[16, 16]}>
+          {WINNER_PLACES.map((p) => (
+            <Col xs={24} md={8} key={p.place}>
+              <div
+                className="winner-place-box"
+                style={{
+                  border: `1px solid #f0f0f0`,
+                  borderTop: `3px solid ${p.color}`,
+                  borderRadius: 8,
+                  padding: 16,
+                  height: "100%",
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 4 }}>
+                  <TrophyOutlined style={{ color: p.color, marginRight: 6 }} />
+                  {p.label}
+                </div>
+                <Tag color="gold" style={{ marginBottom: 12, whiteSpace: "normal" }}>
+                  {p.prize}
+                </Tag>
+                <Input
+                  placeholder="Winner Fund Number"
+                  value={winnerFunds[p.place]}
+                  onChange={(e) =>
+                    setWinnerFunds((prev) => ({ ...prev, [p.place]: e.target.value }))
+                  }
+                  onPressEnter={handleSaveWinners}
+                />
+              </div>
+            </Col>
+          ))}
+        </Row>
+        <div style={{ textAlign: "right", marginTop: 16 }}>
+          <Button
+            type="primary"
+            icon={<TrophyOutlined />}
+            loading={winnerLoading}
+            onClick={handleSaveWinners}
+          >
+            Save Winners
           </Button>
         </div>
       </Card>

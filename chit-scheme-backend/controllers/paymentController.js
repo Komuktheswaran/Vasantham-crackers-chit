@@ -483,6 +483,44 @@ const notifyPayment = async (req, res) => {
   }
 };
 
+// ====================================================================
+// O(1) fund-number navigation
+// Replaces the old approach of loading 5000 fund numbers into the browser
+// on every Payments page mount. Uses IX_Scheme_Members_FundNumber.
+// ====================================================================
+const getAdjacentFundNumber = (direction) => async (req, res) => {
+  try {
+    // Fund numbers contain slashes (e.g. "fund/2026/001"), which IIS rejects
+    // in the URL path. Use query parameter ?current=<encoded fund>.
+    const fundNumber = req.query.current;
+    if (!fundNumber) {
+      return sendError(res, 'Missing required query parameter: current', null, 400);
+    }
+    const comparator = direction === 'next' ? '>' : '<';
+    const order = direction === 'next' ? 'ASC' : 'DESC';
+
+    // Natural numeric-safe ordering: sort by Fund_Number text (works because
+    // every Fund_Number is the same `prefix/year/NNN` shape).
+    const rows = await executeQuery(
+      `SELECT TOP 1 Fund_Number
+       FROM Scheme_Members
+       WHERE Fund_Number ${comparator} @param0
+       ORDER BY Fund_Number ${order}`,
+      [{ value: fundNumber, type: sql.VarChar(50) }]
+    );
+
+    if (!rows.length) {
+      return sendSuccess(res, `No ${direction} fund number`, { fundNumber: null });
+    }
+    return sendSuccess(res, 'OK', { fundNumber: rows[0].Fund_Number });
+  } catch (error) {
+    return sendError(res, 'Failed to look up adjacent fund number', error);
+  }
+};
+
+const getNextFund = getAdjacentFundNumber('next');
+const getPrevFund = getAdjacentFundNumber('prev');
+
 module.exports = {
   getPaymentsByCustomer,
   recordPayment,
@@ -491,5 +529,7 @@ module.exports = {
   payAllDues,
   updatePayment,
   getNextReferenceId,
-  notifyPayment
+  notifyPayment,
+  getNextFund,
+  getPrevFund,
 };

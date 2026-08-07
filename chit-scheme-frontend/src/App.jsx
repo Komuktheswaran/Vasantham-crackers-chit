@@ -13,6 +13,7 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   EnvironmentOutlined,
+  TrophyOutlined,
 } from "@ant-design/icons";
 import {
   Routes,
@@ -27,10 +28,12 @@ import Schemes from "./pages/Schemes";
 import Payments from "./pages/Payments";
 import Downloads from "./pages/Downloads";
 import Auction from "./pages/Auction";
+import WinnersBoard from "./pages/WinnersBoard";
 import Reports from "./pages/Reports";
 import SchemeMembers from "./pages/SchemeMembers";
 import Login from "./pages/Login";
 import UserManagement from "./pages/UserManagement";
+import AuditLogs from "./pages/AuditLogs";
 
 import TrackingOrder from "./pages/TrackingOrder";
 import TransportMaster from "./pages/TransportMaster";
@@ -117,6 +120,7 @@ const App = () => {
       },
       { key: "/payments", icon: <BarChartOutlined />, label: "Payments" },
       { key: "/auction", icon: <MoneyCollectOutlined />, label: "Auction" },
+      { key: "/winners", icon: <TrophyOutlined />, label: "Monthly Winners" },
       { key: "/transport", icon: <EnvironmentOutlined />, label: "Transport" },
       {
         key: "/tracking-order",
@@ -131,6 +135,11 @@ const App = () => {
         key: "/users",
         icon: <SettingOutlined />,
         label: "User Management",
+      });
+      items.push({
+        key: "/audit-logs",
+        icon: <BarChartOutlined />,
+        label: "Audit Logs",
       });
     }
     return items;
@@ -324,6 +333,14 @@ const App = () => {
               }
             />
             <Route
+              path="/winners"
+              element={
+                <ProtectedRoute authenticated={authenticated} loading={loading}>
+                  <WinnersBoard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/transport"
               element={
                 <ProtectedRoute authenticated={authenticated} loading={loading}>
@@ -356,6 +373,18 @@ const App = () => {
                   loading={loading}
                 >
                   <UserManagement />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/audit-logs"
+              element={
+                <AdminRoute
+                  authenticated={authenticated}
+                  user={user}
+                  loading={loading}
+                >
+                  <AuditLogs />
                 </AdminRoute>
               }
             />

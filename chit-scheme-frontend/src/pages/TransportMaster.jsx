@@ -21,8 +21,11 @@ const TransportMaster = () => {
   const [dpModalVisible, setDpModalVisible] = useState(false);
   const [editingTransporter, setEditingTransporter] = useState(null);
   const [selectedTransporter, setSelectedTransporter] = useState(null);
+  const [editDpModalVisible, setEditDpModalVisible] = useState(false);
+  const [editingDp, setEditingDp] = useState(null);
   const [form] = Form.useForm();
   const [dpForm] = Form.useForm();
+  const [editDpForm] = Form.useForm();
 
   useEffect(() => {
     fetchTransporters();
@@ -139,6 +142,31 @@ const TransportMaster = () => {
     }
   };
 
+  const handleEditDP = (record) => {
+    setEditingDp(record);
+    editDpForm.setFieldsValue({
+      Place_Name: record.Place_Name,
+      Branch_Phone: record.Branch_Phone,
+      Branch_Address: record.Branch_Address,
+    });
+    setEditDpModalVisible(true);
+  };
+
+  const handleUpdateDP = async (values) => {
+    try {
+      await transportersAPI.updateDeliveryPoint(
+        editingDp.Delivery_Point_ID,
+        values,
+      );
+      message.success("Delivery Point updated");
+      setEditDpModalVisible(false);
+      handleManageDP(selectedTransporter); // Refresh local list
+      fetchTransporters();
+    } catch (error) {
+      message.error("Failed to update delivery point");
+    }
+  };
+
   const handleDeleteDP = async (pointId) => {
     try {
       await transportersAPI.deleteDeliveryPoint(pointId);
@@ -219,14 +247,21 @@ const TransportMaster = () => {
     {
       title: "Action",
       key: "action",
-      width: 80,
+      width: 100,
       render: (text, record) => (
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          onClick={() => handleDeleteDP(record.Delivery_Point_ID)}
-        />
+        <Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEditDP(record)}
+          />
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteDP(record.Delivery_Point_ID)}
+          />
+        </Space>
       ),
     },
   ];
@@ -373,6 +408,31 @@ const TransportMaster = () => {
             size="small"
           />
         </div>
+      </Modal>
+
+      {/* Edit Delivery Point Modal */}
+      <Modal
+        title="Edit Branch Details"
+        open={editDpModalVisible}
+        onCancel={() => setEditDpModalVisible(false)}
+        onOk={() => editDpForm.submit()}
+        forceRender
+      >
+        <Form form={editDpForm} layout="vertical" onFinish={handleUpdateDP}>
+          <Form.Item
+            name="Place_Name"
+            label="Branch Name"
+            rules={[{ required: true, message: "Required" }]}
+          >
+            <Input placeholder="Branch Name" />
+          </Form.Item>
+          <Form.Item name="Branch_Phone" label="Branch Phone">
+            <Input placeholder="Phone Number" />
+          </Form.Item>
+          <Form.Item name="Branch_Address" label="Branch Address">
+            <Input.TextArea rows={2} placeholder="Address" />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

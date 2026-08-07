@@ -14,9 +14,13 @@ const dbConfig = {
     requestTimeout: 300000, // 5 minutes
   },
   pool: {
-    max: 20,   // 1000 was dangerously high — SQL Server default max is 32767 but node processes don't need more than ~20
-    min: 2,
+    // Bumped 20 → 50 after load testing revealed pool exhaustion at >30 concurrent
+    // requests. Each large-payload endpoint holds a slot ~1s; with bursts of 50
+    // concurrent requests the queue blew up. 50 is comfortable + headroom.
+    max: 50,
+    min: 5,
     idleTimeoutMillis: 30000,
+    acquireTimeoutMillis: 30000,
   },
 };
 

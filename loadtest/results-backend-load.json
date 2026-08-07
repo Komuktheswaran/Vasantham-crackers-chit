@@ -1,0 +1,307 @@
+{
+    "metrics": {
+        "http_req_duration": {
+            "med": 299.52,
+            "max": 4739.5632,
+            "p(90)": 2144.6879600000007,
+            "p(95)": 2701.8576399999993,
+            "avg": 756.1786401459852,
+            "min": 7.3955
+        },
+        "http_req_tls_handshaking": {
+            "min": 0,
+            "med": 0,
+            "max": 22.9636,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.2609865693430657
+        },
+        "iteration_duration": {
+            "p(95)": 14183.351375,
+            "avg": 10953.006864912282,
+            "min": 5927.9357,
+            "med": 11027.7101,
+            "max": 17880.7419,
+            "p(90)": 13603.4127
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 685,
+            "thresholds": {
+                "rate<0.02": false
+            },
+            "value": 0
+        },
+        "iterations": {
+            "count": 114,
+            "rate": 0.8817211988566378
+        },
+        "http_req_waiting": {
+            "avg": 755.2078408759128,
+            "min": 6.9207,
+            "med": 298.3098,
+            "max": 4737.9131,
+            "p(90)": 2143.9146600000004,
+            "p(95)": 2700.241699999999
+        },
+        "http_req_sending": {
+            "avg": 0.3360962043795621,
+            "min": 0,
+            "med": 0.2141,
+            "max": 3.3674,
+            "p(90)": 0.9724400000000001,
+            "p(95)": 1.0204799999999998
+        },
+        "http_req_receiving": {
+            "avg": 0.6347030656934307,
+            "min": 0,
+            "med": 0.6201,
+            "max": 6.0023,
+            "p(90)": 1.1413200000000003,
+            "p(95)": 1.3154199999999998
+        },
+        "checks": {
+            "passes": 686,
+            "fails": 0,
+            "value": 1
+        },
+        "data_sent": {
+            "count": 79687,
+            "rate": 616.330852397271
+        },
+        "group_duration": {
+            "p(95)": 3423.51165,
+            "avg": 1136.7231890350872,
+            "min": 9.4459,
+            "med": 617.70465,
+            "max": 4918.6058,
+            "p(90)": 2844.8847
+        },
+        "vus_max": {
+            "value": 10,
+            "min": 10,
+            "max": 10
+        },
+        "http_req_blocked": {
+            "med": 0,
+            "max": 28.462,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.31158671532846716,
+            "min": 0
+        },
+        "http_req_duration{endpoint:customers-list}": {
+            "avg": 334.0006298245614,
+            "min": 10.8525,
+            "med": 197.1978,
+            "max": 1420.8137,
+            "p(90)": 882.91038,
+            "p(95)": 1138.0930649999996,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_duration{endpoint:login}": {
+            "avg": 149.6206,
+            "min": 149.6206,
+            "med": 149.6206,
+            "max": 149.6206,
+            "p(90)": 149.6206,
+            "p(95)": 149.6206,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "data_received": {
+            "count": 4312482,
+            "rate": 33354.445606032205
+        },
+        "vus": {
+            "value": 2,
+            "min": 2,
+            "max": 10
+        },
+        "http_req_duration{endpoint:scheme-members-month-filter}": {
+            "p(95)": 2268.1711849999997,
+            "avg": 1374.1998473684212,
+            "min": 150.5504,
+            "med": 1395.13155,
+            "max": 3446.8399,
+            "p(90)": 2209.48791,
+            "thresholds": {
+                "p(95)<3000": false
+            }
+        },
+        "http_req_duration{endpoint:schemes-list}": {
+            "avg": 126.02329122807022,
+            "min": 9.4459,
+            "med": 50.32465,
+            "max": 1061.0657,
+            "p(90)": 284.02790000000005,
+            "p(95)": 434.3553049999997,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_connecting": {
+            "max": 4.9641,
+            "p(90)": 0,
+            "p(95)": 0,
+            "avg": 0.03786715328467153,
+            "min": 0,
+            "med": 0
+        },
+        "http_req_duration{endpoint:scheme-members-paged}": {
+            "max": 1563.7557,
+            "p(90)": 1054.82514,
+            "p(95)": 1189.09519,
+            "avg": 530.1243631578948,
+            "min": 8.4967,
+            "med": 533.9881,
+            "thresholds": {
+                "p(95)<2000": false
+            }
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 756.1786401459852,
+            "min": 7.3955,
+            "med": 299.52,
+            "max": 4739.5632,
+            "p(90)": 2144.6879600000007,
+            "p(95)": 2701.8576399999993
+        },
+        "http_req_duration{endpoint:customers-search-20}": {
+            "avg": 2100.628796491228,
+            "min": 171.8107,
+            "med": 2093.25315,
+            "max": 4739.5632,
+            "p(90)": 3648.9406300000005,
+            "p(95)": 3876.2416799999996,
+            "thresholds": {
+                "p(95)<1500": true
+            }
+        },
+        "http_req_duration{endpoint:fund-next}": {
+            "p(95)": 196.62586,
+            "avg": 77.41559736842106,
+            "min": 7.3955,
+            "med": 51.632999999999996,
+            "max": 591.5557,
+            "p(90)": 181.82964,
+            "thresholds": {
+                "p(95)<500": false
+            }
+        },
+        "http_reqs": {
+            "count": 685,
+            "rate": 5.2980615896210255
+        }
+    },
+    "setup_data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJhZG1pbiIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc4MTkzMDAxOSwiZXhwIjoxNzgxOTU4ODE5fQ.DCCq9jD-YDxqlv0uyiNaAlxzO9R8vuOcCKsjBK9Wv4o"
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {
+            "setup": {
+                "name": "setup",
+                "path": "::setup",
+                "id": "5c0f8025f7e0b6654089e5b00e950f1a",
+                "groups": {},
+                "checks": {
+                        "login 200": {
+                            "fails": 0,
+                            "name": "login 200",
+                            "path": "::setup::login 200",
+                            "id": "647055af8ffe21e58084ae4b140cdda0",
+                            "passes": 1
+                        },
+                        "login returns token": {
+                            "fails": 0,
+                            "name": "login returns token",
+                            "path": "::setup::login returns token",
+                            "id": "2c9e3e4ff64d4b6febba748061509914",
+                            "passes": 1
+                        }
+                    }
+            },
+            "OPEN customers page": {
+                "name": "OPEN customers page",
+                "path": "::OPEN customers page",
+                "id": "274868b461d3a7bcc7af994da0dc3e23",
+                "groups": {},
+                "checks": {
+                        "customers list 200": {
+                            "passes": 114,
+                            "fails": 0,
+                            "name": "customers list 200",
+                            "path": "::OPEN customers page::customers list 200",
+                            "id": "5ad783bad80bcad42d161fe7ec4090c1"
+                        }
+                    }
+            },
+            "OPEN payments page": {
+                "name": "OPEN payments page",
+                "path": "::OPEN payments page",
+                "id": "dd633144a5de102c4ca00240d43da2db",
+                "groups": {},
+                "checks": {
+                        "customers search 200": {
+                            "name": "customers search 200",
+                            "path": "::OPEN payments page::customers search 200",
+                            "id": "06f3bddee38679678058619b329af4e1",
+                            "passes": 114,
+                            "fails": 0
+                        },
+                        "fund-next 200": {
+                            "id": "ec82f4622bcb36f810adf10ad4b3de92",
+                            "passes": 114,
+                            "fails": 0,
+                            "name": "fund-next 200",
+                            "path": "::OPEN payments page::fund-next 200"
+                        }
+                    }
+            },
+            "OPEN scheme-members + apply month filter": {
+                "checks": {
+                    "members paged 200": {
+                        "name": "members paged 200",
+                        "path": "::OPEN scheme-members + apply month filter::members paged 200",
+                        "id": "d2f8498d81d340727d5fb004fc5e98bc",
+                        "passes": 114,
+                        "fails": 0
+                    },
+                    "month-filter 200": {
+                        "fails": 0,
+                        "name": "month-filter 200",
+                        "path": "::OPEN scheme-members + apply month filter::month-filter 200",
+                        "id": "ed578ba51bd8875a44e0638c2e88b184",
+                        "passes": 114
+                    }
+                },
+                "name": "OPEN scheme-members + apply month filter",
+                "path": "::OPEN scheme-members + apply month filter",
+                "id": "4b597b5c5adc871359126b2774bca033",
+                "groups": {}
+            },
+            "OPEN schemes page": {
+                "name": "OPEN schemes page",
+                "path": "::OPEN schemes page",
+                "id": "87c07ff9a3ab833b93db6419a36ba61d",
+                "groups": {},
+                "checks": {
+                        "schemes 200": {
+                            "name": "schemes 200",
+                            "path": "::OPEN schemes page::schemes 200",
+                            "id": "634e40ea0ca04d73018683e0fa829826",
+                            "passes": 114,
+                            "fails": 0
+                        }
+                    }
+            }
+        },
+        "checks": {}
+    }
+}
